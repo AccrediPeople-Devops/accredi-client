@@ -2,7 +2,7 @@
 export const PurpleEleganceTheme = {
   name: "Purple Elegance",
   colors: {
-    primary: "#7E57C2", // Medium purple - more vibrant
+    primary: "#4F46E5", // Medium purple - more vibrant 7E57C2
     secondary: "#B39DDB", // Lighter purple - better contrast
     background: "#1E1E2F", // Deep blue-charcoal - easier on eyes
     text: "#F8F9FA", // Crisp white text - better readability
