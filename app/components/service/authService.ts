@@ -7,12 +7,40 @@ class AuthService {
         email,
         password,
       });
-      localStorage.setItem("token", response.data.token);
+
+      // Only set token if we're on the client side
+      if (typeof window !== "undefined") {
+        localStorage.setItem("token", response.data.token);
+      }
+
       return response.data;
     } catch (error) {
       console.error("Login failed:", error);
       throw error;
     }
+  }
+
+  async register(userData: any) {
+    try {
+      const response = await axiosInstance.post("/auth/v1/register", userData);
+      return response.data;
+    } catch (error) {
+      console.error("Registration failed:", error);
+      throw error;
+    }
+  }
+
+  logout() {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("token");
+    }
+  }
+
+  isAuthenticated() {
+    if (typeof window !== "undefined") {
+      return !!localStorage.getItem("token");
+    }
+    return false;
   }
 }
 
