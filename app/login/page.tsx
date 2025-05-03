@@ -67,11 +67,11 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
       {/* Left column with logo and quote */}
-      <div className="w-full md:w-1/2 bg-[#5b2c6f] flex flex-col items-center justify-center p-8 relative">
+      <div className="w-full md:w-1/2 bg-[#4F46E5] flex flex-col items-center justify-center p-8 relative">
         <div className="max-w-md w-full flex flex-col items-center">
-          <div className="relative w-80 h-32 mb-12">
+          <div className="relative w-96 h-40 mb-12">
             <Image
-              src="/Logo/Only Transperent/full_margin_transparent_white.png"
+              src="/Logo/Only Transperent/full_trimmed_transparent_white.png"
               alt="Accredipeople Logo"
               fill
               style={{ objectFit: "contain" }}
@@ -83,16 +83,6 @@ export default function LoginPage() {
             <p className="text-lg opacity-80">
               "Elevating professionals through industry-recognized certifications and verified credentials."
             </p>
-          </div>
-        </div>
-        <div className="absolute bottom-6 left-6">
-          <div className="relative w-48 h-16">
-            <Image
-              src="/Logo/Only Transperent/full_trimmed_transparent_color1.png"
-              alt="Accredipeople Color Logo"
-              fill
-              style={{ objectFit: "contain" }}
-            />
           </div>
         </div>
       </div>
@@ -140,14 +130,14 @@ export default function LoginPage() {
               </Link>
             </div>
 
-            <Button type="submit" fullWidth disabled={isLoading} className="py-3">
+            <Button type="submit" fullWidth disabled={isLoading} className="py-3 bg-[#4F46E5] hover:bg-[#4338CA]">
               {isLoading ? "Signing in..." : "Sign In"}
             </Button>
 
             <div className="text-center mt-6">
               <p className="text-white/70">
                 Don&apos;t have an account?{" "}
-                <Link href="/signup" className="auth-link">
+                <Link href="/signup" className="auth-link text-[#4F46E5]">
                   Sign up
                 </Link>
               </p>
