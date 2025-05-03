@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "../components/dashboard/Sidebar";
-import ThemeSelector from "../components/dashboard/ThemeSelector";
 import AuthService from "../components/service/authService";
 import { ThemeProvider } from "../context/ThemeContext";
 
@@ -63,8 +62,6 @@ export default function DashboardLayout({
             </div>
 
             <div className="flex items-center space-x-4">
-              <ThemeSelector />
-
               <div className="relative">
                 <button className="h-9 w-9 rounded-full bg-[var(--primary)] flex items-center justify-center text-[var(--background)] shadow-[var(--shadow-sm)]">
                   <svg

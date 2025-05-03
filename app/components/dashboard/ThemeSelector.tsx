@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useTheme } from "../../context/ThemeContext";
 import { themes, ThemeType } from "../../theme";
 
 export default function ThemeSelector() {
   const { themeType, setTheme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const themeOptions = [
     { id: "purpleElegance", label: "Purple Elegance", color: "#7E57C2" },
@@ -25,11 +26,28 @@ export default function ThemeSelector() {
     setIsOpen(false);
   };
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   // Find the current theme
   const currentTheme = themeOptions.find((theme) => theme.id === themeType);
 
   return (
-    <div className="relative">
+    <div className="relative" ref={dropdownRef}>
       <button
         className="flex items-center space-x-2 px-3 py-2 rounded-[var(--radius-md)] bg-[var(--input-bg)] text-[var(--foreground)] hover:bg-opacity-80 transition-colors border border-[var(--primary)]/10 shadow-[var(--shadow-sm)]"
         onClick={toggleDropdown}
@@ -58,7 +76,21 @@ export default function ThemeSelector() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 rounded-[var(--radius-md)] shadow-[var(--shadow-md)] bg-[var(--background)] border border-[var(--primary)]/10 z-50">
+        <div
+          className="fixed mt-2 w-48 rounded-[var(--radius-md)] shadow-[var(--shadow-md)] bg-[var(--background)] border border-[var(--primary)]/10 z-50"
+          style={{
+            top: dropdownRef.current
+              ? dropdownRef.current.getBoundingClientRect().bottom +
+                window.scrollY
+              : 0,
+            right:
+              window.innerWidth -
+              (dropdownRef.current
+                ? dropdownRef.current.getBoundingClientRect().right +
+                  window.scrollX
+                : 0),
+          }}
+        >
           <div className="py-1" role="menu" aria-orientation="vertical">
             {themeOptions.map((option) => (
               <button
