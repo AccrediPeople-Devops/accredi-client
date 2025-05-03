@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { PurpleEleganceTheme } from "../../theme";
+import { useTheme } from "../../context/ThemeContext";
 
 interface SidebarProps {
   isMobileOpen: boolean;
@@ -10,6 +10,7 @@ interface SidebarProps {
 
 export default function Sidebar({ isMobileOpen, toggleSidebar }: SidebarProps) {
   const pathname = usePathname();
+  const { currentTheme } = useTheme();
 
   const menuItems = [
     {
@@ -106,7 +107,8 @@ export default function Sidebar({ isMobileOpen, toggleSidebar }: SidebarProps) {
       <aside
         className={`
           fixed top-0 left-0 z-30 h-screen w-64 
-          bg-[#1C1C1C] border-r border-[#5B2C6F]/20
+          bg-[var(--background)] border-r border-[var(--primary)]/20
+          shadow-[var(--shadow-md)]
           transition-transform duration-300 ease-in-out transform
           ${isMobileOpen ? "translate-x-0" : "-translate-x-full"} 
           md:translate-x-0
@@ -114,11 +116,11 @@ export default function Sidebar({ isMobileOpen, toggleSidebar }: SidebarProps) {
       >
         <div className="h-full flex flex-col">
           {/* Logo */}
-          <div className="p-4 border-b border-[#5B2C6F]/20">
+          <div className="p-4 border-b border-[var(--primary)]/20">
             <div className="flex items-center justify-center">
-              <div className="text-xl font-bold text-white">
-                <span className="text-[#D7BDE2]">Accredi</span>
-                <span className="text-white">Learn</span>
+              <div className="text-xl font-bold text-[var(--foreground)]">
+                <span className="text-[var(--primary)]">Accredi</span>
+                <span className="text-[var(--secondary)]">Learn</span>
               </div>
             </div>
           </div>
@@ -134,11 +136,11 @@ export default function Sidebar({ isMobileOpen, toggleSidebar }: SidebarProps) {
                     <Link
                       href={item.path}
                       className={`
-                        flex items-center px-4 py-3 text-sm font-medium rounded-lg
+                        flex items-center px-4 py-3 text-sm font-medium rounded-[var(--radius-md)]
                         ${
                           isActive
-                            ? "bg-[#5B2C6F] text-white"
-                            : "text-white/80 hover:bg-[#5B2C6F]/20"
+                            ? "bg-[var(--primary)] text-[var(--background)]"
+                            : "text-[var(--foreground)]/80 hover:bg-[var(--primary)]/10"
                         }
                         transition-colors duration-200
                       `}
@@ -153,9 +155,9 @@ export default function Sidebar({ isMobileOpen, toggleSidebar }: SidebarProps) {
           </nav>
 
           {/* Footer */}
-          <div className="p-4 border-t border-[#5B2C6F]/20">
+          <div className="p-4 border-t border-[var(--primary)]/20">
             <button
-              className="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white rounded-lg bg-[#5B2C6F] hover:bg-[#5B2C6F]/90 transition-colors duration-200"
+              className="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-[var(--background)] rounded-[var(--radius-md)] bg-[var(--primary)] hover:bg-[var(--primary)]/90 transition-colors duration-200 shadow-[var(--shadow-sm)]"
               onClick={() => {
                 if (typeof window !== "undefined") {
                   localStorage.removeItem("token");
