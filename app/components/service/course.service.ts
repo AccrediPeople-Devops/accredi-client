@@ -110,6 +110,20 @@ class CourseService {
       throw error;
     }
   }
+
+  /**
+   * Restore a deleted course
+   * @param {string} id - Course ID
+   * @returns {Promise<{status: boolean, course: Course}>}
+   */
+  async restoreCourse(id: string) {
+    try {
+      const response = await axiosInstance.put(`/courses/v1/${id}/undo-delete`);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
 }
 
 export default new CourseService();
