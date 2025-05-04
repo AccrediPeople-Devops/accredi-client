@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function CoursesPage() {
   const [activeFilter, setActiveFilter] = useState("all");
@@ -146,21 +147,23 @@ export default function CoursesPage() {
           </svg>
         </div>
 
-        <button className="w-full sm:w-auto px-4 py-2 bg-[#5B2C6F] text-white rounded-lg font-medium hover:bg-[#5B2C6F]/90 transition-colors flex items-center justify-center">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5 mr-2"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fillRule="evenodd"
-              d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-              clipRule="evenodd"
-            />
-          </svg>
-          Add New Course
-        </button>
+        <Link href="/dashboard/courses/add" className="w-full sm:w-auto">
+          <button className="w-full px-4 py-2 bg-[#5B2C6F] text-white rounded-lg font-medium hover:bg-[#5B2C6F]/90 transition-colors flex items-center justify-center">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 mr-2"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                clipRule="evenodd"
+              />
+            </svg>
+            Add New Course
+          </button>
+        </Link>
       </div>
 
       {/* Courses Grid */}
