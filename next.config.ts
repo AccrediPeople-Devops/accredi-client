@@ -9,6 +9,11 @@ const nextConfig: NextConfig = {
         hostname: "placehold.co",
         pathname: "**",
       },
+      {
+        protocol: "http",
+        hostname: "148.135.137.229",
+        port: "3000",
+      },
     ],
   },
 };

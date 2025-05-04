@@ -7,7 +7,8 @@ import {
   ValidationError,
 } from "../../types/courseCategory";
 import { getCategoryPlaceholderImage } from "../../utils/imageUtils";
-
+import uploadService from "../service/upload.service";
+import config from "../config/config";
 interface CourseCategoryFormProps {
   initialData: CourseCategory | null;
   onSubmit: (data: any) => void;
@@ -29,6 +30,7 @@ export default function CourseCategoryForm({
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [imagePath, setImagePath] = useState<string | null>(null);
 
   useEffect(() => {
     if (initialData) {
@@ -40,7 +42,10 @@ export default function CourseCategoryForm({
       });
 
       if (initialData.image && initialData.image.length > 0) {
-        setImagePreview(initialData.image[0].url);
+        // Construct the image preview URL from path
+        const previewUrl = `${config.imageUrl}${initialData.image[0].path}`;
+        setImagePreview(previewUrl);
+        setImagePath(initialData.image[0].key);
       }
     }
   }, [initialData]);
@@ -60,22 +65,84 @@ export default function CourseCategoryForm({
     setFormData({ ...formData, [name]: checked });
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
       const file = files[0];
       setImageFile(file);
 
-      // Create preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      try {
+        // Upload image to server
+        const uploadResponse = await uploadService.uploadImage(file);
+        console.log("Upload response:", uploadResponse);
 
-      // Clear image errors
-      setErrors(errors.filter((error) => error.field !== "image"));
+        if (
+          uploadResponse &&
+          uploadResponse.upload &&
+          uploadResponse.upload[0] &&
+          uploadResponse.upload[0].path
+        ) {
+          // Get the path from the response
+          const path = uploadResponse.upload[0].path;
+          const key = uploadResponse.upload[0].key || path;
+          const imageBaseUrl = config.imageUrl;
+          const fullImageUrl = `${imageBaseUrl}${path}`;
+
+          // Store the path in state for later deletion
+          setImagePath(path);
+
+          // Store the path and key in the form data according to ImageItem interface
+          setFormData((prev) => ({
+            ...prev,
+            image: [
+              {
+                path: path,
+                key: key,
+                _id: undefined,
+              },
+            ],
+          }));
+
+          // Update image preview with the constructed URL
+          setImagePreview(fullImageUrl);
+        } else {
+          throw new Error("Invalid upload response");
+        }
+
+        // Clear errors
+        setErrors(errors.filter((error) => error.field !== "image"));
+      } catch (error) {
+        console.error("Error uploading image:", error);
+        setErrors((prev) => [
+          ...prev.filter((e) => e.field !== "image"),
+          {
+            field: "image",
+            message: "Failed to upload image. Please try again.",
+          },
+        ]);
+      }
     }
+  };
+
+  const handleClearImage = async () => {
+    if (imagePath) {
+      try {
+        // Call the delete API with the stored path
+        await uploadService.deleteImage(imagePath);
+        console.log("Image deleted successfully");
+      } catch (error) {
+        console.error("Error deleting image:", error);
+      }
+    }
+
+    // Clear states regardless of API success
+    setImagePreview(null);
+    setImageFile(null);
+    setImagePath(null);
+    setFormData((prev) => ({
+      ...prev,
+      image: [],
+    }));
   };
 
   const validateForm = (): boolean => {
@@ -110,20 +177,41 @@ export default function CourseCategoryForm({
     setIsSubmitting(true);
 
     try {
-      // In a real application, you would upload the image file to your server/CDN
-      // and get back a URL and key, then include that in your formData
-
       let updatedFormData = { ...formData };
 
-      if (imageFile) {
-        // Simulate image upload
-        // In a real app, you would call your API to upload the image
-        const mockUploadedImage: ImageItem = {
-          url: imagePreview || getCategoryPlaceholderImage(formData.name),
-          key: `${Date.now()}-${imageFile.name}`,
-        };
+      // Only try to upload a new image if we have an image file and it wasn't already uploaded
+      if (imageFile && (!formData.image || formData.image.length === 0)) {
+        try {
+          const uploadResponse = await uploadService.uploadImage(imageFile);
 
-        updatedFormData.image = [mockUploadedImage];
+          if (
+            uploadResponse &&
+            uploadResponse.upload &&
+            uploadResponse.upload[0] &&
+            uploadResponse.upload[0].path
+          ) {
+            const imagePath = uploadResponse.upload[0].path;
+            const key = uploadResponse.upload[0].key || imagePath;
+            const imageBaseUrl = config.imageUrl;
+            const fullImageUrl = `${imageBaseUrl}${imagePath}`;
+
+            updatedFormData.image = [
+              {
+                path: imagePath,
+                key: key,
+                _id: undefined,
+              },
+            ];
+          } else {
+            throw new Error("Invalid upload response");
+          }
+        } catch (uploadError) {
+          console.error(
+            "Error uploading image during submission:",
+            uploadError
+          );
+          throw new Error("Failed to upload image. Please try again.");
+        }
       }
 
       // If editing, preserve the ID and other fields
@@ -235,13 +323,7 @@ export default function CourseCategoryForm({
                 <button
                   type="button"
                   className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
-                  onClick={() => {
-                    setImagePreview(null);
-                    setImageFile(null);
-                    if (initialData) {
-                      setFormData({ ...formData, image: [] });
-                    }
-                  }}
+                  onClick={handleClearImage}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"

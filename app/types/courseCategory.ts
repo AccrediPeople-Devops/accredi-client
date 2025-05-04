@@ -1,6 +1,6 @@
 export interface ImageItem {
   _id?: string;
-  url: string;
+  path: string;
   key: string;
 }
 
