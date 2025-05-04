@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { generatePlaceholderImage } from "../utils/imageUtils";
 
 export default function Dashboard() {
   // Mock data for stats
@@ -81,28 +82,28 @@ export default function Dashboard() {
       title: "Introduction to Web Development",
       category: "Programming",
       students: 245,
-      image: "https://placehold.co/600x400/5B2C6F/FFFFFF/png?text=Web+Dev",
+      image: generatePlaceholderImage("5B2C6F", "FFFFFF", "Web Dev"),
     },
     {
       id: 2,
       title: "Digital Marketing Essentials",
       category: "Marketing",
       students: 187,
-      image: "https://placehold.co/600x400/7D3C98/FFFFFF/png?text=Marketing",
+      image: generatePlaceholderImage("7D3C98", "FFFFFF", "Marketing"),
     },
     {
       id: 3,
       title: "Data Science Fundamentals",
       category: "Data Science",
       students: 156,
-      image: "https://placehold.co/600x400/8E44AD/FFFFFF/png?text=Data+Science",
+      image: generatePlaceholderImage("8E44AD", "FFFFFF", "Data Science"),
     },
     {
       id: 4,
       title: "Mobile App Development with React Native",
       category: "Programming",
       students: 132,
-      image: "https://placehold.co/600x400/9B59B6/FFFFFF/png?text=React+Native",
+      image: generatePlaceholderImage("9B59B6", "FFFFFF", "React Native"),
     },
   ];
 
