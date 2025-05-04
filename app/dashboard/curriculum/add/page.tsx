@@ -4,22 +4,42 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import curriculumService from "../../../components/service/curriculum.service";
+import courseService from "../../../components/service/course.service";
 import { CurriculumContent } from "../../../types/curriculum";
+import { Course } from "../../../types/course";
 import CurriculumItemInput from "../../../components/curriculum/CurriculumItemInput";
 
 export default function AddCurriculumPage() {
   const router = useRouter();
   const [courseId, setCourseId] = useState("");
   const [content, setContent] = useState<CurriculumContent[]>([
-    { title: "", description: "" }
+    { title: "", description: "" },
   ]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [availableCourses, setAvailableCourses] = useState<{ id: string; title: string }[]>([
-    { id: "67facdd9067a3cf2e7263124", title: "Introduction to Web Development" },
-    { id: "67facdd9067a3cf2e7263125", title: "Advanced JavaScript" },
-    { id: "67facdd9067a3cf2e7263126", title: "React for Beginners" }
-  ]);
+  const [availableCourses, setAvailableCourses] = useState<
+    { id: string; title: string }[]
+  >([]);
+
+  // Fetch available courses from the API
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const res = await courseService.getAllCourses();
+        if (res?.status && res?.courses) {
+          setAvailableCourses(
+            res.courses.map((course: Course) => ({
+              id: course._id,
+              title: course.title,
+            }))
+          );
+        }
+      } catch (err) {
+        setError("Failed to load courses");
+      }
+    };
+    fetchCourses();
+  }, []);
 
   const validateForm = () => {
     if (!courseId.trim()) {
@@ -45,7 +65,7 @@ export default function AddCurriculumPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -53,26 +73,20 @@ export default function AddCurriculumPage() {
     setIsLoading(true);
     try {
       // Clean up empty descriptions
-      const cleanContent = content.map(item => ({
+      const cleanContent = content.map((item) => ({
         ...item,
-        description: item.description.trim()
+        description: item.description.trim(),
       }));
 
       const payload = {
         courseId,
-        content: cleanContent
+        content: cleanContent,
       };
 
-      // Comment out for testing
-      // const res = await curriculumService.createCurriculum(payload);
-      // if (res) {
-      //   router.push("/dashboard/curriculum");
-      // }
-
-      // For testing/display only
-      console.log("Curriculum Payload:", payload);
-      alert("Curriculum would be created with: " + JSON.stringify(payload, null, 2));
-      router.push("/dashboard/curriculum");
+      const res = await curriculumService.createCurriculum(payload);
+      if (res) {
+        router.push("/dashboard/curriculum");
+      }
     } catch (err: any) {
       setError(err.response?.data?.message || "Error creating curriculum");
     } finally {
@@ -102,7 +116,9 @@ export default function AddCurriculumPage() {
           </svg>
         </Link>
         <div className="p-6 bg-[#2A2A2A] rounded-xl flex-1">
-          <h1 className="text-2xl font-bold text-white mb-2">Add New Curriculum</h1>
+          <h1 className="text-2xl font-bold text-white mb-2">
+            Add New Curriculum
+          </h1>
           <p className="text-[#D7BDE2]">Create a new curriculum for a course</p>
         </div>
       </div>
@@ -118,8 +134,10 @@ export default function AddCurriculumPage() {
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="bg-[#2A2A2A] rounded-xl p-6">
           <div className="mb-6">
-            <h2 className="text-xl font-bold text-white mb-4">Course Information</h2>
-            
+            <h2 className="text-xl font-bold text-white mb-4">
+              Course Information
+            </h2>
+
             <div>
               <label className="block text-sm font-medium text-white/70 mb-1">
                 Select Course
@@ -132,7 +150,7 @@ export default function AddCurriculumPage() {
                 <option value="">-- Select a course --</option>
                 {availableCourses.map((course) => (
                   <option key={course.id} value={course.id}>
-                    {course.title} ({course.id})
+                    {course.title}
                   </option>
                 ))}
               </select>
@@ -174,4 +192,4 @@ export default function AddCurriculumPage() {
       </form>
     </div>
   );
-} 
+}

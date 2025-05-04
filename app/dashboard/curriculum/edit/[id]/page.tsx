@@ -4,7 +4,9 @@ import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import curriculumService from "../../../../components/service/curriculum.service";
+import courseService from "../../../../components/service/course.service";
 import { Curriculum, CurriculumContent } from "../../../../types/curriculum";
+import { Course } from "../../../../types/course";
 import CurriculumItemInput from "../../../../components/curriculum/CurriculumItemInput";
 
 export default function EditCurriculumPage() {
@@ -17,66 +19,63 @@ export default function EditCurriculumPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
-  const [availableCourses, setAvailableCourses] = useState<{ id: string; title: string }[]>([
-    { id: "67facdd9067a3cf2e7263124", title: "Introduction to Web Development" },
-    { id: "67facdd9067a3cf2e7263125", title: "Advanced JavaScript" },
-    { id: "67facdd9067a3cf2e7263126", title: "React for Beginners" }
-  ]);
+  const [availableCourses, setAvailableCourses] = useState<
+    { id: string; title: string }[]
+  >([]);
+  const [currentCourseName, setCurrentCourseName] = useState<string>("");
 
   useEffect(() => {
     if (id) {
       fetchCurriculum();
     }
+
+    // Fetch available courses
+    const fetchCourses = async () => {
+      try {
+        const res = await courseService.getAllCourses();
+        if (res?.courses) {
+          setAvailableCourses(
+            res.courses.map((course: Course) => ({
+              id: course._id,
+              title: course.title,
+            }))
+          );
+        }
+      } catch (err) {
+        setError("Failed to load courses");
+      }
+    };
+    fetchCourses();
   }, [id]);
 
   const fetchCurriculum = async () => {
     setIsLoading(true);
     setError("");
     try {
-      // In a real application, this would fetch from the API
-      // const res = await curriculumService.getCurriculumById(id);
-      // if (res?.curriculum) {
-      //   setCourseId(res.curriculum.courseId);
-      //   setContent(res.curriculum.content);
-      // }
-      
-      // Using mock data for now
-      // This simulates fetching the curriculum from the API
-      const mockCurriculum: Curriculum = {
-        _id: id,
-        courseId: "67facdd9067a3cf2e7263124",
-        content: [
-          {
-            title: "Introduction to the Course",
-            description: "Welcome to the course! This introductory section covers what you'll learn and how to get the most out of the materials."
-          },
-          {
-            title: "Setting Up Your Environment",
-            description: "Learn how to install and configure the necessary tools and software for this course."
-          },
-          {
-            title: "Core Concepts",
-            description: "Dive into the fundamental principles and concepts that form the foundation of this subject area."
-          },
-          {
-            title: "Practical Applications",
-            description: "Apply what you've learned through hands-on exercises and real-world examples."
-          },
-          {
-            title: "Advanced Techniques",
-            description: "Take your skills to the next level with more sophisticated approaches and methodologies."
-          },
-          {
-            title: "Final Project",
-            description: "Consolidate your knowledge by completing a comprehensive project that demonstrates your mastery of the material."
+      // Get all curriculums and find the one with matching ID
+      const res = await curriculumService.getAllCurriculums();
+      if (res?.status && res?.curriculum && Array.isArray(res.curriculum)) {
+        const foundCurriculum = res.curriculum.find(
+          (item: Curriculum) => item._id === id
+        );
+        if (foundCurriculum) {
+          setCourseId(foundCurriculum.courseId);
+          setContent(foundCurriculum.content);
+
+          // Get course name for the header
+          const coursesRes = await courseService.getAllCourses();
+          if (coursesRes?.courses) {
+            const course = coursesRes.courses.find(
+              (course: Course) => course._id === foundCurriculum.courseId
+            );
+            setCurrentCourseName(course ? course.title : "Unknown Course");
           }
-        ],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      
-      setCourseId(mockCurriculum.courseId);
-      setContent(mockCurriculum.content);
+        } else {
+          setError("Curriculum not found");
+        }
+      } else {
+        setError("Failed to retrieve curriculum data");
+      }
     } catch (err: any) {
       setError(err.response?.data?.message || "Error fetching curriculum");
     } finally {
@@ -108,7 +107,7 @@ export default function EditCurriculumPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -116,31 +115,32 @@ export default function EditCurriculumPage() {
     setIsSaving(true);
     try {
       // Clean up empty descriptions
-      const cleanContent = content.map(item => ({
+      const cleanContent = content.map((item) => ({
         ...item,
-        description: item.description.trim()
+        description: item.description.trim(),
       }));
 
       const payload = {
         courseId,
-        content: cleanContent
+        content: cleanContent,
       };
 
-      // Comment out for testing
-      // const res = await curriculumService.updateCurriculum(id, payload);
-      // if (res) {
-      //   router.push("/dashboard/curriculum");
-      // }
-
-      // For testing/display only
-      console.log("Updated Curriculum Payload:", payload);
-      alert("Curriculum would be updated with: " + JSON.stringify(payload, null, 2));
-      router.push(`/dashboard/curriculum/${id}`);
+      const res = await curriculumService.updateCurriculum(id, payload);
+      if (res) {
+        router.push(`/dashboard/curriculum/${id}`);
+      }
     } catch (err: any) {
       setError(err.response?.data?.message || "Error updating curriculum");
     } finally {
       setIsSaving(false);
     }
+  };
+
+  // Get course name by ID
+  const getCourseNameById = (courseId: string) => {
+    if (!courseId) return "Unknown Course";
+    const course = availableCourses.find((course) => course.id === courseId);
+    return course ? course.title : "Course Not Found";
   };
 
   return (
@@ -165,8 +165,19 @@ export default function EditCurriculumPage() {
           </svg>
         </Link>
         <div className="p-6 bg-[#2A2A2A] rounded-xl flex-1">
-          <h1 className="text-2xl font-bold text-white mb-2">Edit Curriculum</h1>
-          <p className="text-[#D7BDE2]">Update course curriculum content</p>
+          <h1 className="text-2xl font-bold text-white mb-2">
+            Edit Curriculum
+          </h1>
+          <p className="text-[#D7BDE2]">
+            {!isLoading && currentCourseName ? (
+              <>
+                Update curriculum for{" "}
+                <span className="font-medium">{currentCourseName}</span>
+              </>
+            ) : (
+              "Update course curriculum content"
+            )}
+          </p>
         </div>
       </div>
 
@@ -190,8 +201,10 @@ export default function EditCurriculumPage() {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="bg-[#2A2A2A] rounded-xl p-6">
             <div className="mb-6">
-              <h2 className="text-xl font-bold text-white mb-4">Course Information</h2>
-              
+              <h2 className="text-xl font-bold text-white mb-4">
+                Course Information
+              </h2>
+
               <div>
                 <label className="block text-sm font-medium text-white/70 mb-1">
                   Select Course
@@ -204,7 +217,7 @@ export default function EditCurriculumPage() {
                   <option value="">-- Select a course --</option>
                   {availableCourses.map((course) => (
                     <option key={course.id} value={course.id}>
-                      {course.title} ({course.id})
+                      {course.title}
                     </option>
                   ))}
                 </select>
@@ -247,4 +260,4 @@ export default function EditCurriculumPage() {
       )}
     </div>
   );
-} 
+}
