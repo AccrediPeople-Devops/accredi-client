@@ -7,11 +7,16 @@ import RichTextEditor from "../../../../components/RichTextEditor";
 import ImageUpload from "../../../../components/ImageUpload";
 import MultipleImageUpload from "../../../../components/MultipleImageUpload";
 import KeyFeaturesInput from "../../../../components/KeyFeaturesInput";
+import courseService from "../../../../components/service/course.service";
+import courseCategoryService from "../../../../components/service/courseCategory.service";
+import uploadService from "../../../../components/service/upload.service";
+import config from "../../../../components/config/config";
 
 interface FileUpload {
   url: string;
   key: string;
   _id?: string;
+  path?: string;
 }
 
 interface CourseFormData {
@@ -25,70 +30,25 @@ interface CourseFormData {
     courseBadge: FileUpload[];
   };
   keyFeatures: string[];
-  isActive: boolean;
   broucher: FileUpload[];
 }
 
-// Mock categories for dropdown
-const categories = [
-  { id: "67faba597db07ab585f64eae", name: "Programming" },
-  { id: "67faba597db07ab585f64eaf", name: "Marketing" },
-  { id: "67faba597db07ab585f64eb0", name: "Design" },
-  { id: "67faba597db07ab585f64eb1", name: "Business" },
-  { id: "67faba597db07ab585f64eb2", name: "Data Science" },
-];
-
-// Mock courses data for pre-filling form
-const mockCoursesData: Record<string, CourseFormData> = {
-  "1": {
-    title: "Introduction to Web Development",
-    categoryId: "67faba597db07ab585f64eae",
-    shortDescription: "Learn the fundamentals of web development including HTML, CSS, and JavaScript.",
-    description: "<p>This comprehensive course covers all the basics of web development, starting with HTML structure, CSS styling, and JavaScript functionality. You will build real-world projects and learn modern development practices.</p><ul><li>Understanding HTML5 semantics</li><li>CSS Grid and Flexbox</li><li>JavaScript fundamentals</li><li>Responsive design principles</li></ul>",
-    upload: {
-      courseImage: [{ url: "https://via.placeholder.com/500x300", key: "img1" }],
-      courseSampleCertificate: [{ url: "https://via.placeholder.com/400x300", key: "cert1" }],
-      courseBadge: [
-        { url: "https://via.placeholder.com/100", key: "badge1" },
-        { url: "https://via.placeholder.com/100", key: "badge2" }
-      ]
-    },
-    keyFeatures: [
-      "Beginner-friendly content",
-      "Hands-on projects",
-      "Interactive coding exercises",
-      "Certificate of completion"
-    ],
-    isActive: true,
-    broucher: [{ url: "https://via.placeholder.com/800x600", key: "brochure1" }]
-  },
-  "2": {
-    title: "Advanced JavaScript Patterns",
-    categoryId: "67faba597db07ab585f64eae",
-    shortDescription: "Master advanced JavaScript patterns and concepts for modern web development.",
-    description: "<p>Take your JavaScript skills to the next level with this advanced course focused on design patterns, asynchronous programming, and modern ES6+ features.</p><p>You'll learn how to write clean, maintainable, and efficient JavaScript code for complex applications.</p>",
-    upload: {
-      courseImage: [{ url: "https://via.placeholder.com/500x300", key: "img2" }],
-      courseSampleCertificate: [{ url: "https://via.placeholder.com/400x300", key: "cert2" }],
-      courseBadge: [
-        { url: "https://via.placeholder.com/100", key: "badge3" }
-      ]
-    },
-    keyFeatures: [
-      "Design patterns",
-      "Functional programming",
-      "Asynchronous JavaScript",
-      "Performance optimization"
-    ],
-    isActive: true,
-    broucher: [{ url: "https://via.placeholder.com/800x600", key: "brochure2" }]
-  }
-};
+interface CourseCategory {
+  _id: string;
+  name: string;
+  isActive: boolean;
+  isDeleted: boolean;
+}
 
 export default function EditCoursePage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingCourse, setIsLoadingCourse] = useState(true);
+  const [categories, setCategories] = useState<CourseCategory[]>([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [initialFormState, setInitialFormState] =
+    useState<CourseFormData | null>(null);
   const [formData, setFormData] = useState<CourseFormData>({
     title: "",
     categoryId: "",
@@ -100,33 +60,123 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
       courseBadge: [],
     },
     keyFeatures: [],
-    isActive: true,
     broucher: [],
   });
 
   useEffect(() => {
-    // In a real app, you would fetch course data from an API
-    // For now, we'll use our mock data
-    const fetchCourse = () => {
+    const fetchCategories = async () => {
+      try {
+        setIsLoadingCategories(true);
+        const response = await courseCategoryService.getAllCourseCategories();
+        if (response && response.courseCategories) {
+          // Filter categories that are active and not deleted
+          const filteredCategories = response.courseCategories.filter(
+            (category: CourseCategory) =>
+              category.isActive && !category.isDeleted
+          );
+          setCategories(filteredCategories);
+        }
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      } finally {
+        setIsLoadingCategories(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    const fetchCourse = async () => {
       setIsLoadingCourse(true);
-      // Simulate API fetch delay
-      setTimeout(() => {
-        if (mockCoursesData[params.id]) {
-          setFormData(mockCoursesData[params.id]);
+
+      try {
+        // Fetch all courses instead of a specific course by ID
+        const response = await courseService.getAllCourses();
+
+        if (response && response.courses) {
+          // Find the course with the matching ID
+          const courseData = response.courses.find(
+            (course: any) => course._id === params.id
+          );
+
+          if (courseData) {
+            // Format the course data for display
+            // Add url property to all file objects for display purposes
+            if (courseData.upload) {
+              // Process courseImage
+              if (
+                courseData.upload.courseImage &&
+                courseData.upload.courseImage.length > 0
+              ) {
+                courseData.upload.courseImage =
+                  courseData.upload.courseImage.map((img: any) => ({
+                    ...img,
+                    url: img.path ? `${config.imageUrl}${img.path}` : "",
+                  }));
+              }
+
+              // Process courseSampleCertificate
+              if (
+                courseData.upload.courseSampleCertificate &&
+                courseData.upload.courseSampleCertificate.length > 0
+              ) {
+                courseData.upload.courseSampleCertificate =
+                  courseData.upload.courseSampleCertificate.map((img: any) => ({
+                    ...img,
+                    url: img.path ? `${config.imageUrl}${img.path}` : "",
+                  }));
+              }
+
+              // Process courseBadge
+              if (
+                courseData.upload.courseBadge &&
+                courseData.upload.courseBadge.length > 0
+              ) {
+                courseData.upload.courseBadge =
+                  courseData.upload.courseBadge.map((img: any) => ({
+                    ...img,
+                    url: img.path ? `${config.imageUrl}${img.path}` : "",
+                  }));
+              }
+            }
+
+            // Process broucher
+            if (courseData.broucher && courseData.broucher.length > 0) {
+              courseData.broucher = courseData.broucher.map((img: any) => ({
+                ...img,
+                url: img.path ? `${config.imageUrl}${img.path}` : "",
+              }));
+            }
+
+            setFormData(courseData);
+            setInitialFormState(courseData);
+          } else {
+            // Course not found, redirect to courses page
+            alert("Course not found");
+            router.push("/dashboard/courses");
+          }
         } else {
-          // Course not found, redirect to courses page
-          alert("Course not found");
+          // No courses data, redirect to courses page
+          alert("Failed to load course data");
           router.push("/dashboard/courses");
         }
+      } catch (error) {
+        console.error("Error fetching course:", error);
+        alert("Error fetching course");
+        router.push("/dashboard/courses");
+      } finally {
         setIsLoadingCourse(false);
-      }, 500);
+      }
     };
 
     fetchCourse();
   }, [params.id, router]);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -157,57 +207,233 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
     }));
   };
 
-  const handleSingleImageUpload = (
+  const handleSingleImageUpload = async (
     type: "courseImage" | "courseSampleCertificate" | "broucher",
     file: FileUpload
   ) => {
-    if (type === "broucher") {
-      setFormData((prev) => ({
-        ...prev,
-        broucher: [file],
-      }));
-    } else {
+    try {
+      // When a file is selected from the UI, it will have a url but no path yet
+      if (file.url && !file.path) {
+        setIsUploadingImage(true);
+
+        // Extract actual File object from the url (which is a Blob URL)
+        const response = await fetch(file.url);
+        const blob = await response.blob();
+        const fileExtension = file.url.split(".").pop() || "jpg";
+        const actualFile = new File([blob], `upload.${fileExtension}`, {
+          type: blob.type,
+        });
+
+        // Upload to server
+        const uploadResponse = await uploadService.uploadImage(actualFile);
+
+        if (
+          uploadResponse &&
+          uploadResponse.upload &&
+          uploadResponse.upload[0]
+        ) {
+          const uploadedFile = uploadResponse.upload[0];
+          const path = uploadedFile.path;
+          const key = uploadedFile.key || path;
+
+          // Create a new file object with the server response
+          const serverFile: FileUpload = {
+            url: `${config.imageUrl}${path}`,
+            key: key,
+            path: path,
+          };
+
+          // Update form data with the new file
+          if (type === "broucher") {
+            setFormData((prev) => ({
+              ...prev,
+              broucher: [serverFile],
+            }));
+          } else {
+            setFormData((prev) => ({
+              ...prev,
+              upload: {
+                ...prev.upload,
+                [type]: [serverFile],
+              },
+            }));
+          }
+        }
+      } else if (!file.url) {
+        // Handle removal - if url is empty
+        if (type === "broucher") {
+          setFormData((prev) => ({
+            ...prev,
+            broucher: [],
+          }));
+        } else {
+          setFormData((prev) => ({
+            ...prev,
+            upload: {
+              ...prev.upload,
+              [type]: [],
+            },
+          }));
+        }
+      }
+    } catch (error) {
+      console.error(`Error uploading ${type}:`, error);
+      alert(`Failed to upload ${type}. Please try again.`);
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
+  const handleMultipleImageUpload = async (
+    type: "courseBadge",
+    files: FileUpload[]
+  ) => {
+    try {
+      // Process each file that has a url but no path (new uploads)
+      const processedFiles = await Promise.all(
+        files.map(async (file) => {
+          if (file.url && !file.path) {
+            setIsUploadingImage(true);
+
+            // Extract actual File object
+            const response = await fetch(file.url);
+            const blob = await response.blob();
+            const fileExtension = file.url.split(".").pop() || "jpg";
+            const actualFile = new File([blob], `upload.${fileExtension}`, {
+              type: blob.type,
+            });
+
+            // Upload to server
+            const uploadResponse = await uploadService.uploadImage(actualFile);
+
+            if (
+              uploadResponse &&
+              uploadResponse.upload &&
+              uploadResponse.upload[0]
+            ) {
+              const uploadedFile = uploadResponse.upload[0];
+              const path = uploadedFile.path;
+              const key = uploadedFile.key || path;
+
+              // Return the processed file
+              return {
+                url: `${config.imageUrl}${path}`,
+                key: key,
+                path: path,
+              };
+            }
+            setIsUploadingImage(false);
+          }
+          // Return the original file if it already has a path or we couldn't process it
+          return file;
+        })
+      );
+
+      // Update form data with processed files
       setFormData((prev) => ({
         ...prev,
         upload: {
           ...prev.upload,
-          [type]: [file],
+          [type]: processedFiles.filter(Boolean) as FileUpload[],
         },
       }));
+    } catch (error) {
+      console.error(`Error uploading ${type}:`, error);
+      alert(`Failed to upload ${type}. Please try again.`);
     }
   };
 
-  const handleMultipleImageUpload = (type: "courseBadge", files: FileUpload[]) => {
-    setFormData((prev) => ({
-      ...prev,
+  // Function to prepare data for API submission
+  const prepareDataForSubmission = () => {
+    // Create a new object with the right format for the backend
+    const submissionData = {
+      id: params.id,
+      title: formData.title,
+      categoryId: formData.categoryId,
+      shortDescription: formData.shortDescription,
+      description: formData.description,
+      keyFeatures: formData.keyFeatures,
       upload: {
-        ...prev.upload,
-        [type]: files,
+        courseImage: formData.upload.courseImage.map((file) => ({
+          path: file.path,
+          key: file.key,
+          _id: file._id, // Keep _id for existing images
+        })),
+        courseSampleCertificate: formData.upload.courseSampleCertificate.map(
+          (file) => ({
+            path: file.path,
+            key: file.key,
+            _id: file._id,
+          })
+        ),
+        courseBadge: formData.upload.courseBadge.map((file) => ({
+          path: file.path,
+          key: file.key,
+          _id: file._id,
+        })),
       },
-    }));
+      broucher: formData.broucher.map((file) => ({
+        path: file.path,
+        key: file.key,
+        _id: file._id,
+      })),
+    };
+
+    return submissionData;
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-    
-    // In a real application, you would send this data to your backend
-    // For now, we'll just simulate a delay and redirect
-    console.log("Form data to update:", formData);
-    
-    setTimeout(() => {
-      setIsLoading(false);
+
+    try {
+      if (isUploadingImage) {
+        alert("Please wait for images to finish uploading");
+        setIsLoading(false);
+        return;
+      }
+
+      // Prepare data in the format expected by the backend
+      const submissionData = prepareDataForSubmission();
+
+      // Update course using the course service
+      const updateResponse = await courseService.updateCourse(
+        params.id,
+        submissionData
+      );
+
       alert("Course updated successfully");
       router.push(`/dashboard/courses/${params.id}`);
-    }, 1500);
+    } catch (error) {
+      console.error("Error updating course:", error);
+      alert("Error updating course");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (isLoadingCourse) {
     return (
       <div className="flex justify-center items-center h-96">
-        <svg className="animate-spin h-10 w-10 text-[#5B2C6F]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        <svg
+          className="animate-spin h-10 w-10 text-[#5B2C6F]"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+          ></circle>
+          <path
+            className="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          ></path>
         </svg>
       </div>
     );
@@ -220,10 +446,16 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
         <p className="text-[#D7BDE2]">Update course information</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-6"
+        aria-label="Edit course form"
+      >
         <div className="bg-[#2A2A2A] rounded-xl p-6">
-          <h2 className="text-xl font-semibold text-white mb-4">Basic Information</h2>
-          
+          <h2 className="text-xl font-semibold text-white mb-4">
+            Basic Information
+          </h2>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Input
               label="Course Title"
@@ -233,7 +465,7 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
               required
               placeholder="Enter course title"
             />
-            
+
             <div className="mb-4">
               <label className="block mb-2 text-sm font-medium text-white">
                 Category
@@ -244,10 +476,16 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
                 onChange={handleChange}
                 className="w-full px-4 py-2 bg-[#2A2A2A] text-white border border-[#5B2C6F]/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5B2C6F]"
                 required
+                disabled={isLoadingCategories}
+                aria-label="Course Category"
               >
-                <option value="" disabled>Select a category</option>
+                <option value="" disabled>
+                  {isLoadingCategories
+                    ? "Loading categories..."
+                    : "Select a category"}
+                </option>
                 {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
+                  <option key={category._id} value={category._id}>
                     {category.name}
                   </option>
                 ))}
@@ -258,7 +496,9 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
           <RichTextEditor
             label="Short Description"
             value={formData.shortDescription}
-            onChange={(value) => handleRichTextChange("shortDescription", value)}
+            onChange={(value) =>
+              handleRichTextChange("shortDescription", value)
+            }
             placeholder="Enter a brief description (max 150 characters)"
             maxLength={150}
             minHeight="100px"
@@ -273,27 +513,13 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
             minHeight="250px"
             id="edit-full-description"
           />
-
-          <div className="mt-4">
-            <div className="flex items-center">
-              <span className="text-white mr-3">Active Course</span>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="isActive"
-                  checked={formData.isActive}
-                  onChange={handleCheckboxChange}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-[#3A3A55] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#5B2C6F]"></div>
-              </label>
-            </div>
-          </div>
         </div>
 
         <div className="bg-[#2A2A2A] rounded-xl p-6">
-          <h2 className="text-xl font-semibold text-white mb-4">Media & Files</h2>
-          
+          <h2 className="text-xl font-semibold text-white mb-4">
+            Media & Files
+          </h2>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
               <label className="block mb-2 text-sm font-medium text-white">
@@ -301,18 +527,22 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
               </label>
               <ImageUpload
                 value={formData.upload.courseImage[0]}
-                onChange={(file) => handleSingleImageUpload("courseImage", file)}
+                onChange={(file) =>
+                  handleSingleImageUpload("courseImage", file)
+                }
                 shape="square"
               />
             </div>
-            
+
             <div>
               <label className="block mb-2 text-sm font-medium text-white">
                 Sample Certificate
               </label>
               <ImageUpload
                 value={formData.upload.courseSampleCertificate[0]}
-                onChange={(file) => handleSingleImageUpload("courseSampleCertificate", file)}
+                onChange={(file) =>
+                  handleSingleImageUpload("courseSampleCertificate", file)
+                }
                 shape="square"
               />
             </div>
@@ -322,7 +552,9 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
             <MultipleImageUpload
               label="Course Badges"
               value={formData.upload.courseBadge}
-              onChange={(files) => handleMultipleImageUpload("courseBadge", files)}
+              onChange={(files) =>
+                handleMultipleImageUpload("courseBadge", files)
+              }
             />
           </div>
 
@@ -342,8 +574,10 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
         </div>
 
         <div className="bg-[#2A2A2A] rounded-xl p-6">
-          <h2 className="text-xl font-semibold text-white mb-4">Key Features</h2>
-          
+          <h2 className="text-xl font-semibold text-white mb-4">
+            Key Features
+          </h2>
+
           <KeyFeaturesInput
             value={formData.keyFeatures}
             onChange={handleKeyFeaturesChange}
@@ -358,7 +592,7 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
           >
             Cancel
           </button>
-          
+
           <button
             type="submit"
             disabled={isLoading}
@@ -366,9 +600,25 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
           >
             {isLoading ? (
               <>
-                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <svg
+                  className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
                 </svg>
                 Saving...
               </>
@@ -380,4 +630,4 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
       </form>
     </div>
   );
-} 
+}
