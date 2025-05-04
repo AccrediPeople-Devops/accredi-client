@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "../components/dashboard/Sidebar";
-import AuthService from "../components/service/authService";
+import AuthService from "../components/service/auth.service";
 import { ThemeProvider } from "../context/ThemeContext";
 
 export default function DashboardLayout({

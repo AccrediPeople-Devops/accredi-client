@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import Input from "../components/Input";
 import Button from "../components/Button";
 import { loginSchema, validateForm } from "../utils/validation";
-import AuthService from "../components/service/authService";
+import AuthService from "../components/service/auth.service";
 
 export default function LoginPage() {
   const router = useRouter();
