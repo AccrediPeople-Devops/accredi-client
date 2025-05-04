@@ -22,8 +22,10 @@ export default function CoursesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [activeTab, setActiveTab] = useState("active");
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [isRestoring, setIsRestoring] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [courseToDelete, setCourseToDelete] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -65,7 +67,7 @@ export default function CoursesPage() {
     fetchCategories();
   }, []);
 
-  // Filter courses based on search, category, and status
+  // Filter courses based on search, category, status, and deleted state
   const filteredCourses = courses.filter((course) => {
     const matchesSearch = course.title
       .toLowerCase()
@@ -77,10 +79,12 @@ export default function CoursesPage() {
       (statusFilter === "active" && course.isActive) ||
       (statusFilter === "inactive" && !course.isActive);
 
-    // Also filter out deleted courses
-    const notDeleted = !course.isDeleted;
+    // Filter based on active tab
+    const matchesTab =
+      (activeTab === "active" && !course.isDeleted) ||
+      (activeTab === "deleted" && course.isDeleted);
 
-    return matchesSearch && matchesCategory && matchesStatus && notDeleted;
+    return matchesSearch && matchesCategory && matchesStatus && matchesTab;
   });
 
   const getCategoryName = (categoryId: string) => {
@@ -224,6 +228,21 @@ export default function CoursesPage() {
     }
   };
 
+  // Add function to handle course restore
+  const handleRestoreCourse = async (courseId: string) => {
+    setIsRestoring(courseId);
+    try {
+      await CourseService.restoreCourse(courseId);
+
+      // Refresh courses data instead of trying to update local state
+      await fetchCourses();
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Error restoring course");
+    } finally {
+      setIsRestoring(null);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="p-6 bg-[#2A2A2A] rounded-xl flex flex-wrap justify-between items-center">
@@ -256,6 +275,30 @@ export default function CoursesPage() {
           {error}
         </div>
       )}
+
+      {/* Tab Navigation */}
+      <div className="bg-[#2A2A2A] rounded-xl p-4 flex space-x-4">
+        <button
+          className={`px-4 py-2 rounded-lg ${
+            activeTab === "active"
+              ? "bg-[#5B2C6F] text-white"
+              : "bg-[#3A3A55] text-gray-300"
+          }`}
+          onClick={() => setActiveTab("active")}
+        >
+          Active Courses
+        </button>
+        <button
+          className={`px-4 py-2 rounded-lg ${
+            activeTab === "deleted"
+              ? "bg-[#5B2C6F] text-white"
+              : "bg-[#3A3A55] text-gray-300"
+          }`}
+          onClick={() => setActiveTab("deleted")}
+        >
+          Deleted Courses
+        </button>
+      </div>
 
       {/* Filters */}
       <div className="bg-[#2A2A2A] rounded-xl p-6">
@@ -388,113 +431,177 @@ export default function CoursesPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <label className="relative inline-flex items-center cursor-pointer">
-                          <input
-                            type="checkbox"
-                            className="sr-only peer"
-                            checked={course.isActive}
-                            onChange={() =>
-                              handleToggleActive(course._id, !course.isActive)
-                            }
-                          />
-                          <div className="w-11 h-6 bg-[#3A3A55] rounded-full peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#5B2C6F]"></div>
-                          <span className="ml-3 text-sm text-white">
+                        {activeTab === "active" ? (
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              className="sr-only peer"
+                              checked={course.isActive}
+                              onChange={() =>
+                                handleToggleActive(course._id, !course.isActive)
+                              }
+                            />
+                            <div className="w-11 h-6 bg-[#3A3A55] rounded-full peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#5B2C6F]"></div>
+                            <span className="ml-3 text-sm text-white">
+                              {course.isActive ? "Active" : "Inactive"}
+                            </span>
+                          </label>
+                        ) : (
+                          <span
+                            className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                              course.isActive
+                                ? "bg-green-100 text-green-800"
+                                : "bg-red-100 text-red-800"
+                            }`}
+                          >
                             {course.isActive ? "Active" : "Inactive"}
                           </span>
-                        </label>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex space-x-2">
-                          <Link
-                            href={`/dashboard/courses/${course._id}`}
-                            className="text-indigo-400 hover:text-indigo-200 transition-colors"
-                            title="View"
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="h-5 w-5"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                              />
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                              />
-                            </svg>
-                          </Link>
-                          <Link
-                            href={`/dashboard/courses/edit/${course._id}`}
-                            className="text-blue-400 hover:text-blue-200 transition-colors"
-                            title="Edit"
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="h-5 w-5"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                              />
-                            </svg>
-                          </Link>
-                          <button
-                            onClick={() => handleDeleteClick(course._id)}
-                            className="text-red-400 hover:text-red-200 transition-colors"
-                            title="Delete"
-                            disabled={isDeleting === course._id}
-                          >
-                            {isDeleting === course._id ? (
-                              <svg
-                                className="animate-spin h-5 w-5"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
+                          {activeTab === "active" ? (
+                            <>
+                              <Link
+                                href={`/dashboard/courses/${course._id}`}
+                                className="text-indigo-400 hover:text-indigo-200 transition-colors"
+                                title="View"
                               >
-                                <circle
-                                  className="opacity-25"
-                                  cx="12"
-                                  cy="12"
-                                  r="10"
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="h-5 w-5"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
                                   stroke="currentColor"
-                                  strokeWidth="4"
-                                ></circle>
-                                <path
-                                  className="opacity-75"
-                                  fill="currentColor"
-                                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                ></path>
-                              </svg>
-                            ) : (
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-5 w-5"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                  />
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                  />
+                                </svg>
+                              </Link>
+                              <Link
+                                href={`/dashboard/courses/edit/${course._id}`}
+                                className="text-blue-400 hover:text-blue-200 transition-colors"
+                                title="Edit"
                               >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                />
-                              </svg>
-                            )}
-                          </button>
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="h-5 w-5"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                  />
+                                </svg>
+                              </Link>
+                              <button
+                                onClick={() => handleDeleteClick(course._id)}
+                                className="text-red-400 hover:text-red-200 transition-colors"
+                                title="Delete"
+                                disabled={isDeleting === course._id}
+                              >
+                                {isDeleting === course._id ? (
+                                  <svg
+                                    className="animate-spin h-5 w-5"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <circle
+                                      className="opacity-25"
+                                      cx="12"
+                                      cy="12"
+                                      r="10"
+                                      stroke="currentColor"
+                                      strokeWidth="4"
+                                    ></circle>
+                                    <path
+                                      className="opacity-75"
+                                      fill="currentColor"
+                                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                    ></path>
+                                  </svg>
+                                ) : (
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-5 w-5"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                    />
+                                  </svg>
+                                )}
+                              </button>
+                            </>
+                          ) : (
+                            <button
+                              onClick={() => handleRestoreCourse(course._id)}
+                              className="text-green-400 hover:text-green-200 transition-colors"
+                              title="Restore"
+                              disabled={isRestoring === course._id}
+                            >
+                              {isRestoring === course._id ? (
+                                <svg
+                                  className="animate-spin h-5 w-5"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <circle
+                                    className="opacity-25"
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke="currentColor"
+                                    strokeWidth="4"
+                                  ></circle>
+                                  <path
+                                    className="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                  ></path>
+                                </svg>
+                              ) : (
+                                <div className="flex items-center">
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-5 w-5 mr-1"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                                    />
+                                  </svg>
+                                  Restore
+                                </div>
+                              )}
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -505,7 +612,9 @@ export default function CoursesPage() {
                       colSpan={5}
                       className="px-6 py-10 text-center text-white"
                     >
-                      No courses found matching your filters.
+                      {activeTab === "active"
+                        ? "No active courses found matching your filters."
+                        : "No deleted courses found."}
                     </td>
                   </tr>
                 )}
