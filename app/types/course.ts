@@ -1,24 +1,28 @@
-import { ImageItem } from "./courseCategory";
-
-export interface CourseUpload {
-  courseImage?: ImageItem[];
-  courseSampleCertificate?: ImageItem[];
-  courseBadge?: ImageItem[];
+export interface FileUpload {
+  url?: string;
+  key: string;
+  path?: string;
+  _id?: string;
 }
 
 export interface Course {
   _id: string;
   title: string;
   categoryId: string;
-  shortDescription: string;
-  description: string;
-  upload: CourseUpload;
+  shortDescription?: string;
+  description?: string;
+  upload: {
+    courseImage: FileUpload[];
+    courseSampleCertificate?: FileUpload[];
+    courseBadge?: FileUpload[];
+  };
   keyFeatures?: string[];
-  broucher?: ImageItem[];
   isActive: boolean;
-  isDeleted: boolean;
+  isDeleted?: boolean;
+  broucher?: FileUpload[];
   createdAt: string;
-  updatedAt: string;
+  updatedAt?: string;
+  __v?: number;
 }
 
 export interface CourseFormData {
@@ -26,8 +30,19 @@ export interface CourseFormData {
   categoryId: string;
   shortDescription: string;
   description: string;
-  upload: CourseUpload;
-  keyFeatures?: string[];
-  broucher?: ImageItem[];
+  upload: {
+    courseImage: FileUpload[];
+    courseSampleCertificate: FileUpload[];
+    courseBadge: FileUpload[];
+  };
+  keyFeatures: string[];
   isActive: boolean;
+  broucher: FileUpload[];
+}
+
+export interface CourseApiResponse {
+  status: boolean;
+  courses?: Course[];
+  course?: Course;
+  message?: string;
 }
