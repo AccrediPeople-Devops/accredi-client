@@ -70,9 +70,12 @@ export default function CourseCategoriesPage() {
 
   const fetchCategories = async () => {
     setIsLoading(true);
+    setError("");
     try {
       const res = await CourseCategoryService.getAllCourseCategories();
-      setCategories(res?.courseCategories);
+      if (res?.courseCategories) {
+        setCategories(res.courseCategories);
+      }
     } catch (err: any) {
       setError(err.response?.data?.message || "Error fetching categories");
     } finally {
@@ -150,12 +153,15 @@ export default function CourseCategoriesPage() {
     try {
       const res = await CourseCategoryService.restoreCourseCategory(id);
       if (res) {
-        // Update the category in the list
+        // Optimistically update the UI
         setCategories(
           categories.map((category) =>
             category._id === id ? { ...category, isDeleted: false } : category
           )
         );
+
+        // Then refresh data to ensure consistency
+        await fetchCategories();
       }
     } catch (err: any) {
       setError(err.response?.data?.message || "Error restoring category");
@@ -297,9 +303,35 @@ export default function CourseCategoriesPage() {
 
   const handleDeleteCategory = async (id: string) => {
     try {
+      const categoryToDelete = categories.find((cat) => cat._id === id);
+
+      // Delete any associated images first if they exist
+      if (
+        categoryToDelete &&
+        categoryToDelete.image &&
+        categoryToDelete.image.length > 0
+      ) {
+        for (const img of categoryToDelete.image) {
+          if (img.key) {
+            try {
+              // Use the upload service to delete the image by key
+              await uploadService.deleteImage(img.key);
+            } catch (error) {
+              console.error(`Error deleting image with key ${img.key}:`, error);
+              // Continue with category deletion even if image deletion fails
+            }
+          }
+        }
+      }
+
+      // Now delete the category
       await deleteCategory(id);
-      // Remove the deleted category from the list
+
+      // Optimistically update UI first
       setCategories(categories.filter((category) => category._id !== id));
+
+      // Then refresh data to ensure deleted categories appear in deleted tab
+      await fetchCategories();
     } catch (err: any) {
       setError(err.response?.data?.message || "Error deleting category");
     }
@@ -346,6 +378,12 @@ export default function CourseCategoriesPage() {
     activeTab === "active" ? !category.isDeleted : category.isDeleted
   );
 
+  // Add a tab change handler that refreshes data when switching tabs
+  const handleTabChange = async (tab: "active" | "deleted") => {
+    setActiveTab(tab);
+    await fetchCategories();
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -379,7 +417,7 @@ export default function CourseCategoriesPage() {
                 ? "border-b-2 border-[var(--primary)] font-medium text-[var(--primary)]"
                 : "text-[var(--foreground)]/70"
             }`}
-            onClick={() => setActiveTab("active")}
+            onClick={() => handleTabChange("active")}
           >
             Active Categories
           </button>
@@ -389,7 +427,7 @@ export default function CourseCategoriesPage() {
                 ? "border-b-2 border-[var(--primary)] font-medium text-[var(--primary)]"
                 : "text-[var(--foreground)]/70"
             }`}
-            onClick={() => setActiveTab("deleted")}
+            onClick={() => handleTabChange("deleted")}
           >
             Deleted Categories
           </button>
