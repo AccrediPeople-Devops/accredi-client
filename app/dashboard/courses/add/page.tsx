@@ -2,15 +2,15 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Input from "../../../../components/Input";
-import RichTextEditor from "../../../../components/RichTextEditor";
-import ImageUpload from "../../../../components/ImageUpload";
-import MultipleImageUpload from "../../../../components/MultipleImageUpload";
-import KeyFeaturesInput from "../../../../components/KeyFeaturesInput";
-import courseService from "../../../../components/service/course.service";
-import courseCategoryService from "../../../../components/service/courseCategory.service";
-import uploadService from "../../../../components/service/upload.service";
-import config from "../../../../components/config/config";
+import Input from "../../../components/Input";
+import RichTextEditor from "../../../components/RichTextEditor";
+import ImageUpload from "../../../components/ImageUpload";
+import MultipleImageUpload from "../../../components/MultipleImageUpload";
+import KeyFeaturesInput from "../../../components/KeyFeaturesInput";
+import courseCategoryService from "../../../components/service/courseCategory.service";
+import courseService from "../../../components/service/course.service";
+import uploadService from "../../../components/service/upload.service";
+import config from "../../../components/config/config";
 
 interface FileUpload {
   url: string;
@@ -40,15 +40,12 @@ interface CourseCategory {
   isDeleted: boolean;
 }
 
-export default function EditCoursePage({ params }: { params: { id: string } }) {
+export default function AddCoursePage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [isLoadingCourse, setIsLoadingCourse] = useState(true);
   const [categories, setCategories] = useState<CourseCategory[]>([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
-  const [initialFormState, setInitialFormState] =
-    useState<CourseFormData | null>(null);
   const [formData, setFormData] = useState<CourseFormData>({
     title: "",
     categoryId: "",
@@ -85,93 +82,6 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
 
     fetchCategories();
   }, []);
-
-  useEffect(() => {
-    const fetchCourse = async () => {
-      setIsLoadingCourse(true);
-
-      try {
-        // Fetch all courses instead of a specific course by ID
-        const response = await courseService.getAllCourses();
-
-        if (response && response.courses) {
-          // Find the course with the matching ID
-          const courseData = response.courses.find(
-            (course: any) => course._id === params.id
-          );
-
-          if (courseData) {
-            // Format the course data for display
-            // Add url property to all file objects for display purposes
-            if (courseData.upload) {
-              // Process courseImage
-              if (
-                courseData.upload.courseImage &&
-                courseData.upload.courseImage.length > 0
-              ) {
-                courseData.upload.courseImage =
-                  courseData.upload.courseImage.map((img: any) => ({
-                    ...img,
-                    url: img.path ? `${config.imageUrl}${img.path}` : "",
-                  }));
-              }
-
-              // Process courseSampleCertificate
-              if (
-                courseData.upload.courseSampleCertificate &&
-                courseData.upload.courseSampleCertificate.length > 0
-              ) {
-                courseData.upload.courseSampleCertificate =
-                  courseData.upload.courseSampleCertificate.map((img: any) => ({
-                    ...img,
-                    url: img.path ? `${config.imageUrl}${img.path}` : "",
-                  }));
-              }
-
-              // Process courseBadge
-              if (
-                courseData.upload.courseBadge &&
-                courseData.upload.courseBadge.length > 0
-              ) {
-                courseData.upload.courseBadge =
-                  courseData.upload.courseBadge.map((img: any) => ({
-                    ...img,
-                    url: img.path ? `${config.imageUrl}${img.path}` : "",
-                  }));
-              }
-            }
-
-            // Process broucher
-            if (courseData.broucher && courseData.broucher.length > 0) {
-              courseData.broucher = courseData.broucher.map((img: any) => ({
-                ...img,
-                url: img.path ? `${config.imageUrl}${img.path}` : "",
-              }));
-            }
-
-            setFormData(courseData);
-            setInitialFormState(courseData);
-          } else {
-            // Course not found, redirect to courses page
-            alert("Course not found");
-            router.push("/dashboard/courses");
-          }
-        } else {
-          // No courses data, redirect to courses page
-          alert("Failed to load course data");
-          router.push("/dashboard/courses");
-        }
-      } catch (error) {
-        console.error("Error fetching course:", error);
-        alert("Error fetching course");
-        router.push("/dashboard/courses");
-      } finally {
-        setIsLoadingCourse(false);
-      }
-    };
-
-    fetchCourse();
-  }, [params.id, router]);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -347,7 +257,6 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
   const prepareDataForSubmission = () => {
     // Create a new object with the right format for the backend
     const submissionData = {
-      id: params.id,
       title: formData.title,
       categoryId: formData.categoryId,
       shortDescription: formData.shortDescription,
@@ -357,25 +266,21 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
         courseImage: formData.upload.courseImage.map((file) => ({
           path: file.path,
           key: file.key,
-          _id: file._id, // Keep _id for existing images
         })),
         courseSampleCertificate: formData.upload.courseSampleCertificate.map(
           (file) => ({
             path: file.path,
             key: file.key,
-            _id: file._id,
           })
         ),
         courseBadge: formData.upload.courseBadge.map((file) => ({
           path: file.path,
           key: file.key,
-          _id: file._id,
         })),
       },
       broucher: formData.broucher.map((file) => ({
         path: file.path,
         key: file.key,
-        _id: file._id,
       })),
     };
 
@@ -396,60 +301,33 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
       // Prepare data in the format expected by the backend
       const submissionData = prepareDataForSubmission();
 
-      // Update course using the course service
-      const updateResponse = await courseService.updateCourse(
-        params.id,
-        submissionData
-      );
-
-      alert("Course updated successfully");
-      router.push(`/dashboard/courses/${params.id}`);
+      // Send data to backend using the course service
+      const response = await courseService.createCourse(submissionData);
+      if (response && response.status) {
+        alert("Course created successfully");
+        router.push("/dashboard/courses");
+      } else {
+        alert("Error creating course");
+      }
     } catch (error) {
-      console.error("Error updating course:", error);
-      alert("Error updating course");
+      console.error("Error creating course:", error);
+      alert("Error creating course");
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (isLoadingCourse) {
-    return (
-      <div className="flex justify-center items-center h-96">
-        <svg
-          className="animate-spin h-10 w-10 text-[#5B2C6F]"
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-        >
-          <circle
-            className="opacity-25"
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            strokeWidth="4"
-          ></circle>
-          <path
-            className="opacity-75"
-            fill="currentColor"
-            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-          ></path>
-        </svg>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       <div className="p-6 bg-[#2A2A2A] rounded-xl">
-        <h1 className="text-2xl font-bold text-white mb-2">Edit Course</h1>
-        <p className="text-[#D7BDE2]">Update course information</p>
+        <h1 className="text-2xl font-bold text-white mb-2">Add New Course</h1>
+        <p className="text-[#D7BDE2]">Create a new course in your catalog</p>
       </div>
 
       <form
         onSubmit={handleSubmit}
         className="space-y-6"
-        aria-label="Edit course form"
+        aria-label="Add course form"
       >
         <div className="bg-[#2A2A2A] rounded-xl p-6">
           <h2 className="text-xl font-semibold text-white mb-4">
@@ -502,7 +380,6 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
             placeholder="Enter a brief description (max 150 characters)"
             maxLength={150}
             minHeight="100px"
-            id="edit-short-description"
           />
 
           <RichTextEditor
@@ -511,7 +388,6 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
             onChange={(value) => handleRichTextChange("description", value)}
             placeholder="Enter detailed course description"
             minHeight="250px"
-            id="edit-full-description"
           />
         </div>
 
@@ -584,10 +460,10 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
           />
         </div>
 
-        <div className="flex justify-between">
+        <div className="flex justify-end space-x-4">
           <button
             type="button"
-            onClick={() => router.push(`/dashboard/courses/${params.id}`)}
+            onClick={() => router.push("/dashboard/courses")}
             className="px-6 py-2 bg-transparent border border-[#5B2C6F] text-white rounded-lg hover:bg-[#5B2C6F]/10 transition-colors"
           >
             Cancel
@@ -623,7 +499,7 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
                 Saving...
               </>
             ) : (
-              "Update Course"
+              <>Save Course</>
             )}
           </button>
         </div>

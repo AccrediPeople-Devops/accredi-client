@@ -5,12 +5,14 @@ interface ImageUploadProps {
   onChange: (file: { url: string; key: string }) => void;
   value?: { url: string; key: string };
   error?: string;
+  shape?: "square" | "rectangle";
 }
 
 export default function ImageUpload({
   onChange,
   value,
   error,
+  shape = "square",
 }: ImageUploadProps) {
   const [preview, setPreview] = useState<string | null>(value?.url || null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -27,7 +29,7 @@ export default function ImageUpload({
     // and get back a URL and key. For now, we'll mock this.
     const mockUploadedFile = {
       url: previewUrl,
-      key: `profile-${Date.now()}-${file.name}`,
+      key: `image-${Date.now()}-${file.name}`,
     };
 
     onChange(mockUploadedFile);
@@ -37,37 +39,77 @@ export default function ImageUpload({
     fileInputRef.current?.click();
   };
 
+  // Get the shape-specific class
+  const getShapeClass = () => {
+    switch (shape) {
+      case "rectangle":
+        return "h-24 w-full rounded-lg";
+      case "square":
+      default:
+        return "h-32 w-32 rounded-lg";
+    }
+  };
+
+  // Determine if we should show a remove button
+  const handleRemove = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setPreview(null);
+    onChange({ url: "", key: "" });
+  };
+
   return (
     <div className="mb-4">
-      <label className="block mb-2 text-sm font-medium text-white">
-        Profile Image
-      </label>
-
       <div
         onClick={triggerFileInput}
         className={`
-          h-32 w-32 rounded-full relative cursor-pointer
+          ${getShapeClass()} relative cursor-pointer
           flex items-center justify-center
-          bg-input-bg border-2 border-dashed
+          bg-[#2A2A2A] border-2 border-dashed
           ${
             error
               ? "border-error"
-              : "border-secondary/50 hover:border-secondary"
+              : "border-[#3A3A55] hover:border-[#5B2C6F]"
           }
           transition-colors duration-300
+          group
         `}
       >
         {preview ? (
-          <div className="relative h-full w-full rounded-full overflow-hidden">
+          <div className="relative h-full w-full rounded-lg overflow-hidden">
             <Image
               src={preview}
-              alt="Profile preview"
+              alt="Uploaded image"
               fill
               style={{ objectFit: "cover" }}
             />
+            
+            {/* Remove button with improved visibility */}
+            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+              <button
+                type="button"
+                onClick={handleRemove}
+                className="p-2 bg-red-500 rounded-full text-white hover:bg-red-600 transition-colors"
+                title="Remove image"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
           </div>
         ) : (
-          <div className="text-secondary/70 text-sm text-center">
+          <div className="text-white/70 text-sm text-center">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-8 w-8 mx-auto mb-1"
