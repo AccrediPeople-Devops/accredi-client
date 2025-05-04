@@ -124,6 +124,23 @@ class CourseService {
       throw error;
     }
   }
+
+  /**
+   * Toggle course active status
+   * @param {string} id - Course ID
+   * @param {boolean} isActive - New active status
+   * @returns {Promise<{status: boolean, course: Course}>}
+   */
+  async activeStatus(id: string, isActive: boolean) {
+    try {
+      const response = await axiosInstance.put(`/courses/v1/${id}/active`, {
+        isActive,
+      });
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
 }
 
 export default new CourseService();

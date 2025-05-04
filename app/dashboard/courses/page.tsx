@@ -215,7 +215,7 @@ export default function CoursesPage() {
   const handleToggleActive = async (courseId: string, isActive: boolean) => {
     try {
       // Call the API to update the course status
-      await CourseService.updateCourseStatus(courseId, isActive);
+      await CourseService.activeStatus(courseId, isActive);
 
       // Update the local state to reflect the change
       setCourses(
