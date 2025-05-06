@@ -9,6 +9,7 @@ import CourseService from "../../components/service/course.service";
 import CourseCategoryService from "../../components/service/courseCategory.service";
 import uploadService from "../../components/service/upload.service";
 import config from "../../components/config/config";
+import { LoadingSpinner } from "../../components/LoadingSpinner";
 
 interface CategoryType {
   id: string;
@@ -245,18 +246,20 @@ export default function CoursesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="p-6 bg-[#2A2A2A] rounded-xl flex flex-wrap justify-between items-center">
+      <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-2xl font-bold text-white mb-1">Courses</h1>
-          <p className="text-[#D7BDE2]">Manage your course catalog</p>
+          <h1 className="text-2xl font-bold text-[var(--foreground)]">Courses</h1>
+          <p className="text-[var(--foreground-muted)]">
+            Manage your course catalog
+          </p>
         </div>
         <Link
           href="/dashboard/courses/add"
-          className="px-4 py-2 bg-[#5B2C6F] text-white rounded-lg hover:bg-[#5B2C6F]/90 transition-colors flex items-center"
+          className="px-4 py-2 bg-[var(--primary)] text-white rounded-[var(--radius-md)] flex items-center gap-2 hover:bg-[var(--primary)]/90 transition-colors"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5 mr-2"
+            className="h-5 w-5"
             viewBox="0 0 20 20"
             fill="currentColor"
           >
@@ -271,125 +274,134 @@ export default function CoursesPage() {
       </div>
 
       {error && (
-        <div className="p-4 bg-red-900 border border-red-700 text-red-100 rounded-lg">
+        <div className="p-4 bg-[var(--error)]/10 border border-[var(--error)]/30 text-[var(--error)] rounded-[var(--radius-md)]">
           {error}
         </div>
       )}
 
-      {/* Tab Navigation */}
-      <div className="bg-[#2A2A2A] rounded-xl p-4 flex space-x-4">
-        <button
-          className={`px-4 py-2 rounded-lg ${
-            activeTab === "active"
-              ? "bg-[#5B2C6F] text-white"
-              : "bg-[#3A3A55] text-gray-300"
-          }`}
-          onClick={() => setActiveTab("active")}
-        >
-          Active Courses
-        </button>
-        <button
-          className={`px-4 py-2 rounded-lg ${
-            activeTab === "deleted"
-              ? "bg-[#5B2C6F] text-white"
-              : "bg-[#3A3A55] text-gray-300"
-          }`}
-          onClick={() => setActiveTab("deleted")}
-        >
-          Deleted Courses
-        </button>
+      {/* Tabs for Active/Deleted */}
+      <div className="border-b border-[var(--border)]">
+        <div className="flex space-x-4">
+          <button
+            onClick={() => setActiveTab("active")}
+            className={`pb-3 px-1 font-medium text-sm transition-colors ${
+              activeTab === "active"
+                ? "border-b-2 border-[var(--primary)] text-[var(--foreground)]"
+                : "text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
+            }`}
+          >
+            Active Courses
+          </button>
+          <button
+            onClick={() => setActiveTab("deleted")}
+            className={`pb-3 px-1 font-medium text-sm transition-colors ${
+              activeTab === "deleted"
+                ? "border-b-2 border-[var(--primary)] text-[var(--foreground)]"
+                : "text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
+            }`}
+          >
+            Deleted Courses
+          </button>
+        </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-[#2A2A2A] rounded-xl p-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block mb-2 text-sm font-medium text-white">
-              Search
-            </label>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 text-[var(--foreground-muted)]"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
             <input
               type="text"
               placeholder="Search courses..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-2 bg-[#2A2A2A] text-white border border-[#3A3A55] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5B2C6F]"
+              className="pl-10 pr-4 py-2 w-full bg-[var(--input-bg)] text-[var(--foreground)] border border-[var(--border)] rounded-[var(--radius-md)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
             />
           </div>
+        </div>
 
-          <div>
-            <label className="block mb-2 text-sm font-medium text-white">
-              Category
-            </label>
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full px-4 py-2 bg-[#2A2A2A] text-white border border-[#3A3A55] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5B2C6F]"
-            >
-              <option value="">All Categories</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
-          </div>
+        <div>
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="px-4 py-2 w-full bg-[var(--input-bg)] text-[var(--foreground)] border border-[var(--border)] rounded-[var(--radius-md)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+          >
+            <option value="">All Categories</option>
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </select>
+        </div>
 
-          <div>
-            <label className="block mb-2 text-sm font-medium text-white">
-              Status
-            </label>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full px-4 py-2 bg-[#2A2A2A] text-white border border-[#3A3A55] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5B2C6F]"
-            >
-              <option value="all">All</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
-          </div>
+        <div>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="px-4 py-2 w-full bg-[var(--input-bg)] text-[var(--foreground)] border border-[var(--border)] rounded-[var(--radius-md)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+          >
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
         </div>
       </div>
 
+      {/* Loading state */}
+      {isLoading && (
+        <div className="flex justify-center items-center py-10">
+          <LoadingSpinner size="medium" text="Loading courses..." />
+        </div>
+      )}
+
       {/* Course list */}
-      <div className="bg-[#2A2A2A] rounded-xl overflow-hidden">
-        <div className="overflow-x-auto">
-          {isLoading ? (
-            <div className="p-10 text-center text-white">
-              <div className="animate-spin mx-auto w-8 h-8 border-4 border-[#5B2C6F] border-t-transparent rounded-full mb-4"></div>
-              <p>Loading courses...</p>
-            </div>
-          ) : (
-            <table className="min-w-full divide-y divide-[#3A3A55]">
-              <thead className="bg-[#2D2D44]">
+      {!isLoading && (
+        <div className="rounded-[var(--radius-md)] overflow-hidden border border-[var(--border)]">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-[var(--border)]">
+              <thead className="bg-[var(--input-bg)]">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wider">
                     Course
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wider">
                     Category
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wider">
                     Date Added
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#3A3A55] bg-[#2A2A2A]">
+              <tbody className="divide-y divide-[var(--border)] bg-[var(--background)]">
                 {filteredCourses.length > 0 ? (
                   filteredCourses.map((course) => (
                     <tr
                       key={course._id}
-                      className="hover:bg-[#2D2D44] transition-colors"
+                      className="hover:bg-[var(--input-bg)]/50 transition-colors"
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
-                          <div className="h-10 w-10 rounded-md overflow-hidden flex-shrink-0">
+                          <div className="h-10 w-10 rounded-[var(--radius-md)] overflow-hidden flex-shrink-0">
                             {course.upload?.courseImage &&
                             course.upload.courseImage.length > 0 &&
                             course.upload.courseImage[0].path ? (
@@ -411,22 +423,22 @@ export default function CoursesPage() {
                             )}
                           </div>
                           <div className="ml-4">
-                            <div className="text-sm font-medium text-white">
+                            <div className="text-sm font-medium text-[var(--foreground)]">
                               {course.title}
                             </div>
-                            <div className="text-xs text-[#D7BDE2] truncate max-w-xs">
+                            <div className="text-xs text-[var(--foreground-muted)] truncate max-w-xs">
                               {course.shortDescription}
                             </div>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-white">
+                        <div className="text-sm text-[var(--foreground)]">
                           {getCategoryName(course.categoryId)}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-white">
+                        <div className="text-sm text-[var(--foreground)]">
                           {formatDate(course.createdAt)}
                         </div>
                       </td>
@@ -441,8 +453,8 @@ export default function CoursesPage() {
                                 handleToggleActive(course._id, !course.isActive)
                               }
                             />
-                            <div className="w-11 h-6 bg-[#3A3A55] rounded-full peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#5B2C6F]"></div>
-                            <span className="ml-3 text-sm text-white">
+                            <div className="w-11 h-6 bg-[var(--input-bg)] rounded-full peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--primary)]"></div>
+                            <span className="ml-3 text-sm text-[var(--foreground)]">
                               {course.isActive ? "Active" : "Inactive"}
                             </span>
                           </label>
@@ -450,8 +462,8 @@ export default function CoursesPage() {
                           <span
                             className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
                               course.isActive
-                                ? "bg-green-100 text-green-800"
-                                : "bg-red-100 text-red-800"
+                                ? "bg-[var(--success)]/20 text-[var(--success)]"
+                                : "bg-[var(--error)]/20 text-[var(--error)]"
                             }`}
                           >
                             {course.isActive ? "Active" : "Inactive"}
@@ -464,7 +476,7 @@ export default function CoursesPage() {
                             <>
                               <Link
                                 href={`/dashboard/courses/${course._id}`}
-                                className="text-indigo-400 hover:text-indigo-200 transition-colors"
+                                className="text-[var(--primary)] hover:text-[var(--primary)]/80 transition-colors"
                                 title="View"
                               >
                                 <svg
@@ -490,7 +502,7 @@ export default function CoursesPage() {
                               </Link>
                               <Link
                                 href={`/dashboard/courses/edit/${course._id}`}
-                                className="text-blue-400 hover:text-blue-200 transition-colors"
+                                className="text-blue-400 hover:text-blue-300 transition-colors"
                                 title="Edit"
                               >
                                 <svg
@@ -510,31 +522,12 @@ export default function CoursesPage() {
                               </Link>
                               <button
                                 onClick={() => handleDeleteClick(course._id)}
-                                className="text-red-400 hover:text-red-200 transition-colors"
+                                className="text-[var(--error)] hover:text-[var(--error)]/80 transition-colors"
                                 title="Delete"
                                 disabled={isDeleting === course._id}
                               >
                                 {isDeleting === course._id ? (
-                                  <svg
-                                    className="animate-spin h-5 w-5"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <circle
-                                      className="opacity-25"
-                                      cx="12"
-                                      cy="12"
-                                      r="10"
-                                      stroke="currentColor"
-                                      strokeWidth="4"
-                                    ></circle>
-                                    <path
-                                      className="opacity-75"
-                                      fill="currentColor"
-                                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                    ></path>
-                                  </svg>
+                                  <LoadingSpinner size="small" />
                                 ) : (
                                   <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -556,31 +549,12 @@ export default function CoursesPage() {
                           ) : (
                             <button
                               onClick={() => handleRestoreCourse(course._id)}
-                              className="text-green-400 hover:text-green-200 transition-colors"
+                              className="text-[var(--success)] hover:text-[var(--success)]/80 transition-colors"
                               title="Restore"
                               disabled={isRestoring === course._id}
                             >
                               {isRestoring === course._id ? (
-                                <svg
-                                  className="animate-spin h-5 w-5"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <circle
-                                    className="opacity-25"
-                                    cx="12"
-                                    cy="12"
-                                    r="10"
-                                    stroke="currentColor"
-                                    strokeWidth="4"
-                                  ></circle>
-                                  <path
-                                    className="opacity-75"
-                                    fill="currentColor"
-                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                  ></path>
-                                </svg>
+                                <LoadingSpinner size="small" />
                               ) : (
                                 <div className="flex items-center">
                                   <svg
@@ -610,7 +584,7 @@ export default function CoursesPage() {
                   <tr>
                     <td
                       colSpan={5}
-                      className="px-6 py-10 text-center text-white"
+                      className="px-6 py-10 text-center text-[var(--foreground-muted)]"
                     >
                       {activeTab === "active"
                         ? "No active courses found matching your filters."
@@ -620,18 +594,18 @@ export default function CoursesPage() {
                 )}
               </tbody>
             </table>
-          )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Delete confirmation modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-          <div className="bg-[#2A2A2A] rounded-xl p-6 max-w-md w-full">
-            <h3 className="text-xl font-bold text-white mb-4">
+          <div className="bg-[var(--background)] rounded-[var(--radius-lg)] p-6 max-w-md w-full shadow-[var(--shadow-lg)]">
+            <h3 className="text-xl font-bold text-[var(--foreground)] mb-4">
               Confirm Delete
             </h3>
-            <p className="text-white mb-6">
+            <p className="text-[var(--foreground)] mb-6">
               Are you sure you want to delete this course? This action cannot be
               undone.
             </p>
@@ -639,7 +613,7 @@ export default function CoursesPage() {
               <button
                 type="button"
                 onClick={() => setShowDeleteModal(false)}
-                className="px-4 py-2 bg-transparent border border-[#5B2C6F] text-white rounded-lg hover:bg-[#5B2C6F]/10 transition-colors"
+                className="px-4 py-2 bg-transparent border border-[var(--border)] text-[var(--foreground)] rounded-[var(--radius-md)] hover:bg-[var(--input-bg)] transition-colors"
               >
                 Cancel
               </button>
@@ -647,30 +621,11 @@ export default function CoursesPage() {
                 type="button"
                 onClick={confirmDelete}
                 disabled={isDeleting !== null}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center"
+                className="px-4 py-2 bg-[var(--error)] text-white rounded-[var(--radius-md)] hover:bg-[var(--error)]/90 transition-colors flex items-center"
               >
                 {isDeleting !== null ? (
                   <>
-                    <svg
-                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
+                    <LoadingSpinner size="small" className="-ml-1 mr-2" />
                     Deleting...
                   </>
                 ) : (

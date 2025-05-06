@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import Input from "../../../../components/Input";
 import RichTextEditor from "../../../../components/RichTextEditor";
 import ImageUpload from "../../../../components/ImageUpload";
@@ -11,6 +12,7 @@ import courseService from "../../../../components/service/course.service";
 import courseCategoryService from "../../../../components/service/courseCategory.service";
 import uploadService from "../../../../components/service/upload.service";
 import config from "../../../../components/config/config";
+import { LoadingSpinner } from "../../../../components/LoadingSpinner";
 
 interface FileUpload {
   url: string;
@@ -47,6 +49,7 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
   const [categories, setCategories] = useState<CourseCategory[]>([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [error, setError] = useState("");
   const [initialFormState, setInitialFormState] =
     useState<CourseFormData | null>(null);
   const [formData, setFormData] = useState<CourseFormData>({
@@ -78,6 +81,7 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
         }
       } catch (error) {
         console.error("Error fetching categories:", error);
+        setError("Failed to load categories");
       } finally {
         setIsLoadingCategories(false);
       }
@@ -89,6 +93,7 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
   useEffect(() => {
     const fetchCourse = async () => {
       setIsLoadingCourse(true);
+      setError("");
 
       try {
         // Fetch all courses instead of a specific course by ID
@@ -152,19 +157,14 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
             setFormData(courseData);
             setInitialFormState(courseData);
           } else {
-            // Course not found, redirect to courses page
-            alert("Course not found");
-            router.push("/dashboard/courses");
+            setError("Course not found");
           }
         } else {
-          // No courses data, redirect to courses page
-          alert("Failed to load course data");
-          router.push("/dashboard/courses");
+          setError("Failed to load course data");
         }
       } catch (error) {
         console.error("Error fetching course:", error);
-        alert("Error fetching course");
-        router.push("/dashboard/courses");
+        setError("Error fetching course data");
       } finally {
         setIsLoadingCourse(false);
       }
@@ -278,7 +278,7 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
       }
     } catch (error) {
       console.error(`Error uploading ${type}:`, error);
-      alert(`Failed to upload ${type}. Please try again.`);
+      setError(`Failed to upload ${type}. Please try again.`);
     } finally {
       setIsUploadingImage(false);
     }
@@ -289,201 +289,249 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
     files: FileUpload[]
   ) => {
     try {
-      // Process each file that has a url but no path (new uploads)
-      const processedFiles = await Promise.all(
-        files.map(async (file) => {
-          if (file.url && !file.path) {
-            setIsUploadingImage(true);
+      // Find which files are new (have url but no path)
+      const newFiles = files.filter((file) => file.url && !file.path);
 
-            // Extract actual File object
-            const response = await fetch(file.url);
-            const blob = await response.blob();
-            const fileExtension = file.url.split(".").pop() || "jpg";
-            const actualFile = new File([blob], `upload.${fileExtension}`, {
-              type: blob.type,
+      if (newFiles.length > 0) {
+        setIsUploadingImage(true);
+
+        // Process each new file for upload
+        const uploadedFiles: FileUpload[] = [];
+        const existingFiles = files.filter((file) => file.path);
+
+        for (const file of newFiles) {
+          // Extract actual File object from the url (which is a Blob URL)
+          const response = await fetch(file.url);
+          const blob = await response.blob();
+          const fileExtension = file.url.split(".").pop() || "jpg";
+          const actualFile = new File([blob], `upload.${fileExtension}`, {
+            type: blob.type,
+          });
+
+          // Upload to server
+          const uploadResponse = await uploadService.uploadImage(actualFile);
+
+          if (
+            uploadResponse &&
+            uploadResponse.upload &&
+            uploadResponse.upload[0]
+          ) {
+            const uploadedFile = uploadResponse.upload[0];
+            const path = uploadedFile.path;
+            const key = uploadedFile.key || path;
+
+            // Create a new file object with the server response
+            uploadedFiles.push({
+              url: `${config.imageUrl}${path}`,
+              key: key,
+              path: path,
             });
-
-            // Upload to server
-            const uploadResponse = await uploadService.uploadImage(actualFile);
-
-            if (
-              uploadResponse &&
-              uploadResponse.upload &&
-              uploadResponse.upload[0]
-            ) {
-              const uploadedFile = uploadResponse.upload[0];
-              const path = uploadedFile.path;
-              const key = uploadedFile.key || path;
-
-              // Return the processed file
-              return {
-                url: `${config.imageUrl}${path}`,
-                key: key,
-                path: path,
-              };
-            }
-            setIsUploadingImage(false);
           }
-          // Return the original file if it already has a path or we couldn't process it
-          return file;
-        })
-      );
+        }
 
-      // Update form data with processed files
-      setFormData((prev) => ({
-        ...prev,
-        upload: {
-          ...prev.upload,
-          [type]: processedFiles.filter(Boolean) as FileUpload[],
-        },
-      }));
+        // Update form data with all files (existing + newly uploaded)
+        setFormData((prev) => ({
+          ...prev,
+          upload: {
+            ...prev.upload,
+            [type]: [...existingFiles, ...uploadedFiles],
+          },
+        }));
+      } else if (files.length === 0) {
+        // All files removed
+        setFormData((prev) => ({
+          ...prev,
+          upload: {
+            ...prev.upload,
+            [type]: [],
+          },
+        }));
+      }
     } catch (error) {
       console.error(`Error uploading ${type}:`, error);
-      alert(`Failed to upload ${type}. Please try again.`);
+      setError(`Failed to upload ${type}. Please try again.`);
+    } finally {
+      setIsUploadingImage(false);
     }
   };
 
-  // Function to prepare data for API submission
   const prepareDataForSubmission = () => {
-    // Create a new object with the right format for the backend
-    const submissionData = {
-      id: params.id,
-      title: formData.title,
-      categoryId: formData.categoryId,
-      shortDescription: formData.shortDescription,
-      description: formData.description,
-      keyFeatures: formData.keyFeatures,
-      upload: {
-        courseImage: formData.upload.courseImage.map((file) => ({
-          path: file.path,
-          key: file.key,
-          _id: file._id, // Keep _id for existing images
-        })),
-        courseSampleCertificate: formData.upload.courseSampleCertificate.map(
-          (file) => ({
-            path: file.path,
-            key: file.key,
-            _id: file._id,
-          })
-        ),
-        courseBadge: formData.upload.courseBadge.map((file) => ({
-          path: file.path,
-          key: file.key,
-          _id: file._id,
-        })),
-      },
-      broucher: formData.broucher.map((file) => ({
-        path: file.path,
-        key: file.key,
-        _id: file._id,
-      })),
-    };
+    const preparedData: any = { ...formData };
 
-    return submissionData;
+    // Format for upload.courseImage
+    if (
+      formData.upload.courseImage &&
+      formData.upload.courseImage.length > 0
+    ) {
+      preparedData.upload.courseImage = formData.upload.courseImage.map(
+        (img) => ({
+          key: img.key,
+          path: img.path,
+        })
+      );
+    }
+
+    // Format for upload.courseSampleCertificate
+    if (
+      formData.upload.courseSampleCertificate &&
+      formData.upload.courseSampleCertificate.length > 0
+    ) {
+      preparedData.upload.courseSampleCertificate =
+        formData.upload.courseSampleCertificate.map((img) => ({
+          key: img.key,
+          path: img.path,
+        }));
+    }
+
+    // Format for upload.courseBadge
+    if (formData.upload.courseBadge && formData.upload.courseBadge.length > 0) {
+      preparedData.upload.courseBadge = formData.upload.courseBadge.map(
+        (img) => ({
+          key: img.key,
+          path: img.path,
+        })
+      );
+    }
+
+    // Format for broucher
+    if (formData.broucher && formData.broucher.length > 0) {
+      preparedData.broucher = formData.broucher.map((img) => ({
+        key: img.key,
+        path: img.path,
+      }));
+    }
+
+    return preparedData;
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
+    setError("");
 
     try {
-      if (isUploadingImage) {
-        alert("Please wait for images to finish uploading");
-        setIsLoading(false);
-        return;
+      // Validate required fields
+      if (!formData.title) {
+        throw new Error("Course title is required");
+      }
+      if (!formData.categoryId) {
+        throw new Error("Course category is required");
+      }
+      if (!formData.shortDescription) {
+        throw new Error("Short description is required");
+      }
+      if (!formData.description) {
+        throw new Error("Full description is required");
       }
 
-      // Prepare data in the format expected by the backend
-      const submissionData = prepareDataForSubmission();
+      // Prepare the data
+      const preparedData = prepareDataForSubmission();
 
-      // Update course using the course service
-      const updateResponse = await courseService.updateCourse(
-        params.id,
-        submissionData
-      );
+      // Submit the updated course data
+      const response = await courseService.updateCourse(params.id, preparedData);
 
-      alert("Course updated successfully");
-      router.push(`/dashboard/courses/${params.id}`);
-    } catch (error) {
-      console.error("Error updating course:", error);
-      alert("Error updating course");
+      if (response && response.course) {
+        // Successfully updated course
+        router.push("/dashboard/courses");
+      } else {
+        throw new Error("Failed to update course");
+      }
+    } catch (err: any) {
+      console.error("Error updating course:", err);
+      setError(err.message || "An error occurred while updating the course");
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (isLoadingCourse) {
+  if (isLoadingCourse || isLoadingCategories) {
     return (
-      <div className="flex justify-center items-center h-96">
-        <svg
-          className="animate-spin h-10 w-10 text-[#5B2C6F]"
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-        >
-          <circle
-            className="opacity-25"
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            strokeWidth="4"
-          ></circle>
-          <path
-            className="opacity-75"
-            fill="currentColor"
-            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-          ></path>
-        </svg>
+      <div className="flex justify-center items-center py-20">
+        <LoadingSpinner size="large" text="Loading course data..." />
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div className="p-6 bg-[#2A2A2A] rounded-xl">
-        <h1 className="text-2xl font-bold text-white mb-2">Edit Course</h1>
-        <p className="text-[#D7BDE2]">Update course information</p>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-[var(--foreground)]">
+            Edit Course
+          </h1>
+          <p className="text-[var(--foreground-muted)]">
+            Update course information and media
+          </p>
+        </div>
+        <Link
+          href="/dashboard/courses"
+          className="px-4 py-2 bg-[var(--background)] text-[var(--foreground)] rounded-[var(--radius-md)] flex items-center gap-2 hover:bg-[var(--input-bg)] transition-colors border border-[var(--border)]"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fillRule="evenodd"
+              d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+              clipRule="evenodd"
+            />
+          </svg>
+          Back to Courses
+        </Link>
       </div>
 
-      <form
-        onSubmit={handleSubmit}
-        className="space-y-6"
-        aria-label="Edit course form"
-      >
-        <div className="bg-[#2A2A2A] rounded-xl p-6">
-          <h2 className="text-xl font-semibold text-white mb-4">
+      {/* Error message */}
+      {error && (
+        <div className="p-4 bg-[var(--error)]/10 border border-[var(--error)]/30 text-[var(--error)] rounded-[var(--radius-md)]">
+          {error}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Basic Information */}
+        <div className="bg-[var(--input-bg)] p-6 rounded-[var(--radius-lg)]">
+          <h2 className="text-lg font-medium text-[var(--foreground)] mb-4">
             Basic Information
           </h2>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Input
-              label="Course Title"
-              name="title"
-              value={formData.title}
-              onChange={handleChange}
-              required
-              placeholder="Enter course title"
-            />
+            <div>
+              <label 
+                htmlFor="title" 
+                className="block text-sm font-medium text-[var(--foreground-muted)] mb-1"
+              >
+                Course Title *
+              </label>
+              <input 
+                type="text"
+                id="title"
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+                className="w-full px-4 py-2 bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] rounded-[var(--radius-md)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                required
+              />
+            </div>
 
-            <div className="mb-4">
-              <label className="block mb-2 text-sm font-medium text-white">
-                Category
+            <div>
+              <label 
+                htmlFor="categoryId" 
+                className="block text-sm font-medium text-[var(--foreground-muted)] mb-1"
+              >
+                Category *
               </label>
               <select
+                id="categoryId"
                 name="categoryId"
                 value={formData.categoryId}
                 onChange={handleChange}
-                className="w-full px-4 py-2 bg-[#2A2A2A] text-white border border-[#5B2C6F]/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5B2C6F]"
+                className="w-full px-4 py-2 bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] rounded-[var(--radius-md)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                 required
-                disabled={isLoadingCategories}
-                aria-label="Course Category"
               >
-                <option value="" disabled>
-                  {isLoadingCategories
-                    ? "Loading categories..."
-                    : "Select a category"}
-                </option>
+                <option value="">Select a category</option>
                 {categories.map((category) => (
                   <option key={category._id} value={category._id}>
                     {category.name}
@@ -491,136 +539,146 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
                 ))}
               </select>
             </div>
+
+            <div className="md:col-span-2">
+              <label 
+                htmlFor="shortDescription"
+                className="block text-sm font-medium text-[var(--foreground-muted)] mb-1"
+              >
+                Short Description *
+              </label>
+              <textarea
+                id="shortDescription"
+                name="shortDescription"
+                value={formData.shortDescription}
+                onChange={handleChange}
+                rows={3}
+                className="w-full px-4 py-2 bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] rounded-[var(--radius-md)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                required
+              />
+            </div>
           </div>
-
-          <RichTextEditor
-            label="Short Description"
-            value={formData.shortDescription}
-            onChange={(value) =>
-              handleRichTextChange("shortDescription", value)
-            }
-            placeholder="Enter a brief description (max 150 characters)"
-            maxLength={150}
-            minHeight="100px"
-            id="edit-short-description"
-          />
-
-          <RichTextEditor
-            label="Full Description"
-            value={formData.description}
-            onChange={(value) => handleRichTextChange("description", value)}
-            placeholder="Enter detailed course description"
-            minHeight="250px"
-            id="edit-full-description"
-          />
         </div>
 
-        <div className="bg-[#2A2A2A] rounded-xl p-6">
-          <h2 className="text-xl font-semibold text-white mb-4">
-            Media & Files
+        {/* Full Description */}
+        <div className="bg-[var(--input-bg)] p-6 rounded-[var(--radius-lg)]">
+          <h2 className="text-lg font-medium text-[var(--foreground)] mb-4">
+            Full Description
           </h2>
+          <div>
+            <label 
+              htmlFor="description"
+              className="block text-sm font-medium text-[var(--foreground-muted)] mb-1"
+            >
+              Course Details *
+            </label>
+            <RichTextEditor
+              value={formData.description}
+              onChange={(value) => handleRichTextChange("description", value)}
+            />
+          </div>
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        {/* Media Uploads */}
+        <div className="bg-[var(--input-bg)] p-6 rounded-[var(--radius-lg)]">
+          <h2 className="text-lg font-medium text-[var(--foreground)] mb-4">
+            Media and Resources
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block mb-2 text-sm font-medium text-white">
-                Course Thumbnail Image
+              <label 
+                className="block text-sm font-medium text-[var(--foreground-muted)] mb-2"
+              >
+                Course Image *
               </label>
               <ImageUpload
-                value={formData.upload.courseImage[0]}
+                value={formData.upload.courseImage.length > 0
+                  ? formData.upload.courseImage[0]
+                  : { url: "", key: "" }}
                 onChange={(file) =>
                   handleSingleImageUpload("courseImage", file)
                 }
-                shape="square"
               />
             </div>
 
             <div>
-              <label className="block mb-2 text-sm font-medium text-white">
-                Sample Certificate
+              <label 
+                className="block text-sm font-medium text-[var(--foreground-muted)] mb-2"
+              >
+                Certificate Sample
               </label>
               <ImageUpload
-                value={formData.upload.courseSampleCertificate[0]}
+                value={formData.upload.courseSampleCertificate.length > 0
+                  ? formData.upload.courseSampleCertificate[0]
+                  : { url: "", key: "" }}
                 onChange={(file) =>
                   handleSingleImageUpload("courseSampleCertificate", file)
                 }
-                shape="square"
+              />
+            </div>
+
+            <div>
+              <label 
+                className="block text-sm font-medium text-[var(--foreground-muted)] mb-2"
+              >
+                Course Badges
+              </label>
+              <MultipleImageUpload
+                value={formData.upload.courseBadge}
+                onChange={(files) =>
+                  handleMultipleImageUpload("courseBadge", files)
+                }
+                maxImages={5}
+              />
+            </div>
+
+            <div>
+              <label 
+                className="block text-sm font-medium text-[var(--foreground-muted)] mb-2"
+              >
+                Course Brochure
+              </label>
+              <ImageUpload
+                value={formData.broucher.length > 0
+                  ? formData.broucher[0]
+                  : { url: "", key: "" }}
+                onChange={(file) =>
+                  handleSingleImageUpload("broucher", file)
+                }
               />
             </div>
           </div>
-
-          <div className="mb-6">
-            <MultipleImageUpload
-              label="Course Badges"
-              value={formData.upload.courseBadge}
-              onChange={(files) =>
-                handleMultipleImageUpload("courseBadge", files)
-              }
-            />
-          </div>
-
-          <div>
-            <label className="block mb-2 text-sm font-medium text-white">
-              Course Brochure
-            </label>
-            <ImageUpload
-              value={formData.broucher[0]}
-              onChange={(file) => handleSingleImageUpload("broucher", file)}
-              shape="rectangle"
-            />
-            <p className="text-xs text-white/50 mt-1">
-              Upload a PDF or image file for the course brochure
-            </p>
-          </div>
         </div>
 
-        <div className="bg-[#2A2A2A] rounded-xl p-6">
-          <h2 className="text-xl font-semibold text-white mb-4">
+        {/* Key Features */}
+        <div className="bg-[var(--input-bg)] p-6 rounded-[var(--radius-lg)]">
+          <h2 className="text-lg font-medium text-[var(--foreground)] mb-4">
             Key Features
           </h2>
-
-          <KeyFeaturesInput
-            value={formData.keyFeatures}
-            onChange={handleKeyFeaturesChange}
-          />
+          <div>
+            <label 
+              className="block text-sm font-medium text-[var(--foreground-muted)] mb-2"
+            >
+              Course Features
+            </label>
+            <KeyFeaturesInput
+              value={formData.keyFeatures}
+              onChange={handleKeyFeaturesChange}
+            />
+          </div>
         </div>
 
-        <div className="flex justify-between">
-          <button
-            type="button"
-            onClick={() => router.push(`/dashboard/courses/${params.id}`)}
-            className="px-6 py-2 bg-transparent border border-[#5B2C6F] text-white rounded-lg hover:bg-[#5B2C6F]/10 transition-colors"
-          >
-            Cancel
-          </button>
-
+        {/* Submit button */}
+        <div className="flex justify-end">
           <button
             type="submit"
-            disabled={isLoading}
-            className="px-6 py-2 bg-[#5B2C6F] text-white rounded-lg hover:bg-[#5B2C6F]/90 transition-colors flex items-center"
+            disabled={isLoading || isUploadingImage}
+            className="px-6 py-2 bg-[var(--primary)] text-white rounded-[var(--radius-md)] hover:bg-[var(--primary-hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {isLoading ? (
               <>
-                <svg
-                  className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
-                Saving...
+                <LoadingSpinner size="small" className="text-white" />
+                Updating Course...
               </>
             ) : (
               "Update Course"

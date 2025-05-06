@@ -63,11 +63,14 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
       // Apply colors
       root.style.setProperty("--background", theme.colors.background);
       root.style.setProperty("--foreground", theme.colors.text);
+      root.style.setProperty("--foreground-muted", theme.colors.mutedText || adjustColor(theme.colors.text, 0.6));
       root.style.setProperty("--primary", theme.colors.primary);
+      root.style.setProperty("--primary-hover", theme.colors.primaryHover || adjustColor(theme.colors.primary, 0.8));
       root.style.setProperty("--secondary", theme.colors.secondary);
       root.style.setProperty("--input-bg", theme.colors.inputBg);
       root.style.setProperty("--error", theme.colors.error);
       root.style.setProperty("--success", theme.colors.success);
+      root.style.setProperty("--border", theme.colors.border || adjustColor(theme.colors.text, 0.2));
 
       // Apply border radius
       root.style.setProperty("--radius-sm", theme.borderRadius.small);
@@ -82,6 +85,29 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
       // Apply typography
       root.style.setProperty("--font-family", theme.typography.fontFamily);
     }
+  };
+
+  // Helper function to adjust color opacity
+  const adjustColor = (color: string, opacity: number): string => {
+    // If color is in hex format, convert to rgba
+    if (color.startsWith('#')) {
+      const r = parseInt(color.slice(1, 3), 16);
+      const g = parseInt(color.slice(3, 5), 16);
+      const b = parseInt(color.slice(5, 7), 16);
+      return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+    }
+    
+    // If already rgba, adjust opacity
+    if (color.startsWith('rgba')) {
+      return color.replace(/rgba\((\d+),\s*(\d+),\s*(\d+),\s*[\d.]+\)/, `rgba($1, $2, $3, ${opacity})`);
+    }
+    
+    // If rgb, convert to rgba
+    if (color.startsWith('rgb')) {
+      return color.replace(/rgb/, 'rgba').replace(/\)/, `, ${opacity})`);
+    }
+    
+    return color;
   };
 
   return (

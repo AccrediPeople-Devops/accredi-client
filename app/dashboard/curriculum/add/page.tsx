@@ -8,6 +8,7 @@ import courseService from "../../../components/service/course.service";
 import { CurriculumContent } from "../../../types/curriculum";
 import { Course } from "../../../types/course";
 import CurriculumItemInput from "../../../components/curriculum/CurriculumItemInput";
+import { LoadingSpinner } from "../../../components/LoadingSpinner";
 
 export default function AddCurriculumPage() {
   const router = useRouter();
@@ -16,6 +17,7 @@ export default function AddCurriculumPage() {
     { title: "", description: "" },
   ]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingCourses, setIsLoadingCourses] = useState(true);
   const [error, setError] = useState("");
   const [availableCourses, setAvailableCourses] = useState<
     { id: string; title: string }[]
@@ -24,9 +26,10 @@ export default function AddCurriculumPage() {
   // Fetch available courses from the API
   useEffect(() => {
     const fetchCourses = async () => {
+      setIsLoadingCourses(true);
       try {
         const res = await courseService.getAllCourses();
-        if (res?.status && res?.courses) {
+        if (res?.courses) {
           setAvailableCourses(
             res.courses.map((course: Course) => ({
               id: course._id,
@@ -36,6 +39,8 @@ export default function AddCurriculumPage() {
         }
       } catch (err) {
         setError("Failed to load courses");
+      } finally {
+        setIsLoadingCourses(false);
       }
     };
     fetchCourses();
@@ -71,6 +76,8 @@ export default function AddCurriculumPage() {
     }
 
     setIsLoading(true);
+    setError("");
+    
     try {
       // Clean up empty descriptions
       const cleanContent = content.map((item) => ({
@@ -96,11 +103,19 @@ export default function AddCurriculumPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header with navigation */}
-      <div className="flex items-center space-x-4">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-[var(--foreground)]">
+            Add Curriculum
+          </h1>
+          <p className="text-[var(--foreground-muted)]">
+            Create curriculum content for a course
+          </p>
+        </div>
         <Link
           href="/dashboard/curriculum"
-          className="p-2 rounded-lg bg-[#2A2A2A] text-white hover:bg-[#5B2C6F]/20 transition-colors"
+          className="px-4 py-2 bg-[var(--background)] text-[var(--foreground)] rounded-[var(--radius-md)] flex items-center gap-2 hover:bg-[var(--input-bg)] transition-colors border border-[var(--border)]"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -114,82 +129,86 @@ export default function AddCurriculumPage() {
               clipRule="evenodd"
             />
           </svg>
+          Back to Curriculum
         </Link>
-        <div className="p-6 bg-[#2A2A2A] rounded-xl flex-1">
-          <h1 className="text-2xl font-bold text-white mb-2">
-            Add New Curriculum
-          </h1>
-          <p className="text-[#D7BDE2]">Create a new curriculum for a course</p>
-        </div>
       </div>
 
       {/* Error message */}
       {error && (
-        <div className="p-4 bg-red-500/20 border border-red-500/50 rounded-lg text-white text-center">
+        <div className="p-4 bg-[var(--error)]/10 border border-[var(--error)]/30 text-[var(--error)] rounded-[var(--radius-md)]">
           {error}
         </div>
       )}
 
-      {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="bg-[#2A2A2A] rounded-xl p-6">
-          <div className="mb-6">
-            <h2 className="text-xl font-bold text-white mb-4">
-              Course Information
+      {/* Loading state for courses */}
+      {isLoadingCourses ? (
+        <div className="flex justify-center py-8">
+          <LoadingSpinner size="medium" text="Loading courses..." />
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Course Selection */}
+          <div className="bg-[var(--input-bg)] p-6 rounded-[var(--radius-lg)]">
+            <h2 className="text-lg font-medium text-[var(--foreground)] mb-4">
+              Course Selection
             </h2>
-
             <div>
-              <label className="block text-sm font-medium text-white/70 mb-1">
-                Select Course
+              <label 
+                htmlFor="courseId" 
+                className="block text-sm font-medium text-[var(--foreground-muted)] mb-1"
+              >
+                Select Course *
               </label>
               <select
+                id="courseId"
                 value={courseId}
                 onChange={(e) => setCourseId(e.target.value)}
-                className="w-full px-3 py-2 bg-[#1A1A1A] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5B2C6F]"
+                className="w-full px-4 py-2 bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] rounded-[var(--radius-md)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                required
               >
-                <option value="">-- Select a course --</option>
+                <option value="">Select a course</option>
                 {availableCourses.map((course) => (
                   <option key={course.id} value={course.id}>
                     {course.title}
                   </option>
                 ))}
               </select>
-              <p className="text-sm text-white/50 mt-1">
-                Choose the course for which you want to create a curriculum
+              <p className="mt-1 text-sm text-[var(--foreground-muted)]">
+                Choose the course this curriculum belongs to
               </p>
             </div>
           </div>
 
-          {/* Curriculum items editor */}
-          <CurriculumItemInput items={content} setItems={setContent} />
-        </div>
+          {/* Curriculum Content */}
+          <div className="bg-[var(--input-bg)] p-6 rounded-[var(--radius-lg)]">
+            <h2 className="text-lg font-medium text-[var(--foreground)] mb-4">
+              Curriculum Content
+            </h2>
+            <CurriculumItemInput 
+              items={content} 
+              setItems={setContent} 
+            />
+          </div>
 
-        {/* Action buttons */}
-        <div className="flex justify-end space-x-3">
-          <Link
-            href="/dashboard/curriculum"
-            className="px-4 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors"
-          >
-            Cancel
-          </Link>
-          <button
-            type="submit"
-            disabled={isLoading}
-            className={`px-4 py-2 rounded-lg bg-[#5B2C6F] text-white hover:bg-[#5B2C6F]/90 transition-colors flex items-center ${
-              isLoading ? "opacity-70 cursor-not-allowed" : ""
-            }`}
-          >
-            {isLoading ? (
-              <>
-                <div className="h-4 w-4 border-t-2 border-r-2 border-white rounded-full animate-spin mr-2"></div>
-                Creating...
-              </>
-            ) : (
-              "Create Curriculum"
-            )}
-          </button>
-        </div>
-      </form>
+          {/* Submit button */}
+          <div className="flex justify-end">
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="px-6 py-2 bg-[var(--primary)] text-white rounded-[var(--radius-md)] hover:bg-[var(--primary-hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {isLoading ? (
+                <>
+                  <LoadingSpinner size="small" className="text-white" />
+                  Creating Curriculum...
+                </>
+              ) : (
+                "Create Curriculum"
+              )}
+            </button>
+          </div>
+        </form>
+      )}
     </div>
   );
 }

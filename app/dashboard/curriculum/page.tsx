@@ -7,6 +7,7 @@ import courseService from "../../components/service/course.service";
 import { Curriculum } from "../../types/curriculum";
 import { Course } from "../../types/course";
 import { createHtmlPreview } from "../../utils/textUtils";
+import { LoadingSpinner } from "../../components/LoadingSpinner";
 
 export default function CurriculumPage() {
   const [curriculums, setCurriculums] = useState<Curriculum[]>([]);
@@ -83,28 +84,41 @@ export default function CurriculumPage() {
 
   return (
     <div className="space-y-6">
-      <div className="p-6 bg-[#2A2A2A] rounded-xl">
-        <h1 className="text-2xl font-bold text-white mb-2">
-          Curriculum Management
-        </h1>
-        <p className="text-[#D7BDE2]">
-          Create and manage course curriculum content
-        </p>
-      </div>
-
-      {/* Search and Add Curriculum */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-        <div className="relative w-full sm:w-auto">
-          <input
-            type="text"
-            placeholder="Search by course name..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full sm:w-80 px-4 py-2 pl-10 bg-[#2A2A2A] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5B2C6F]"
-          />
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-2xl font-bold text-[var(--foreground)]">
+            Curriculum Management
+          </h1>
+          <p className="text-[var(--foreground-muted)]">
+            Create and manage course curriculum content
+          </p>
+        </div>
+        <Link
+          href="/dashboard/curriculum/add"
+          className="px-4 py-2 bg-[var(--primary)] text-white rounded-[var(--radius-md)] flex items-center gap-2 hover:bg-[var(--primary)]/90 transition-colors"
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50"
+            className="h-5 w-5"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fillRule="evenodd"
+              d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+              clipRule="evenodd"
+            />
+          </svg>
+          Add New Curriculum
+        </Link>
+      </div>
+
+      {/* Search */}
+      <div className="relative w-full max-w-md">
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5 text-[var(--foreground-muted)]"
             viewBox="0 0 20 20"
             fill="currentColor"
           >
@@ -115,47 +129,35 @@ export default function CurriculumPage() {
             />
           </svg>
         </div>
-
-        <Link
-          href="/dashboard/curriculum/add"
-          className="w-full sm:w-auto px-4 py-2 bg-[#5B2C6F] text-white rounded-lg font-medium hover:bg-[#5B2C6F]/90 transition-colors flex items-center justify-center"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5 mr-2"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fillRule="evenodd"
-              d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-              clipRule="evenodd"
-            />
-          </svg>
-          Add New Curriculum
-        </Link>
+        <input
+          type="text"
+          placeholder="Search by course name..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="pl-10 pr-4 py-2 w-full bg-[var(--input-bg)] text-[var(--foreground)] border border-[var(--border)] rounded-[var(--radius-md)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+        />
       </div>
 
-      {/* Loading and Error States */}
-      {isLoading && (
-        <div className="text-center py-8">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-[#5B2C6F] border-r-2 border-b-2 border-transparent"></div>
-          <p className="mt-2 text-white/70">Loading curriculums...</p>
-        </div>
-      )}
-
-      {error && !isLoading && (
-        <div className="p-4 bg-red-500/20 border border-red-500/50 rounded-lg text-white text-center">
+      {/* Error message */}
+      {error && (
+        <div className="p-4 bg-[var(--error)]/10 border border-[var(--error)]/30 text-[var(--error)] rounded-[var(--radius-md)]">
           {error}
         </div>
       )}
 
-      {/* Curriculum List */}
+      {/* Loading state */}
+      {isLoading && (
+        <div className="flex justify-center items-center py-10">
+          <LoadingSpinner size="medium" text="Loading curriculums..." />
+        </div>
+      )}
+
+      {/* Empty state */}
       {!isLoading && !error && filteredCurriculums.length === 0 && (
-        <div className="text-center py-12 bg-[#2A2A2A] rounded-xl">
+        <div className="text-center py-12 bg-[var(--input-bg)] rounded-[var(--radius-md)] border border-[var(--border)]">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-12 w-12 mx-auto text-[#5B2C6F]"
+            className="h-12 w-12 mx-auto text-[var(--primary)]"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -167,10 +169,10 @@ export default function CurriculumPage() {
               d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
             />
           </svg>
-          <h3 className="mt-4 text-xl font-medium text-white">
+          <h3 className="mt-4 text-xl font-medium text-[var(--foreground)]">
             No Curriculums Found
           </h3>
-          <p className="mt-2 text-white/70">
+          <p className="mt-2 text-[var(--foreground-muted)]">
             {searchTerm
               ? "No curriculums match your search criteria."
               : "Get started by creating a new curriculum."}
@@ -178,20 +180,21 @@ export default function CurriculumPage() {
         </div>
       )}
 
+      {/* Curriculum List */}
       {!isLoading && !error && filteredCurriculums.length > 0 && (
         <div className="grid grid-cols-1 gap-4">
           {filteredCurriculums.map((curriculum) => (
             <div
               key={curriculum._id}
-              className="bg-[#2A2A2A] rounded-xl overflow-hidden"
+              className="bg-[var(--background)] rounded-[var(--radius-md)] overflow-hidden border border-[var(--border)]"
             >
               <div className="p-6">
                 <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-medium text-white">
+                  <h2 className="text-xl font-medium text-[var(--foreground)]">
                     {courses.length === 0 ? (
                       <span className="inline-flex items-center">
                         Course:{" "}
-                        <span className="ml-2 animate-pulse text-gray-400">
+                        <span className="ml-2 animate-pulse text-[var(--foreground-muted)]">
                           Loading...
                         </span>
                       </span>
@@ -209,10 +212,10 @@ export default function CurriculumPage() {
                           !curriculum.isActive
                         )
                       }
-                      className={`p-2 rounded-lg ${
+                      className={`p-2 rounded-[var(--radius-sm)] ${
                         curriculum.isActive
-                          ? "bg-green-500/20 text-green-400 hover:bg-green-500/30"
-                          : "bg-gray-500/20 text-gray-400 hover:bg-gray-500/30"
+                          ? "bg-[var(--success)]/20 text-[var(--success)] hover:bg-[var(--success)]/30"
+                          : "bg-[var(--foreground-muted)]/20 text-[var(--foreground-muted)] hover:bg-[var(--foreground-muted)]/30"
                       } transition-colors`}
                       title={curriculum.isActive ? "Deactivate" : "Activate"}
                     >
@@ -235,7 +238,7 @@ export default function CurriculumPage() {
                     </button>
                     <Link
                       href={`/dashboard/curriculum/edit/${curriculum._id}`}
-                      className="p-2 rounded-lg bg-[#5B2C6F]/20 text-[#D7BDE2] hover:bg-[#5B2C6F]/30 transition-colors"
+                      className="p-2 rounded-[var(--radius-sm)] bg-[var(--primary)]/20 text-[var(--primary)] hover:bg-[var(--primary)]/30 transition-colors"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -256,7 +259,7 @@ export default function CurriculumPage() {
                           handleDeleteCurriculum(curriculum._id as string);
                         }
                       }}
-                      className="p-2 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors"
+                      className="p-2 rounded-[var(--radius-sm)] bg-[var(--error)]/20 text-[var(--error)] hover:bg-[var(--error)]/30 transition-colors"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -275,36 +278,39 @@ export default function CurriculumPage() {
                 </div>
 
                 <div className="mt-4">
-                  <h3 className="text-white/90 font-medium mb-2">
+                  <h3 className="text-[var(--foreground)] font-medium mb-2">
                     Content Items: {curriculum.content.length}
                   </h3>
                   <div className="space-y-2">
                     {curriculum.content.slice(0, 3).map((item, index) => (
-                      <div key={index} className="p-3 bg-[#1A1A1A] rounded-lg">
-                        <h4 className="text-[#D7BDE2] font-medium">
+                      <div 
+                        key={index} 
+                        className="p-3 bg-[var(--input-bg)] rounded-[var(--radius-sm)]"
+                      >
+                        <h4 className="text-[var(--primary)] font-medium">
                           {item.title}
                         </h4>
-                        <div className="text-white/70 text-sm mt-1 line-clamp-1 overflow-hidden">
+                        <div className="text-[var(--foreground-muted)] text-sm mt-1 line-clamp-1 overflow-hidden">
                           {createHtmlPreview(item.description)}
                         </div>
                       </div>
                     ))}
                     {curriculum.content.length > 3 && (
-                      <div className="text-center text-[#D7BDE2] text-sm">
+                      <div className="text-center text-[var(--primary)] text-sm">
                         +{curriculum.content.length - 3} more items
                       </div>
                     )}
                   </div>
                 </div>
 
-                <div className="mt-4 pt-4 border-t border-white/10 flex justify-between items-center">
-                  <div className="text-sm text-white/50">
+                <div className="mt-4 pt-4 border-t border-[var(--border)] flex justify-between items-center">
+                  <div className="text-sm text-[var(--foreground-muted)]">
                     Last updated:{" "}
                     {new Date(curriculum.updatedAt || "").toLocaleDateString()}
                     <span className="ml-3 inline-flex items-center">
                       <span
                         className={`h-2 w-2 rounded-full ${
-                          curriculum.isActive ? "bg-green-400" : "bg-gray-400"
+                          curriculum.isActive ? "bg-[var(--success)]" : "bg-[var(--foreground-muted)]"
                         } mr-1`}
                       ></span>
                       {curriculum.isActive ? "Active" : "Inactive"}
@@ -312,7 +318,7 @@ export default function CurriculumPage() {
                   </div>
                   <Link
                     href={`/dashboard/curriculum/${curriculum._id}`}
-                    className="text-[#D7BDE2] hover:text-white transition-colors flex items-center"
+                    className="text-[var(--primary)] hover:text-[var(--primary)]/80 transition-colors flex items-center"
                   >
                     View Details
                     <svg
