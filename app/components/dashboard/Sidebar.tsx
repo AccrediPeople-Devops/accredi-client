@@ -69,20 +69,20 @@ export default function Sidebar({ isMobileOpen, toggleSidebar }: SidebarProps) {
       ),
       path: "/dashboard/curriculum",
     },
-    {
-      title: "Categories",
-      icon: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-5 w-5"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-        >
-          <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
-        </svg>
-      ),
-      path: "/dashboard/categories",
-    },
+    // {
+    //   title: "Categories",
+    //   icon: (
+    //     <svg
+    //       xmlns="http://www.w3.org/2000/svg"
+    //       className="h-5 w-5"
+    //       viewBox="0 0 20 20"
+    //       fill="currentColor"
+    //     >
+    //       <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
+    //     </svg>
+    //   ),
+    //   path: "/dashboard/categories",
+    // },
     {
       title: "Course Categories",
       icon: (
@@ -167,8 +167,7 @@ export default function Sidebar({ isMobileOpen, toggleSidebar }: SidebarProps) {
       <aside
         className={`
           fixed top-0 left-0 z-30 h-screen w-64 
-          bg-[var(--background)] border-r border-[var(--primary)]/20
-          shadow-[var(--shadow-md)]
+          bg-[var(--background)] border-r border-[var(--border)]
           transition-transform duration-300 ease-in-out transform
           ${isMobileOpen ? "translate-x-0" : "-translate-x-full"} 
           md:translate-x-0
@@ -176,17 +175,17 @@ export default function Sidebar({ isMobileOpen, toggleSidebar }: SidebarProps) {
       >
         <div className="h-full flex flex-col">
           {/* Logo */}
-          <div className="p-4 border-b border-[var(--primary)]/20">
+          <div className="p-6 border-b border-[var(--border)]">
             <div className="flex items-center justify-center">
               <div className="text-xl font-bold text-[var(--foreground)]">
                 <span className="text-[var(--primary)]">Accredi</span>
-                <span className="text-[var(--secondary)]">Learn</span>
+                Learn
               </div>
             </div>
           </div>
 
           {/* Menu */}
-          <nav className="flex-1 px-2 py-4 overflow-y-auto">
+          <nav className="flex-1 px-3 py-6 overflow-y-auto">
             <ul className="space-y-1">
               {menuItems.map((item) => {
                 const isActive = pathname === item.path;
@@ -199,13 +198,13 @@ export default function Sidebar({ isMobileOpen, toggleSidebar }: SidebarProps) {
                         flex items-center px-4 py-3 text-sm font-medium rounded-[var(--radius-md)]
                         ${
                           isActive
-                            ? "bg-[var(--primary)] text-[var(--background)]"
-                            : "text-[var(--foreground)]/80 hover:bg-[var(--primary)]/10"
+                            ? "bg-[var(--primary)] text-white"
+                            : "text-[var(--foreground)] hover:bg-[var(--input-bg)]"
                         }
                         transition-colors duration-200
                       `}
                     >
-                      <span className="mr-3">{item.icon}</span>
+                      <span className={`mr-3 ${isActive ? "text-white" : "text-[var(--primary)]"}`}>{item.icon}</span>
                       <span>{item.title}</span>
                     </Link>
                   </li>
@@ -215,9 +214,9 @@ export default function Sidebar({ isMobileOpen, toggleSidebar }: SidebarProps) {
           </nav>
 
           {/* Footer */}
-          <div className="p-4 border-t border-[var(--primary)]/20">
+          <div className="p-4 border-t border-[var(--border)]">
             <button
-              className="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-[var(--background)] rounded-[var(--radius-md)] bg-[var(--primary)] hover:bg-[var(--primary)]/90 transition-colors duration-200 shadow-[var(--shadow-sm)]"
+              className="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white rounded-[var(--radius-md)] bg-[var(--primary)] hover:bg-[var(--primary-hover)] transition-colors"
               onClick={() => {
                 if (typeof window !== "undefined") {
                   localStorage.removeItem("token");
@@ -228,15 +227,16 @@ export default function Sidebar({ isMobileOpen, toggleSidebar }: SidebarProps) {
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-5 w-5 mr-2"
-                viewBox="0 0 20 20"
-                fill="currentColor"
+                fill="none"
+                viewBox="0 0 24 24" 
+                stroke="currentColor"
+                strokeWidth="2"
               >
                 <path
-                  fillRule="evenodd"
-                  d="M3 3a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V7.414l-5-5H3zm7 5a1 1 0 01-1-1V3H3v12h12V8h-5z"
-                  clipRule="evenodd"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
                 />
-                <path d="M13 7l-5 5V7h5z" />
               </svg>
               Logout
             </button>

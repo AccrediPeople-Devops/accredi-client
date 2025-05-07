@@ -34,10 +34,11 @@ export default function DashboardLayout({
         {/* Main content */}
         <div className="md:ml-64 transition-all duration-300 ease-in-out">
           {/* Header */}
-          <header className="h-16 bg-[var(--background)] border-b border-[var(--primary)]/20 shadow-[var(--shadow-sm)] flex items-center justify-between px-4">
+          <header className="h-16 bg-[var(--background)] border-b border-[var(--border)] flex items-center justify-between px-6 sticky top-0 z-10">
             <button
-              className="md:hidden text-[var(--foreground)] p-2"
+              className="md:hidden text-[var(--foreground)] p-2 rounded-[var(--radius-sm)] hover:bg-[var(--input-bg)] transition-colors"
               onClick={toggleSidebar}
+              aria-label="Toggle sidebar"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -63,7 +64,10 @@ export default function DashboardLayout({
 
             <div className="flex items-center space-x-4">
               <div className="relative">
-                <button className="h-9 w-9 rounded-full bg-[var(--primary)] flex items-center justify-center text-[var(--background)] shadow-[var(--shadow-sm)]">
+                <button 
+                  className="h-9 w-9 rounded-full bg-[var(--primary)]/10 flex items-center justify-center text-[var(--primary)] hover:bg-[var(--primary)]/20 transition-colors"
+                  aria-label="Notifications"
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-5 w-5"
@@ -74,18 +78,26 @@ export default function DashboardLayout({
                   </svg>
                 </button>
               </div>
-              <div className="h-9 w-9 rounded-full bg-[var(--secondary)] flex items-center justify-center text-[var(--primary)] font-semibold shadow-[var(--shadow-sm)]">
-                US
+              <div 
+                className="h-9 w-9 rounded-full bg-[var(--primary)] flex items-center justify-center text-white font-medium border-2 border-[var(--background)]"
+                title="User Profile"
+              >
+                AD
               </div>
             </div>
           </header>
 
           {/* Content */}
           <main className="p-6">
-            <div className="bg-[var(--background)] rounded-[var(--radius-lg)] shadow-[var(--shadow-md)] p-6">
-              {children}
-            </div>
+            {children}
           </main>
+
+          {/* Footer */}
+          <footer className="py-4 px-6 border-t border-[var(--border)]">
+            <div className="text-center text-[var(--foreground-muted)] text-sm">
+              AccrediLearn Admin Dashboard &copy; {new Date().getFullYear()}
+            </div>
+          </footer>
         </div>
       </div>
     </ThemeProvider>
