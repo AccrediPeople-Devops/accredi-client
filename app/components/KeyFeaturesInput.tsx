@@ -5,6 +5,7 @@ interface KeyFeaturesInputProps {
   error?: string;
   value: string[];
   onChange: (features: string[]) => void;
+  placeholder?: string;
 }
 
 export default function KeyFeaturesInput({
@@ -12,6 +13,7 @@ export default function KeyFeaturesInput({
   error,
   value = [],
   onChange,
+  placeholder = "Add a key feature",
 }: KeyFeaturesInputProps) {
   const [newFeature, setNewFeature] = useState("");
 
@@ -30,7 +32,7 @@ export default function KeyFeaturesInput({
   return (
     <div className="mb-4 w-full">
       {label && (
-        <label className="block mb-2 text-sm font-medium text-white">
+        <label className="block mb-2 text-sm font-medium text-[var(--foreground)]">
           {label}
         </label>
       )}
@@ -40,8 +42,8 @@ export default function KeyFeaturesInput({
           type="text"
           value={newFeature}
           onChange={(e) => setNewFeature(e.target.value)}
-          className="flex-1 px-4 py-2 bg-[#2A2A2A] text-white rounded-l-lg focus:outline-none focus:ring-2 focus:ring-[#5B2C6F]"
-          placeholder="Add a key feature"
+          className="flex-1 px-4 py-2 bg-[var(--input-bg)] text-[var(--foreground)] rounded-l-[var(--radius-md)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+          placeholder={placeholder}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault();
@@ -52,7 +54,7 @@ export default function KeyFeaturesInput({
         <button
           type="button"
           onClick={addFeature}
-          className="bg-[#5B2C6F] text-white px-4 py-2 rounded-r-lg hover:bg-[#5B2C6F]/90"
+          className="bg-[var(--primary)] text-white px-4 py-2 rounded-r-[var(--radius-md)] hover:bg-[var(--primary)]/90"
         >
           Add
         </button>
@@ -63,13 +65,13 @@ export default function KeyFeaturesInput({
           {value.map((feature, index) => (
             <div 
               key={index} 
-              className="inline-flex items-center bg-[#5B2C6F]/20 text-white px-3 py-1.5 rounded-full"
+              className="inline-flex items-center bg-[var(--primary)]/20 text-[var(--foreground)] px-3 py-1.5 rounded-full"
             >
               <span>{feature}</span>
               <button
                 type="button"
                 onClick={() => removeFeature(index)}
-                className="ml-2 text-white/70 hover:text-white/100"
+                className="ml-2 text-[var(--foreground)]/70 hover:text-[var(--foreground)]"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -91,7 +93,7 @@ export default function KeyFeaturesInput({
         </div>
       )}
       
-      {error && <p className="mt-1 text-sm text-error">{error}</p>}
+      {error && <p className="mt-1 text-sm text-[var(--error)]">{error}</p>}
     </div>
   );
 } 

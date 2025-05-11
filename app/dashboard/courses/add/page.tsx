@@ -127,93 +127,10 @@ export default function AddCoursePage() {
   ) => {
     try {
       // When a file is selected from the UI, it will have a url but no path yet
-      if (file.url && !file.path) {
+      if (file.url && file.url !== "" && !file.path) {
         setIsUploadingImage(true);
 
-        // Extract actual File object from the url (which is a Blob URL)
-        const response = await fetch(file.url);
-        const blob = await response.blob();
-        const fileExtension = file.url.split(".").pop() || "jpg";
-        const actualFile = new File([blob], `upload.${fileExtension}`, {
-          type: blob.type,
-        });
-
-        // Upload to server
-        const uploadResponse = await uploadService.uploadImage(actualFile);
-
-        if (
-          uploadResponse &&
-          uploadResponse.upload &&
-          uploadResponse.upload[0]
-        ) {
-          const uploadedFile = uploadResponse.upload[0];
-          const path = uploadedFile.path;
-          const key = uploadedFile.key || path;
-
-          // Create a new file object with the server response
-          const serverFile: FileUpload = {
-            url: `${config.imageUrl}${path}`,
-            key: key,
-            path: path,
-          };
-
-          // Update form data with the new file
-          if (type === "broucher") {
-            setFormData((prev) => ({
-              ...prev,
-              broucher: [serverFile],
-            }));
-          } else {
-            setFormData((prev) => ({
-              ...prev,
-              upload: {
-                ...prev.upload,
-                [type]: [serverFile],
-              },
-            }));
-          }
-        }
-      } else if (!file.url) {
-        // Handle removal - if url is empty
-        if (type === "broucher") {
-          setFormData((prev) => ({
-            ...prev,
-            broucher: [],
-          }));
-        } else {
-          setFormData((prev) => ({
-            ...prev,
-            upload: {
-              ...prev.upload,
-              [type]: [],
-            },
-          }));
-        }
-      }
-    } catch (error) {
-      console.error(`Error uploading ${type}:`, error);
-      setError(`Failed to upload ${type}. Please try again.`);
-    } finally {
-      setIsUploadingImage(false);
-    }
-  };
-
-  const handleMultipleImageUpload = async (
-    type: "courseBadge",
-    files: FileUpload[]
-  ) => {
-    try {
-      // Find which files are new (have url but no path)
-      const newFiles = files.filter((file) => file.url && !file.path);
-
-      if (newFiles.length > 0) {
-        setIsUploadingImage(true);
-
-        // Process each new file for upload
-        const uploadedFiles: FileUpload[] = [];
-        const existingFiles = files.filter((file) => file.path);
-
-        for (const file of newFiles) {
+        try {
           // Extract actual File object from the url (which is a Blob URL)
           const response = await fetch(file.url);
           const blob = await response.blob();
@@ -235,24 +152,145 @@ export default function AddCoursePage() {
             const key = uploadedFile.key || path;
 
             // Create a new file object with the server response
-            uploadedFiles.push({
+            const serverFile: FileUpload = {
               url: `${config.imageUrl}${path}`,
               key: key,
               path: path,
-            });
-          }
-        }
+            };
 
-        // Update form data with all files (existing + newly uploaded)
+            // Update form data with the new file
+            if (type === "broucher") {
+              setFormData((prev) => ({
+                ...prev,
+                broucher: [serverFile],
+              }));
+            } else {
+              setFormData((prev) => ({
+                ...prev,
+                upload: {
+                  ...prev.upload,
+                  [type]: [serverFile],
+                },
+              }));
+            }
+          } else {
+            throw new Error(`Failed to upload ${type}`);
+          }
+        } catch (err) {
+          console.error(`Error uploading ${type}:`, err);
+          setError(`Failed to upload ${type}. Please try again.`);
+        } finally {
+          setIsUploadingImage(false);
+        }
+      } else if (!file.url || file.url === "") {
+        // Image was removed - deletion is now handled directly in the ImageUpload component
+        if (type === "broucher") {
+          setFormData((prev) => ({
+            ...prev,
+            broucher: [],
+          }));
+        } else {
+          setFormData((prev) => ({
+            ...prev,
+            upload: {
+              ...prev.upload,
+              [type]: [],
+            },
+          }));
+        }
+      }
+    } catch (error) {
+      console.error(`Error handling ${type}:`, error);
+      setError(`Failed to process ${type}. Please try again.`);
+      setIsUploadingImage(false);
+    }
+  };
+
+  const handleMultipleImageUpload = async (
+    type: "courseBadge",
+    files: FileUpload[]
+  ) => {
+    console.log(`handleMultipleImageUpload called for ${type} with ${files.length} files`);
+    
+    try {
+      // Find which files are new (have url but no path)
+      const newFiles = files.filter((file) => file.url && file.url !== "" && !file.path);
+      console.log(`New files to upload: ${newFiles.length}`);
+      
+      // If this is an update to remove files, handle it directly
+      if (files.length < formData.upload[type].length) {
+        console.log(`Detected file removal. Updating state directly.`);
         setFormData((prev) => ({
           ...prev,
           upload: {
             ...prev.upload,
-            [type]: [...existingFiles, ...uploadedFiles],
+            [type]: [...files],
           },
         }));
+        return; // Exit early as deletion is already handled in the component
+      }
+
+      if (newFiles.length > 0) {
+        setIsUploadingImage(true);
+
+        try {
+          // Process each new file for upload
+          const uploadedFiles: FileUpload[] = [];
+          const existingFiles = files.filter((file) => file.path);
+
+          for (const file of newFiles) {
+            try {
+              // Extract actual File object from the url (which is a Blob URL)
+              const response = await fetch(file.url);
+              const blob = await response.blob();
+              const fileExtension = file.url.split(".").pop() || "jpg";
+              const actualFile = new File([blob], `upload.${fileExtension}`, {
+                type: blob.type,
+              });
+
+              // Upload to server
+              const uploadResponse = await uploadService.uploadImage(actualFile);
+
+              if (
+                uploadResponse &&
+                uploadResponse.upload &&
+                uploadResponse.upload[0]
+              ) {
+                const uploadedFile = uploadResponse.upload[0];
+                const path = uploadedFile.path;
+                const key = uploadedFile.key || path;
+
+                // Create a new file object with the server response
+                uploadedFiles.push({
+                  url: `${config.imageUrl}${path}`,
+                  key: key,
+                  path: path,
+                });
+              }
+            } catch (err) {
+              console.error(`Error uploading individual file for ${type}:`, err);
+              // Continue with other files
+            }
+          }
+
+          // Update form data with all files (existing + newly uploaded)
+          if (uploadedFiles.length > 0) {
+            setFormData((prev) => ({
+              ...prev,
+              upload: {
+                ...prev.upload,
+                [type]: [...existingFiles, ...uploadedFiles],
+              },
+            }));
+          }
+        } catch (err) {
+          console.error(`Error in batch upload for ${type}:`, err);
+          setError(`Failed to upload some ${type} images. Please try again.`);
+        } finally {
+          setIsUploadingImage(false);
+        }
       } else if (files.length === 0) {
-        // All files removed
+        // All files were removed - deletion is now handled directly in the MultipleImageUpload component
         setFormData((prev) => ({
           ...prev,
           upload: {
@@ -262,9 +300,8 @@ export default function AddCoursePage() {
         }));
       }
     } catch (error) {
-      console.error(`Error uploading ${type}:`, error);
-      setError(`Failed to upload ${type}. Please try again.`);
-    } finally {
+      console.error(`Error handling ${type}:`, error);
+      setError(`Failed to process ${type}. Please try again.`);
       setIsUploadingImage(false);
     }
   };
@@ -337,18 +374,28 @@ export default function AddCoursePage() {
       if (!formData.description) {
         throw new Error("Full description is required");
       }
+      // Check for required course image
+      if (!formData.upload.courseImage.length || 
+          !formData.upload.courseImage[0].path ||
+          !formData.upload.courseImage[0].key) {
+        throw new Error("Course image is required");
+      }
 
       // Prepare the data
       const preparedData = prepareDataForSubmission();
+      
+      console.log("Submitting course data:", preparedData);
 
       // Submit the course data
       const response = await courseService.createCourse(preparedData);
+      
+      console.log("API Response:", response);
 
-      if (response && response.course) {
+      if (response && (response.course || response.status === "success" || response.status === true)) {
         // Successfully created course
         router.push("/dashboard/courses");
       } else {
-        throw new Error("Failed to create course");
+        throw new Error(response?.message || "Failed to create course");
       }
     } catch (err: any) {
       console.error("Error creating course:", err);
@@ -545,7 +592,6 @@ export default function AddCoursePage() {
                     handleMultipleImageUpload("courseBadge", files)
                   }
                   isLoading={isUploadingImage}
-                  maxImages={5}
                 />
               </div>
 

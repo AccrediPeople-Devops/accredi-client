@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Input from "../../../../components/Input";
@@ -42,7 +42,8 @@ interface CourseCategory {
   isDeleted: boolean;
 }
 
-export default function EditCoursePage({ params }: { params: { id: string } }) {
+// Component to handle param unwrapping
+function CourseEditor({ courseId }: { courseId: string }) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingCourse, setIsLoadingCourse] = useState(true);
@@ -102,7 +103,7 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
         if (response && response.courses) {
           // Find the course with the matching ID
           const courseData = response.courses.find(
-            (course: any) => course._id === params.id
+            (course: any) => course._id === courseId
           );
 
           if (courseData) {
@@ -171,7 +172,7 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
     };
 
     fetchCourse();
-  }, [params.id, router]);
+  }, [courseId, router]);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -213,93 +214,10 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
   ) => {
     try {
       // When a file is selected from the UI, it will have a url but no path yet
-      if (file.url && !file.path) {
+      if (file.url && file.url !== "" && !file.path) {
         setIsUploadingImage(true);
 
-        // Extract actual File object from the url (which is a Blob URL)
-        const response = await fetch(file.url);
-        const blob = await response.blob();
-        const fileExtension = file.url.split(".").pop() || "jpg";
-        const actualFile = new File([blob], `upload.${fileExtension}`, {
-          type: blob.type,
-        });
-
-        // Upload to server
-        const uploadResponse = await uploadService.uploadImage(actualFile);
-
-        if (
-          uploadResponse &&
-          uploadResponse.upload &&
-          uploadResponse.upload[0]
-        ) {
-          const uploadedFile = uploadResponse.upload[0];
-          const path = uploadedFile.path;
-          const key = uploadedFile.key || path;
-
-          // Create a new file object with the server response
-          const serverFile: FileUpload = {
-            url: `${config.imageUrl}${path}`,
-            key: key,
-            path: path,
-          };
-
-          // Update form data with the new file
-          if (type === "broucher") {
-            setFormData((prev) => ({
-              ...prev,
-              broucher: [serverFile],
-            }));
-          } else {
-            setFormData((prev) => ({
-              ...prev,
-              upload: {
-                ...prev.upload,
-                [type]: [serverFile],
-              },
-            }));
-          }
-        }
-      } else if (!file.url) {
-        // Handle removal - if url is empty
-        if (type === "broucher") {
-          setFormData((prev) => ({
-            ...prev,
-            broucher: [],
-          }));
-        } else {
-          setFormData((prev) => ({
-            ...prev,
-            upload: {
-              ...prev.upload,
-              [type]: [],
-            },
-          }));
-        }
-      }
-    } catch (error) {
-      console.error(`Error uploading ${type}:`, error);
-      setError(`Failed to upload ${type}. Please try again.`);
-    } finally {
-      setIsUploadingImage(false);
-    }
-  };
-
-  const handleMultipleImageUpload = async (
-    type: "courseBadge",
-    files: FileUpload[]
-  ) => {
-    try {
-      // Find which files are new (have url but no path)
-      const newFiles = files.filter((file) => file.url && !file.path);
-
-      if (newFiles.length > 0) {
-        setIsUploadingImage(true);
-
-        // Process each new file for upload
-        const uploadedFiles: FileUpload[] = [];
-        const existingFiles = files.filter((file) => file.path);
-
-        for (const file of newFiles) {
+        try {
           // Extract actual File object from the url (which is a Blob URL)
           const response = await fetch(file.url);
           const blob = await response.blob();
@@ -321,24 +239,145 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
             const key = uploadedFile.key || path;
 
             // Create a new file object with the server response
-            uploadedFiles.push({
+            const serverFile: FileUpload = {
               url: `${config.imageUrl}${path}`,
               key: key,
               path: path,
-            });
-          }
-        }
+            };
 
-        // Update form data with all files (existing + newly uploaded)
+            // Update form data with the new file
+            if (type === "broucher") {
+              setFormData((prev) => ({
+                ...prev,
+                broucher: [serverFile],
+              }));
+            } else {
+              setFormData((prev) => ({
+                ...prev,
+                upload: {
+                  ...prev.upload,
+                  [type]: [serverFile],
+                },
+              }));
+            }
+          } else {
+            throw new Error(`Failed to upload ${type}`);
+          }
+        } catch (err) {
+          console.error(`Error uploading ${type}:`, err);
+          setError(`Failed to upload ${type}. Please try again.`);
+        } finally {
+          setIsUploadingImage(false);
+        }
+      } else if (!file.url || file.url === "") {
+        // Image was removed - deletion is now handled directly in the ImageUpload component
+        if (type === "broucher") {
+          setFormData((prev) => ({
+            ...prev,
+            broucher: [],
+          }));
+        } else {
+          setFormData((prev) => ({
+            ...prev,
+            upload: {
+              ...prev.upload,
+              [type]: [],
+            },
+          }));
+        }
+      }
+    } catch (error) {
+      console.error(`Error handling ${type}:`, error);
+      setError(`Failed to process ${type}. Please try again.`);
+      setIsUploadingImage(false);
+    }
+  };
+
+  const handleMultipleImageUpload = async (
+    type: "courseBadge",
+    files: FileUpload[]
+  ) => {
+    console.log(`handleMultipleImageUpload called for ${type} with ${files.length} files`);
+    
+    try {
+      // Find which files are new (have url but no path)
+      const newFiles = files.filter((file) => file.url && file.url !== "" && !file.path);
+      console.log(`New files to upload: ${newFiles.length}`);
+      
+      // If this is an update to remove files, handle it directly
+      if (files.length < formData.upload[type].length) {
+        console.log(`Detected file removal. Updating state directly.`);
         setFormData((prev) => ({
           ...prev,
           upload: {
             ...prev.upload,
-            [type]: [...existingFiles, ...uploadedFiles],
+            [type]: [...files],
           },
         }));
+        return; // Exit early as deletion is already handled in the component
+      }
+
+      if (newFiles.length > 0) {
+        setIsUploadingImage(true);
+
+        try {
+          // Process each new file for upload
+          const uploadedFiles: FileUpload[] = [];
+          const existingFiles = files.filter((file) => file.path);
+
+          for (const file of newFiles) {
+            try {
+              // Extract actual File object from the url (which is a Blob URL)
+              const response = await fetch(file.url);
+              const blob = await response.blob();
+              const fileExtension = file.url.split(".").pop() || "jpg";
+              const actualFile = new File([blob], `upload.${fileExtension}`, {
+                type: blob.type,
+              });
+
+              // Upload to server
+              const uploadResponse = await uploadService.uploadImage(actualFile);
+
+              if (
+                uploadResponse &&
+                uploadResponse.upload &&
+                uploadResponse.upload[0]
+              ) {
+                const uploadedFile = uploadResponse.upload[0];
+                const path = uploadedFile.path;
+                const key = uploadedFile.key || path;
+
+                // Create a new file object with the server response
+                uploadedFiles.push({
+                  url: `${config.imageUrl}${path}`,
+                  key: key,
+                  path: path,
+                });
+              }
+            } catch (err) {
+              console.error(`Error uploading individual file for ${type}:`, err);
+              // Continue with other files
+            }
+          }
+
+          // Update form data with all files (existing + newly uploaded)
+          if (uploadedFiles.length > 0) {
+            setFormData((prev) => ({
+              ...prev,
+              upload: {
+                ...prev.upload,
+                [type]: [...existingFiles, ...uploadedFiles],
+              },
+            }));
+          }
+        } catch (err) {
+          console.error(`Error in batch upload for ${type}:`, err);
+          setError(`Failed to upload some ${type} images. Please try again.`);
+        } finally {
+          setIsUploadingImage(false);
+        }
       } else if (files.length === 0) {
-        // All files removed
+        // All files were removed - deletion is now handled directly in the MultipleImageUpload component
         setFormData((prev) => ({
           ...prev,
           upload: {
@@ -348,27 +387,39 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
         }));
       }
     } catch (error) {
-      console.error(`Error uploading ${type}:`, error);
-      setError(`Failed to upload ${type}. Please try again.`);
-    } finally {
+      console.error(`Error handling ${type}:`, error);
+      setError(`Failed to process ${type}. Please try again.`);
       setIsUploadingImage(false);
     }
   };
 
   const prepareDataForSubmission = () => {
-    const preparedData: any = { ...formData };
+    // Create a clean object with only the fields needed for the update API
+    const preparedData: any = {
+      title: formData.title,
+      categoryId: formData.categoryId,
+      shortDescription: formData.shortDescription,
+      description: formData.description,
+      keyFeatures: formData.keyFeatures || [],
+      upload: {
+        courseImage: [],
+        courseSampleCertificate: [],
+        courseBadge: []
+      },
+      broucher: []
+    };
 
     // Format for upload.courseImage
     if (
       formData.upload.courseImage &&
       formData.upload.courseImage.length > 0
     ) {
-      preparedData.upload.courseImage = formData.upload.courseImage.map(
-        (img) => ({
+      preparedData.upload.courseImage = formData.upload.courseImage
+        .filter(img => img && img.path && img.key)
+        .map(img => ({
           key: img.key,
-          path: img.path,
-        })
-      );
+          path: img.path
+        }));
     }
 
     // Format for upload.courseSampleCertificate
@@ -376,31 +427,42 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
       formData.upload.courseSampleCertificate &&
       formData.upload.courseSampleCertificate.length > 0
     ) {
-      preparedData.upload.courseSampleCertificate =
-        formData.upload.courseSampleCertificate.map((img) => ({
+      preparedData.upload.courseSampleCertificate = formData.upload.courseSampleCertificate
+        .filter(img => img && img.path && img.key)
+        .map(img => ({
           key: img.key,
-          path: img.path,
+          path: img.path
         }));
     }
 
     // Format for upload.courseBadge
     if (formData.upload.courseBadge && formData.upload.courseBadge.length > 0) {
-      preparedData.upload.courseBadge = formData.upload.courseBadge.map(
-        (img) => ({
+      preparedData.upload.courseBadge = formData.upload.courseBadge
+        .filter(img => img && img.path && img.key)
+        .map(img => ({
           key: img.key,
-          path: img.path,
-        })
-      );
+          path: img.path
+        }));
     }
 
     // Format for broucher
     if (formData.broucher && formData.broucher.length > 0) {
-      preparedData.broucher = formData.broucher.map((img) => ({
-        key: img.key,
-        path: img.path,
-      }));
+      preparedData.broucher = formData.broucher
+        .filter(img => img && img.path && img.key)
+        .map(img => ({
+          key: img.key,
+          path: img.path
+        }));
     }
 
+    // Make sure _id and other metadata fields are not included in the update data
+    if (preparedData._id) delete preparedData._id;
+    if (preparedData.createdAt) delete preparedData.createdAt;
+    if (preparedData.updatedAt) delete preparedData.updatedAt;
+    if (preparedData.__v) delete preparedData.__v;
+    
+    console.log('Final prepared data for API:', JSON.stringify(preparedData, null, 2));
+    
     return preparedData;
   };
 
@@ -423,22 +485,61 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
       if (!formData.description) {
         throw new Error("Full description is required");
       }
+      // Check for required course image
+      if (!formData.upload.courseImage.length || 
+          !formData.upload.courseImage[0].path ||
+          !formData.upload.courseImage[0].key) {
+        throw new Error("Course image is required");
+      }
 
       // Prepare the data
       const preparedData = prepareDataForSubmission();
+      
+      console.log("Submitting updated course data:", preparedData);
 
-      // Submit the updated course data
-      const response = await courseService.updateCourse(params.id, preparedData);
+      try {
+        // Submit the updated course data
+        const response = await courseService.updateCourse(courseId, preparedData);
+        
+        console.log("API Response:", response);
 
-      if (response && response.course) {
-        // Successfully updated course
-        router.push("/dashboard/courses");
-      } else {
-        throw new Error("Failed to update course");
+        if (response && (response.course || response.status === "success" || response.status === true)) {
+          // Successfully updated course
+          router.push("/dashboard/courses");
+        } else if (response && response.message) {
+          // Server returned an error message
+          throw new Error(response.message);
+        } else {
+          throw new Error("Failed to update course. Server did not provide a reason.");
+        }
+      } catch (err: any) {
+        console.error("API call error:", err);
+        
+        // Extract the most useful error message
+        if (err.response) {
+          if (err.response.data && typeof err.response.data === 'object' && err.response.data.message) {
+            throw new Error(err.response.data.message);
+          } else if (typeof err.response.data === 'string') {
+            throw new Error(`API Error: ${err.response.data}`);
+          } else {
+            throw new Error(`API Error: ${err.response.status}`);
+          }
+        }
+        throw err; // Re-throw to be caught by the outer catch
       }
     } catch (err: any) {
       console.error("Error updating course:", err);
-      setError(err.message || "An error occurred while updating the course");
+      
+      // Extract the most useful error message
+      let errorMessage = "An error occurred while updating the course";
+      
+      if (err.response && err.response.data && err.response.data.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -598,6 +699,7 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
                 onChange={(file) =>
                   handleSingleImageUpload("courseImage", file)
                 }
+                isLoading={isUploadingImage}
               />
             </div>
 
@@ -614,6 +716,7 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
                 onChange={(file) =>
                   handleSingleImageUpload("courseSampleCertificate", file)
                 }
+                isLoading={isUploadingImage}
               />
             </div>
 
@@ -628,7 +731,7 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
                 onChange={(files) =>
                   handleMultipleImageUpload("courseBadge", files)
                 }
-                maxImages={5}
+                isLoading={isUploadingImage}
               />
             </div>
 
@@ -645,6 +748,7 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
                 onChange={(file) =>
                   handleSingleImageUpload("broucher", file)
                 }
+                isLoading={isUploadingImage}
               />
             </div>
           </div>
@@ -664,6 +768,7 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
             <KeyFeaturesInput
               value={formData.keyFeatures}
               onChange={handleKeyFeaturesChange}
+              placeholder="Add feature and press Enter"
             />
           </div>
         </div>
@@ -688,4 +793,13 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
       </form>
     </div>
   );
+}
+
+// Main page component that handles unwrapping of params
+export default function EditCoursePage({ params }: { params: Promise<{ id: string }> }) {
+  // Unwrap params using React.use()
+  const unwrappedParams = use(params);
+  const courseId = unwrappedParams.id;
+  
+  return <CourseEditor courseId={courseId} />;
 }
