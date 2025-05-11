@@ -303,25 +303,25 @@ export default function CoursesPage() {
             Deleted Courses
           </button>
         </div>
-      </div>
+        </div>
 
       {/* Filters */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
                 className="h-5 w-5 text-[var(--foreground-muted)]"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fillRule="evenodd"
                   d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                  clipRule="evenodd"
-                />
-              </svg>
+              clipRule="evenodd"
+            />
+          </svg>
             </div>
             <input
               type="text"
@@ -413,18 +413,18 @@ export default function CoursesPage() {
                                 className="h-full w-full object-cover"
                               />
                             ) : (
-                              <Image
+              <Image
                                 src="/placeholder.png"
-                                alt={course.title}
+                alt={course.title}
                                 width={40}
                                 height={40}
                                 className="h-full w-full object-cover"
-                              />
+              />
                             )}
-                          </div>
+            </div>
                           <div className="ml-4">
                             <div className="text-sm font-medium text-[var(--foreground)]">
-                              {course.title}
+                {course.title}
                             </div>
                             <div className="text-xs text-[var(--foreground-muted)] truncate max-w-xs">
                               {course.shortDescription}
@@ -556,27 +556,27 @@ export default function CoursesPage() {
                               {isRestoring === course._id ? (
                                 <LoadingSpinner size="small" />
                               ) : (
-                                <div className="flex items-center">
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
+                <div className="flex items-center">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
                                     className="h-5 w-5 mr-1"
                                     fill="none"
                                     viewBox="0 0 24 24"
                                     stroke="currentColor"
-                                  >
+                  >
                                     <path
                                       strokeLinecap="round"
                                       strokeLinejoin="round"
                                       strokeWidth={2}
                                       d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
                                     />
-                                  </svg>
+                  </svg>
                                   Restore
                                 </div>
                               )}
                             </button>
                           )}
-                        </div>
+                </div>
                       </td>
                     </tr>
                   ))
@@ -594,8 +594,8 @@ export default function CoursesPage() {
                 )}
               </tbody>
             </table>
-          </div>
-        </div>
+                </div>
+              </div>
       )}
 
       {/* Delete confirmation modal */}
@@ -634,7 +634,7 @@ export default function CoursesPage() {
               </button>
             </div>
           </div>
-        </div>
+      </div>
       )}
     </div>
   );
