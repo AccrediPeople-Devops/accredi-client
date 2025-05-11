@@ -160,6 +160,21 @@ export default function Sidebar({ isMobileOpen, toggleSidebar }: SidebarProps) {
       path: "/dashboard/coupon-codes",
     },
     {
+      title: "Resources",
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-5 w-5"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+        >
+          <path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" />
+          <path d="M8 11a1 1 0 11-2 0 1 1 0 012 0zm2-2a1 1 0 100 2 1 1 0 000-2zm2 4a1 1 0 11-2 0 1 1 0 012 0z" />
+        </svg>
+      ),
+      path: "/dashboard/resources",
+    },
+    {
       title: "Reviews",
       icon: (
         <svg
