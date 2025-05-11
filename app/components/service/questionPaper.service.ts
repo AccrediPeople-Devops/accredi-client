@@ -66,47 +66,22 @@ class QuestionPaperService {
     try {
       console.log("QuestionPaperService: Fetching question paper with ID:", id);
       
-      // First try the direct endpoint
-      const response = await axiosInstance.get(`/question-papers/v1/${id}`);
-      console.log("QuestionPaperService: Direct endpoint response:", response.data);
+      // Skip the direct endpoint call that was causing 404 errors
+      // and go straight to fetching all question papers and finding the matching one
+      console.log("QuestionPaperService: Using fallback method - fetch all");
       
-      // Format the response if needed
-      if (response.data) {
-        // Check if we got a direct object with _id
-        if (response.data._id === id) {
-          console.log("QuestionPaperService: Received direct object");
-          return { status: true, questionPaper: response.data };
-        }
-        
-        // Check if we got a standard response format
-        if (response.data.questionPaper && response.data.status === true) {
-          console.log("QuestionPaperService: Received standard format");
-          return response.data;
-        }
-        
-        // Check if the data is in a nested property
-        if (response.data.data && response.data.data._id === id) {
-          console.log("QuestionPaperService: Received data in nested property");
-          return { status: true, questionPaper: response.data.data };
-        }
-      }
+      const allResponse = await this.getAllQuestionPapers();
+      console.log("QuestionPaperService: All question papers response:", allResponse);
       
-      // If we couldn't find the question paper in the direct response,
-      // try fetching all and finding the one with matching ID
-      console.log("QuestionPaperService: Direct fetch didn't return expected format, trying to fetch all");
-      
-      const allResponse = await axiosInstance.get("/question-papers/v1");
-      console.log("QuestionPaperService: All question papers response:", allResponse.data);
-      
-      // Handle different response formats for the all endpoint
+      // Handle different response formats
       let questionPapers = [];
       
-      if (allResponse.data && Array.isArray(allResponse.data)) {
+      if (allResponse.questionPapers && Array.isArray(allResponse.questionPapers)) {
+        questionPapers = allResponse.questionPapers;
+      } else if (Array.isArray(allResponse)) {
+        questionPapers = allResponse;
+      } else if (allResponse.data && Array.isArray(allResponse.data)) {
         questionPapers = allResponse.data;
-      } else if (allResponse.data && allResponse.data.questionPapers && Array.isArray(allResponse.data.questionPapers)) {
-        questionPapers = allResponse.data.questionPapers;
-      } else if (allResponse.data && allResponse.data.data && Array.isArray(allResponse.data.data)) {
-        questionPapers = allResponse.data.data;
       }
       
       // Find the question paper with matching ID
@@ -117,36 +92,11 @@ class QuestionPaperService {
         return { status: true, questionPaper: foundPaper };
       }
       
-      // If we still couldn't find it, return a not found error
+      // If we couldn't find it, return a not found error
       console.error("QuestionPaperService: Question paper not found with ID:", id);
       return { status: false, message: `Question paper not found with ID: ${id}` };
     } catch (error: any) {
       console.error("QuestionPaperService: Error fetching question paper:", error);
-      
-      // If there was an error with the direct endpoint, try fetching all as a fallback
-      try {
-        console.log("QuestionPaperService: Trying fallback method - fetch all");
-        const allResponse = await axiosInstance.get("/question-papers/v1");
-        
-        let questionPapers = [];
-        
-        if (allResponse.data && Array.isArray(allResponse.data)) {
-          questionPapers = allResponse.data;
-        } else if (allResponse.data && allResponse.data.questionPapers && Array.isArray(allResponse.data.questionPapers)) {
-          questionPapers = allResponse.data.questionPapers;
-        } else if (allResponse.data && allResponse.data.data && Array.isArray(allResponse.data.data)) {
-          questionPapers = allResponse.data.data;
-        }
-        
-        const foundPaper = questionPapers.find((paper: any) => paper._id === id);
-        
-        if (foundPaper) {
-          console.log("QuestionPaperService: Fallback successful - found paper:", foundPaper);
-          return { status: true, questionPaper: foundPaper };
-        }
-      } catch (fallbackError) {
-        console.error("QuestionPaperService: Fallback method also failed:", fallbackError);
-      }
       
       if (error.response) {
         console.error("QuestionPaperService: Response data:", error.response.data);

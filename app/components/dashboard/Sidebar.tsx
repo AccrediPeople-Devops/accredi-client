@@ -84,20 +84,21 @@ export default function Sidebar({ isMobileOpen, toggleSidebar }: SidebarProps) {
       ),
       path: "/dashboard/question-papers",
     },
-    // {
-    //   title: "Categories",
-    //   icon: (
-    //     <svg
-    //       xmlns="http://www.w3.org/2000/svg"
-    //       className="h-5 w-5"
-    //       viewBox="0 0 20 20"
-    //       fill="currentColor"
-    //     >
-    //       <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
-    //     </svg>
-    //   ),
-    //   path: "/dashboard/categories",
-    // },
+    {
+      title: "Exams",
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-5 w-5"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+        >
+          <path d="M3 5a2 2 0 012-2h1a1 1 0 010 2H5v7h2l1 2h4l1-2h2V5h-1a1 1 0 110-2h1a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V5z" />
+          <path d="M15 7v1a1 1 0 01-1 1H6a1 1 0 01-1-1V7a1 1 0 011-1h8a1 1 0 011 1zM15 11v1a1 1 0 01-1 1H6a1 1 0 01-1-1v-1a1 1 0 011-1h8a1 1 0 011 1z" />
+        </svg>
+      ),
+      path: "/dashboard/exams",
+    },
     {
       title: "Course Categories",
       icon: (
