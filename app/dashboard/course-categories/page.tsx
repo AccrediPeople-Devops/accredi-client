@@ -7,6 +7,7 @@ import { CourseCategory } from "../../types/courseCategory";
 import CourseCategoryService from "../../components/service/courseCategory.service";
 import courseService from "../../components/service/course.service";
 import { LoadingSpinner } from "../../components/LoadingSpinner";
+import Modal from "../../components/Modal";
 
 export default function CourseCategoriesPage() {
   const [categories, setCategories] = useState<CourseCategory[]>([]);
@@ -229,38 +230,16 @@ export default function CourseCategoriesPage() {
       )}
 
       {/* Delete Confirmation Modal */}
-      {isDeleteModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-[var(--background)] rounded-[var(--radius-lg)] p-6 max-w-md w-full">
-            <h3 className="text-lg font-medium text-[var(--foreground)]">Confirm Delete</h3>
-            <p className="mt-2 text-[var(--foreground-muted)]">
-              Are you sure you want to delete this category? This action cannot be undone.
-            </p>
-            <div className="mt-4 flex space-x-2 justify-end">
-              <button
-                onClick={() => setIsDeleteModalOpen(false)}
-                className="px-4 py-2 bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] rounded-[var(--radius-md)] hover:bg-[var(--input-bg)] transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDeleteCategory}
-                disabled={isDeleting}
-                className="px-4 py-2 bg-[var(--error)] text-white rounded-[var(--radius-md)] hover:bg-[var(--error)]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-              >
-                {isDeleting ? (
-                  <>
-                    <LoadingSpinner size="small" />
-                    Deleting...
-                  </>
-                ) : (
-                  <>Delete</>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        title="Confirm Delete"
+        description="Are you sure you want to delete this category? This action cannot be undone."
+        confirmText="Delete"
+        onConfirm={handleDeleteCategory}
+        isConfirming={isDeleting}
+        variant="danger"
+      />
     </div>
   );
 }

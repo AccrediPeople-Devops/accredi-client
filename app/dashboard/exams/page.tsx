@@ -8,6 +8,7 @@ import courseService from "../../components/service/course.service";
 import questionPaperService from "../../components/service/questionPaper.service";
 import { Exam } from "../../types/exam";
 import { LoadingSpinner } from "../../components/LoadingSpinner";
+import Modal from "../../components/Modal";
 
 export default function ExamsPage() {
   const router = useRouter();
@@ -20,6 +21,9 @@ export default function ExamsPage() {
   const [activeTab, setActiveTab] = useState("active");
   const [courseMap, setCourseMap] = useState<{ [key: string]: string }>({});
   const [questionPaperMap, setQuestionPaperMap] = useState<{ [key: string]: string }>({});
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [examToDelete, setExamToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
 
   // Fetch exams, courses, and question papers
   useEffect(() => {
@@ -151,23 +155,30 @@ export default function ExamsPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this exam?")) {
-      return;
-    }
+  const handleDeleteClick = (id: string) => {
+    setExamToDelete(id);
+    setShowDeleteModal(true);
+  };
 
+  const confirmDelete = async () => {
+    if (!examToDelete) return;
+    
+    setIsDeleting(examToDelete);
     try {
-      await examService.deleteExam(id);
+      await examService.deleteExam(examToDelete);
       
       // Update the local state
       setExams(
         exams.map((exam) =>
-          exam._id === id ? { ...exam, isDeleted: true } : exam
+          exam._id === examToDelete ? { ...exam, isDeleted: true } : exam
         )
       );
+      setShowDeleteModal(false);
     } catch (err: any) {
       console.error("Error deleting exam:", err);
-      alert("Failed to delete exam. Please try again.");
+      setError(err.message || "Failed to delete exam. Please try again.");
+    } finally {
+      setIsDeleting(null);
     }
   };
 
@@ -412,7 +423,7 @@ export default function ExamsPage() {
                               </button>
                               <span className="text-[var(--border)]">|</span>
                               <button
-                                onClick={() => handleDelete(exam._id)}
+                                onClick={() => handleDeleteClick(exam._id)}
                                 className="text-red-500 hover:text-red-700"
                               >
                                 Delete
@@ -447,6 +458,18 @@ export default function ExamsPage() {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        title="Confirm Delete"
+        description="Are you sure you want to delete this exam? This action cannot be undone."
+        confirmText="Delete Exam"
+        onConfirm={confirmDelete}
+        isConfirming={isDeleting !== null}
+        variant="danger"
+      />
     </div>
   );
 } 

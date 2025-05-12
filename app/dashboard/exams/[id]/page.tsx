@@ -8,6 +8,7 @@ import courseService from "../../../components/service/course.service";
 import questionPaperService from "../../../components/service/questionPaper.service";
 import { Exam } from "../../../types/exam";
 import { LoadingSpinner } from "../../../components/LoadingSpinner";
+import Modal from "../../../components/Modal";
 
 // Wrapper component to handle the params promise
 function ViewExamContent({ id }: { id: string }) {
@@ -22,6 +23,7 @@ function ViewExamContent({ id }: { id: string }) {
   const [error, setError] = useState("");
   const [actionError, setActionError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   // Fetch exam data and related info
   useEffect(() => {
@@ -93,25 +95,28 @@ function ViewExamContent({ id }: { id: string }) {
     }
   }, [examId]);
 
-  const handleDelete = async () => {
-    if (confirm("Are you sure you want to delete this exam? This action cannot be undone.")) {
-      try {
-        setIsActionLoading(true);
-        setActionError("");
-        
-        const response = await examService.deleteExam(examId);
-        
-        if (response && response.status) {
-          router.push("/dashboard/exams");
-        } else {
-          setActionError(response?.message || "Failed to delete exam");
-        }
-      } catch (err: any) {
-        console.error("Error deleting exam:", err);
-        setActionError(err.message || "An error occurred while deleting the exam");
-      } finally {
-        setIsActionLoading(false);
+  const handleDelete = () => {
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      setIsActionLoading(true);
+      setActionError("");
+      
+      const response = await examService.deleteExam(examId);
+      
+      if (response && response.status) {
+        router.push("/dashboard/exams");
+      } else {
+        setActionError(response?.message || "Failed to delete exam");
       }
+    } catch (err: any) {
+      console.error("Error deleting exam:", err);
+      setActionError(err.message || "An error occurred while deleting the exam");
+    } finally {
+      setIsActionLoading(false);
+      setShowDeleteModal(false);
     }
   };
 
@@ -154,38 +159,36 @@ function ViewExamContent({ id }: { id: string }) {
   };
 
   const handleRestore = async () => {
-    if (confirm("Are you sure you want to restore this exam?")) {
-      try {
-        setIsActionLoading(true);
-        setActionError("");
+    try {
+      setIsActionLoading(true);
+      setActionError("");
+      
+      const response = await examService.restoreExam(examId);
+      
+      if (response && response.status) {
+        // Update the local state
+        setExam(prev => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            isDeleted: false
+          };
+        });
         
-        const response = await examService.restoreExam(examId);
+        setSuccessMessage("Exam restored successfully");
         
-        if (response && response.status) {
-          // Update the local state
-          setExam(prev => {
-            if (!prev) return null;
-            return {
-              ...prev,
-              isDeleted: false
-            };
-          });
-          
-          setSuccessMessage("Exam restored successfully");
-          
-          // Clear success message after 3 seconds
-          setTimeout(() => {
-            setSuccessMessage("");
-          }, 3000);
-        } else {
-          setActionError(response?.message || "Failed to restore exam");
-        }
-      } catch (err: any) {
-        console.error("Error restoring exam:", err);
-        setActionError(err.message || "An error occurred while restoring the exam");
-      } finally {
-        setIsActionLoading(false);
+        // Clear success message after 3 seconds
+        setTimeout(() => {
+          setSuccessMessage("");
+        }, 3000);
+      } else {
+        setActionError(response?.message || "Failed to restore exam");
       }
+    } catch (err: any) {
+      console.error("Error restoring exam:", err);
+      setActionError(err.message || "An error occurred while restoring the exam");
+    } finally {
+      setIsActionLoading(false);
     }
   };
 
@@ -415,6 +418,18 @@ function ViewExamContent({ id }: { id: string }) {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        title="Confirm Delete"
+        description="Are you sure you want to delete this exam? This action cannot be undone."
+        confirmText="Delete Exam"
+        onConfirm={confirmDelete}
+        isConfirming={isActionLoading}
+        variant="danger"
+      />
     </div>
   );
 }

@@ -8,6 +8,7 @@ import { User } from "../../types/user";
 import UserService from "../../components/service/user.service";
 import uploadService from "../../components/service/upload.service";
 import config from "../../components/config/config";
+import Modal from "../../components/Modal";
 
 export default function UsersPage() {
   const router = useRouter();
@@ -457,63 +458,17 @@ export default function UsersPage() {
         </div>
       )}
 
-      {/* Delete confirmation modal */}
-      {showDeleteModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-[var(--background)] p-6 rounded-[var(--radius-lg)] max-w-md w-full">
-            <h3 className="text-lg font-medium text-[var(--foreground)]">
-              Confirm Deletion
-            </h3>
-            <p className="mt-2 text-[var(--foreground-muted)]">
-              Are you sure you want to delete this user? This action cannot be
-              undone.
-            </p>
-            <div className="mt-4 flex justify-end space-x-3">
-              <button
-                type="button"
-                onClick={() => setShowDeleteModal(false)}
-                className="px-4 py-2 bg-[var(--background-secondary)] text-[var(--foreground)] rounded-[var(--radius-md)] hover:bg-[var(--background-secondary)]/80"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={confirmDelete}
-                disabled={isDeleting !== null}
-                className="px-4 py-2 bg-red-600 text-white rounded-[var(--radius-md)] hover:bg-red-700 flex items-center"
-              >
-                {isDeleting ? (
-                  <>
-                    <svg
-                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                    Deleting...
-                  </>
-                ) : (
-                  "Delete"
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        title="Confirm Deletion"
+        description="Are you sure you want to delete this user? This action cannot be undone."
+        confirmText="Delete"
+        onConfirm={confirmDelete}
+        isConfirming={isDeleting !== null}
+        variant="danger"
+      />
     </div>
   );
 }

@@ -7,6 +7,7 @@ import questionPaperService from "../../components/service/questionPaper.service
 import courseService from "../../components/service/course.service";
 import { QuestionPaper } from "../../types/questionPaper";
 import { LoadingSpinner } from "../../components/LoadingSpinner";
+import Modal from "../../components/Modal";
 
 export default function QuestionPapersPage() {
   const router = useRouter();
@@ -18,6 +19,9 @@ export default function QuestionPapersPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [courseFilter, setCourseFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [paperToDelete, setPaperToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -116,23 +120,30 @@ export default function QuestionPapersPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this question paper?")) {
-      return;
-    }
+  const handleDeleteClick = (id: string) => {
+    setPaperToDelete(id);
+    setShowDeleteModal(true);
+  };
 
+  const confirmDelete = async () => {
+    if (!paperToDelete) return;
+    
+    setIsDeleting(true);
     try {
-      await questionPaperService.deleteQuestionPaper(id);
+      await questionPaperService.deleteQuestionPaper(paperToDelete);
       
       // Update the local state
       setQuestionPapers(
         questionPapers.map((paper) =>
-          paper._id === id ? { ...paper, isDeleted: true } : paper
+          paper._id === paperToDelete ? { ...paper, isDeleted: true } : paper
         )
       );
+      setShowDeleteModal(false);
     } catch (err: any) {
       console.error("Error deleting question paper:", err);
-      alert("Failed to delete question paper. Please try again.");
+      setError(err.message || "Failed to delete question paper. Please try again.");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -371,7 +382,7 @@ export default function QuestionPapersPage() {
                               </button>
                               <span className="text-[var(--border)]">|</span>
                               <button
-                                onClick={() => handleDelete(paper._id)}
+                                onClick={() => handleDeleteClick(paper._id)}
                                 className="text-red-500 hover:text-red-700"
                               >
                                 Delete
@@ -406,6 +417,18 @@ export default function QuestionPapersPage() {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        title="Confirm Delete"
+        description="Are you sure you want to delete this question paper? This action cannot be undone."
+        confirmText="Delete"
+        onConfirm={confirmDelete}
+        isConfirming={isDeleting}
+        variant="danger"
+      />
     </div>
   );
 } 

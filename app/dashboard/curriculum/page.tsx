@@ -8,6 +8,7 @@ import { Curriculum } from "../../types/curriculum";
 import { Course } from "../../types/course";
 import { createHtmlPreview } from "../../utils/textUtils";
 import { LoadingSpinner } from "../../components/LoadingSpinner";
+import Modal from "../../components/Modal";
 
 export default function CurriculumPage() {
   const [curriculums, setCurriculums] = useState<Curriculum[]>([]);
@@ -15,6 +16,9 @@ export default function CurriculumPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [curriculumToDelete, setCurriculumToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -74,6 +78,27 @@ export default function CurriculumPage() {
       setError(
         err.response?.data?.message || "Error updating curriculum status"
       );
+    }
+  };
+
+  const handleDeleteClick = (id: string) => {
+    setCurriculumToDelete(id);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!curriculumToDelete) return;
+    
+    setIsDeleting(true);
+    try {
+      await curriculumService.deleteCurriculum(curriculumToDelete);
+      // Update the local state after successful deletion
+      setCurriculums(curriculums.filter((curriculum) => curriculum._id !== curriculumToDelete));
+      setShowDeleteModal(false);
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Error deleting curriculum");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -250,15 +275,7 @@ export default function CurriculumPage() {
                       </svg>
                     </Link>
                     <button
-                      onClick={() => {
-                        if (
-                          confirm(
-                            "Are you sure you want to delete this curriculum?"
-                          )
-                        ) {
-                          handleDeleteCurriculum(curriculum._id as string);
-                        }
-                      }}
+                      onClick={() => handleDeleteClick(curriculum._id as string)}
                       className="p-2 rounded-[var(--radius-sm)] bg-[var(--error)]/20 text-[var(--error)] hover:bg-[var(--error)]/30 transition-colors"
                     >
                       <svg
@@ -340,6 +357,18 @@ export default function CurriculumPage() {
           ))}
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        title="Confirm Delete"
+        description="Are you sure you want to delete this curriculum? This action cannot be undone."
+        confirmText="Delete"
+        onConfirm={confirmDelete}
+        isConfirming={isDeleting}
+        variant="danger"
+      />
     </div>
   );
 }

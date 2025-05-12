@@ -7,6 +7,8 @@ import curriculumService from "../../../components/service/curriculum.service";
 import courseService from "../../../components/service/course.service";
 import { Curriculum } from "../../../types/curriculum";
 import { Course } from "../../../types/course";
+import Modal from "../../../components/Modal";
+import { LoadingSpinner } from "../../../components/LoadingSpinner";
 
 export default function CurriculumDetailPage() {
   const params = useParams();
@@ -17,6 +19,8 @@ export default function CurriculumDetailPage() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -62,14 +66,20 @@ export default function CurriculumDetailPage() {
     return course ? course.title : "Course Not Found";
   };
 
-  const handleDelete = async () => {
-    if (confirm("Are you sure you want to delete this curriculum?")) {
-      try {
-        await curriculumService.deleteCurriculum(id);
-        router.push("/dashboard/curriculum");
-      } catch (err: any) {
-        setError(err.response?.data?.message || "Error deleting curriculum");
-      }
+  const handleDelete = () => {
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await curriculumService.deleteCurriculum(id);
+      router.push("/dashboard/curriculum");
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Error deleting curriculum");
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteModal(false);
     }
   };
 
@@ -93,7 +103,7 @@ export default function CurriculumDetailPage() {
       <div className="flex items-center space-x-4">
         <button
           onClick={() => router.back()}
-          className="p-2 rounded-lg bg-[#2A2A2A] text-white hover:bg-[#5B2C6F]/20 transition-colors"
+          className="p-2 rounded-[var(--radius-md)] bg-[var(--input-bg)] text-[var(--foreground)] hover:bg-[var(--input-bg)]/80 transition-colors"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -108,24 +118,23 @@ export default function CurriculumDetailPage() {
             />
           </svg>
         </button>
-        <div className="p-6 bg-[#2A2A2A] rounded-xl flex-1">
-          <h1 className="text-2xl font-bold text-white mb-2">
+        <div className="p-6 bg-[var(--background)] rounded-[var(--radius-lg)] border border-[var(--border)] flex-1">
+          <h1 className="text-2xl font-bold text-[var(--foreground)] mb-2">
             Curriculum Details
           </h1>
-          <p className="text-[#D7BDE2]">View and manage curriculum content</p>
+          <p className="text-[var(--foreground-muted)]">View and manage curriculum content</p>
         </div>
       </div>
 
       {/* Loading and Error States */}
       {isLoading && (
-        <div className="text-center py-8">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-[#5B2C6F] border-r-2 border-b-2 border-transparent"></div>
-          <p className="mt-2 text-white/70">Loading curriculum...</p>
+        <div className="flex justify-center items-center py-8">
+          <LoadingSpinner size="medium" text="Loading curriculum..." />
         </div>
       )}
 
       {error && !isLoading && (
-        <div className="p-4 bg-red-500/20 border border-red-500/50 rounded-lg text-white text-center">
+        <div className="p-4 bg-[var(--error)]/10 border border-[var(--error)]/30 text-[var(--error)] rounded-[var(--radius-md)]">
           {error}
         </div>
       )}
@@ -137,10 +146,10 @@ export default function CurriculumDetailPage() {
           <div className="flex justify-end space-x-3">
             <button
               onClick={handleToggleActive}
-              className={`px-4 py-2 rounded-lg flex items-center ${
+              className={`px-4 py-2 rounded-[var(--radius-md)] flex items-center ${
                 curriculum.isActive
-                  ? "bg-green-500/20 text-green-400 hover:bg-green-500/30"
-                  : "bg-gray-500/20 text-gray-400 hover:bg-gray-500/30"
+                  ? "bg-[var(--success)]/20 text-[var(--success)] hover:bg-[var(--success)]/30"
+                  : "bg-[var(--foreground-muted)]/20 text-[var(--foreground-muted)] hover:bg-[var(--foreground-muted)]/30"
               } transition-colors`}
             >
               <svg
@@ -163,7 +172,7 @@ export default function CurriculumDetailPage() {
             </button>
             <Link
               href={`/dashboard/curriculum/edit/${id}`}
-              className="px-4 py-2 rounded-lg bg-[#5B2C6F] text-white hover:bg-[#5B2C6F]/90 transition-colors flex items-center"
+              className="px-4 py-2 rounded-[var(--radius-md)] bg-[var(--primary)] text-white hover:bg-[var(--primary)]/90 transition-colors flex items-center"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -177,7 +186,7 @@ export default function CurriculumDetailPage() {
             </Link>
             <button
               onClick={handleDelete}
-              className="px-4 py-2 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors flex items-center"
+              className="px-4 py-2 rounded-[var(--radius-md)] bg-[var(--error)]/20 text-[var(--error)] hover:bg-[var(--error)]/30 transition-colors flex items-center"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -196,41 +205,41 @@ export default function CurriculumDetailPage() {
           </div>
 
           {/* Curriculum Details Card */}
-          <div className="bg-[#2A2A2A] rounded-xl p-6">
+          <div className="bg-[var(--background)] rounded-[var(--radius-lg)] p-6 border border-[var(--border)]">
             <div className="mb-6">
               <div className="flex justify-between items-start">
                 <div>
-                  <h2 className="text-xl font-bold text-white mb-2">
+                  <h2 className="text-xl font-bold text-[var(--foreground)] mb-2">
                     Course Details
                   </h2>
-                  <p className="text-[#D7BDE2]">
+                  <p className="text-[var(--foreground-muted)]">
                     <span className="font-medium">Course:</span>{" "}
                     {courses.length === 0 ? (
-                      <span className="animate-pulse text-gray-400">
+                      <span className="animate-pulse text-[var(--foreground-muted)]">
                         Loading...
                       </span>
                     ) : (
                       getCourseNameById(curriculum.courseId)
                     )}
                   </p>
-                  <p className="text-white/50 text-sm mt-1">
+                  <p className="text-[var(--foreground-muted)] text-sm mt-1">
                     Last updated:{" "}
                     {new Date(curriculum.updatedAt || "").toLocaleString()}
                   </p>
                   <div className="mt-2 flex items-center">
-                    <span className="text-white/70">Status:</span>
+                    <span className="text-[var(--foreground-muted)]">Status:</span>
                     <span
                       className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${
                         curriculum.isActive
-                          ? "bg-green-500/20 text-green-400"
-                          : "bg-gray-500/20 text-gray-400"
+                          ? "bg-[var(--success)]/20 text-[var(--success)]"
+                          : "bg-[var(--foreground-muted)]/20 text-[var(--foreground-muted)]"
                       }`}
                     >
                       {curriculum.isActive ? "Active" : "Inactive"}
                     </span>
                   </div>
                 </div>
-                <div className="bg-[#5B2C6F]/20 px-3 py-1 rounded-full text-[#D7BDE2] text-sm font-medium">
+                <div className="bg-[var(--primary)]/20 px-3 py-1 rounded-full text-[var(--primary)] text-sm font-medium">
                   {curriculum.content.length} Content Items
                 </div>
               </div>
@@ -238,22 +247,22 @@ export default function CurriculumDetailPage() {
 
             {/* Content List */}
             <div className="mt-6">
-              <h3 className="text-lg font-medium text-white mb-4">
+              <h3 className="text-lg font-medium text-[var(--foreground)] mb-4">
                 Curriculum Content
               </h3>
               <div className="space-y-4">
                 {curriculum.content.map((item, index) => (
-                  <div key={index} className="p-4 bg-[#1A1A1A] rounded-lg">
+                  <div key={index} className="p-4 bg-[var(--input-bg)] rounded-[var(--radius-md)] border border-[var(--border)]">
                     <div className="flex justify-between">
-                      <h4 className="text-[#D7BDE2] font-medium">
+                      <h4 className="text-[var(--primary)] font-medium">
                         {index + 1}. {item.title}
                       </h4>
-                      <div className="text-white/50 text-sm">
+                      <div className="text-[var(--foreground-muted)] text-sm">
                         Module {index + 1}
                       </div>
                     </div>
                     <div
-                      className="text-white/70 mt-2"
+                      className="text-[var(--foreground)] mt-2"
                       dangerouslySetInnerHTML={{ __html: item.description }}
                     />
                   </div>
@@ -263,6 +272,17 @@ export default function CurriculumDetailPage() {
           </div>
         </>
       )}
+
+      <Modal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        title="Confirm Delete"
+        description="Are you sure you want to delete this curriculum? This action cannot be undone."
+        confirmText="Delete Curriculum"
+        onConfirm={confirmDelete}
+        isConfirming={isDeleting}
+        variant="danger"
+      />
     </div>
   );
 }

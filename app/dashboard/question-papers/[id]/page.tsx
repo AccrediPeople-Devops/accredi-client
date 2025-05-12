@@ -7,6 +7,7 @@ import questionPaperService from "../../../components/service/questionPaper.serv
 import courseService from "../../../components/service/course.service";
 import { QuestionPaper } from "../../../types/questionPaper";
 import { LoadingSpinner } from "../../../components/LoadingSpinner";
+import Modal from "../../../components/Modal";
 
 // Wrapper component to handle params
 export default function QuestionPaperDetailPageWrapper({
@@ -34,6 +35,8 @@ function QuestionPaperDetailPage({
   const [courseName, setCourseName] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -153,19 +156,23 @@ function QuestionPaperDetailPage({
     }
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
     if (!questionPaper) return;
-
-    if (!window.confirm("Are you sure you want to delete this question paper?")) {
-      return;
-    }
-
+    
+    setIsDeleting(true);
     try {
       await questionPaperService.deleteQuestionPaper(questionPaper._id);
       router.push("/dashboard/question-papers");
     } catch (err: any) {
       console.error("Error deleting question paper:", err);
-      alert("Failed to delete question paper. Please try again.");
+      setError(err.message || "Failed to delete question paper. Please try again.");
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteModal(false);
     }
   };
 
@@ -411,6 +418,18 @@ function QuestionPaperDetailPage({
           Question paper not found.
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        title="Confirm Delete"
+        description="Are you sure you want to delete this question paper? This action cannot be undone."
+        confirmText="Delete"
+        onConfirm={confirmDelete}
+        isConfirming={isDeleting}
+        variant="danger"
+      />
     </div>
   );
 } 

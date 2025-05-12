@@ -6,6 +6,7 @@ import scheduleService from "../../components/service/schedule.service";
 import courseService from "../../components/service/course.service";
 import { Schedule } from "../../types/schedule";
 import { LoadingSpinner } from "../../components/LoadingSpinner";
+import Modal from "../../components/Modal";
 
 export default function SchedulesPage() {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
@@ -580,42 +581,16 @@ export default function SchedulesPage() {
       )}
 
       {/* Delete confirmation modal */}
-      {showDeleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-          <div className="bg-[var(--background)] rounded-[var(--radius-lg)] p-6 max-w-md w-full shadow-[var(--shadow-lg)]">
-            <h3 className="text-xl font-bold text-[var(--foreground)] mb-4">
-              Confirm Delete
-            </h3>
-            <p className="text-[var(--foreground)] mb-6">
-              Are you sure you want to delete this schedule? It will be moved to the deleted items tab.
-            </p>
-            <div className="flex justify-end space-x-4">
-              <button
-                type="button"
-                onClick={() => setShowDeleteModal(false)}
-                className="px-4 py-2 bg-transparent border border-[var(--border)] text-[var(--foreground)] rounded-[var(--radius-md)] hover:bg-[var(--input-bg)] transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={confirmDelete}
-                disabled={isDeleting !== null}
-                className="px-4 py-2 bg-[var(--error)] text-white rounded-[var(--radius-md)] hover:bg-[var(--error)]/90 transition-colors flex items-center"
-              >
-                {isDeleting !== null ? (
-                  <>
-                    <LoadingSpinner size="small" className="-ml-1 mr-2" />
-                    Deleting...
-                  </>
-                ) : (
-                  "Delete Schedule"
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Modal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        title="Confirm Delete"
+        description="Are you sure you want to delete this schedule? It will be moved to the deleted items tab."
+        confirmText="Delete Schedule"
+        onConfirm={confirmDelete}
+        isConfirming={isDeleting !== null}
+        variant="danger"
+      />
     </div>
   );
 } 
