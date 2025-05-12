@@ -7,6 +7,7 @@ import { LoadingSpinner } from "../../../../components/LoadingSpinner";
 import resourceService from "../../../../components/service/resource.service";
 import courseService from "../../../../components/service/course.service";
 import { formatDate } from "../../../../utils/dateUtils";
+import config from "../../../../components/config/config";
 
 interface ResourceFile {
   url: string;
@@ -167,7 +168,6 @@ export default function ResourceDetailsPage() {
 
   const handleOpenResource = (url: string) => {
     console.log("File URL:", url);
-    console.log("File URL type:", typeof url);
     
     // Handle undefined URL
     if (!url || typeof url !== 'string') {
@@ -176,9 +176,26 @@ export default function ResourceDetailsPage() {
     }
     
     try {
+      // Make sure URL is absolute and properly formatted
+      let downloadUrl = url;
+      
+      // If URL is relative (doesn't start with http), prepend the server base URL
+      if (!url.startsWith('http')) {
+        // Make sure we're using the proper server URL from config
+        const configUrl = config.imageUrl;
+        
+        // Remove any leading slashes from url and trailing slashes from baseUrl
+        const cleanUrl = url.startsWith('/') ? url.substring(1) : url;
+        const cleanBaseUrl = configUrl.endsWith('/') ? configUrl : `${configUrl}/`;
+        
+        downloadUrl = `${cleanBaseUrl}${cleanUrl}`;
+      }
+      
+      console.log("Download URL:", downloadUrl);
+      
       // Create an anchor element and set attributes for download
       const a = document.createElement('a');
-      a.href = url;
+      a.href = downloadUrl;
       
       // Safely extract filename from URL
       let filename = 'download';

@@ -169,13 +169,37 @@ class ResourceService {
    */
   async restoreResource(id: string) {
     try {
-      // Using a standard update with isDeleted: false instead of a specific undo-delete endpoint
-      const response = await axiosInstance.patch(`/resources/v1/${id}`, {
-        isDeleted: false
-      });
-      return response.data;
+      // Try multiple approaches to restore the resource
+      try {
+        console.log("Trying PUT to /resources/v1/{id}/undo-delete with isActive");
+        const response = await axiosInstance.put(`/resources/v1/${id}/undo-delete`, {
+          isActive: true
+        });
+        return response.data;
+      } catch (firstError: any) {
+        console.log("First restore attempt failed:", firstError.message);
+        
+        try {
+          console.log("Trying PUT with standard endpoint");
+          const response = await axiosInstance.put(`/resources/v1/${id}`, {
+            isDeleted: false,
+            isActive: true
+          });
+          return response.data;
+        } catch (secondError: any) {
+          console.log("Second restore attempt failed:", secondError.message);
+          
+          // Try PATCH as last resort
+          console.log("Trying PATCH as final attempt");
+          const response = await axiosInstance.patch(`/resources/v1/${id}`, {
+            isDeleted: false,
+            isActive: true
+          });
+          return response.data;
+        }
+      }
     } catch (error) {
-      console.error("Error restoring resource:", error);
+      console.error("All restore attempts failed:", error);
       throw error;
     }
   }
