@@ -6,6 +6,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   isLoading?: boolean;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
+  fullWidth?: boolean;
 }
 
 const Button: React.FC<ButtonProps> = ({
@@ -17,6 +18,7 @@ const Button: React.FC<ButtonProps> = ({
   rightIcon,
   className = '',
   disabled,
+  fullWidth = false,
   ...props
 }) => {
   const getVariantClasses = () => {
@@ -59,6 +61,7 @@ const Button: React.FC<ButtonProps> = ({
         shadow-sm hover:shadow-md
         ${getVariantClasses()}
         ${getSizeClasses()}
+        ${fullWidth ? 'w-full' : ''}
         ${className}
       `}
       disabled={disabled || isLoading}

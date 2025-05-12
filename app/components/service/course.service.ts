@@ -276,6 +276,70 @@ class CourseService {
       return 0;
     }
   }
+
+  /**
+   * Get recent courses with optional limit
+   * @param {number} limit - Maximum number of courses to return
+   * @returns {Promise<{status: boolean, courses: Course[]}>}
+   */
+  async getRecentCourses(limit: number = 4) {
+    try {
+      // First try the dedicated endpoint for recent courses
+      try {
+        const response = await axiosInstance.get(`/courses/v1/recent?limit=${limit}`);
+        return response.data;
+      } catch (directError: any) {
+        console.log("Direct recent courses endpoint failed:", directError.message);
+        
+        // Fallback: get all courses and sort manually
+        console.log("Using fallback method - fetch all courses and sort by date");
+        const allResponse = await this.getAllCourses();
+        
+        // Extract courses from the response with flexible handling of response structure
+        let allCourses = [];
+        if (allResponse && allResponse.courses && Array.isArray(allResponse.courses)) {
+          allCourses = allResponse.courses;
+        } else if (Array.isArray(allResponse)) {
+          allCourses = allResponse;
+        } else if (allResponse && allResponse.data && Array.isArray(allResponse.data)) {
+          allCourses = allResponse.data;
+        }
+        
+        // Handle empty courses array
+        if (allCourses.length === 0) {
+          return { status: true, courses: [] };
+        }
+        
+        // Filter out duplicates by ID (just in case)
+        const uniqueCoursesMap = new Map();
+        allCourses.forEach((course: any) => {
+          if (course._id && !uniqueCoursesMap.has(course._id)) {
+            uniqueCoursesMap.set(course._id, course);
+          }
+        });
+        
+        const uniqueCourses = Array.from(uniqueCoursesMap.values());
+        
+        // Sort by creation date (newest first)
+        const sortedCourses = uniqueCourses.sort((a, b) => {
+          const dateA = new Date(a.createdAt || a.created || 0).getTime();
+          const dateB = new Date(b.createdAt || b.created || 0).getTime();
+          return dateB - dateA;
+        });
+        
+        // Return only the requested number of courses
+        const recentCourses = sortedCourses.slice(0, limit);
+        
+        return { 
+          status: true, 
+          courses: recentCourses 
+        };
+      }
+    } catch (error) {
+      console.error("Error getting recent courses:", error);
+      return { status: false, courses: [] };
+    }
+  }
 }
 
 export default new CourseService();
