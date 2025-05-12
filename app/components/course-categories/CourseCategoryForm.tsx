@@ -9,16 +9,26 @@ import {
 import { getCategoryPlaceholderImage } from "../../utils/imageUtils";
 import uploadService from "../service/upload.service";
 import config from "../config/config";
+
 interface CourseCategoryFormProps {
-  initialData: CourseCategory | null;
+  initialData?: CourseCategory | null;
+  initialCategory?: {
+    name: string;
+    description: string;
+    image: ImageItem[];
+    isActive: boolean;
+  };
   onSubmit: (data: any) => void;
-  onCancel: () => void;
+  onCancel?: () => void;
+  submitButtonText?: string;
 }
 
 export default function CourseCategoryForm({
   initialData,
+  initialCategory,
   onSubmit,
   onCancel,
+  submitButtonText = "Save Changes",
 }: CourseCategoryFormProps) {
   const [formData, setFormData] = useState({
     name: "",
@@ -44,12 +54,30 @@ export default function CourseCategoryForm({
 
       if (initialData.image && initialData.image.length > 0) {
         // Construct the image preview URL from path
-        const previewUrl = `${config.imageUrl}${initialData.image[0].path}`;
+        const previewUrl = initialData.image[0].path
+          ? `${config.imageUrl}${initialData.image[0].path}`
+          : initialData.image[0].url || '';
         setImagePreview(previewUrl);
         setImagePath(initialData.image[0].key);
       }
+    } else if (initialCategory) {
+      setFormData({
+        name: initialCategory.name,
+        description: initialCategory.description,
+        image: initialCategory.image,
+        isActive: initialCategory.isActive,
+      });
+
+      if (initialCategory.image && initialCategory.image.length > 0) {
+        // Construct the image preview URL from path
+        const previewUrl = initialCategory.image[0].path
+          ? `${config.imageUrl}${initialCategory.image[0].path}`
+          : initialCategory.image[0].url || '';
+        setImagePreview(previewUrl);
+        setImagePath(initialCategory.image[0].key);
+      }
     }
-  }, [initialData]);
+  }, [initialData, initialCategory]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -439,20 +467,49 @@ export default function CourseCategoryForm({
           </div>
         )}
 
-        <div className="flex justify-end space-x-3 pt-4">
-          <button
-            type="button"
-            className="py-2 px-4 border border-[var(--primary)]/10 rounded-[var(--radius-md)] text-[var(--foreground)] hover:bg-[var(--primary)]/5 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/50"
-            onClick={onCancel}
-          >
-            Cancel
-          </button>
+        <div className="flex justify-end space-x-3 mt-6">
+          {onCancel && (
+            <button
+              type="button"
+              onClick={onCancel}
+              className="px-4 py-2 border border-[var(--border)] rounded-[var(--radius-md)] text-[var(--foreground)] hover:bg-[var(--input-bg)] transition-colors"
+              disabled={isSubmitting}
+            >
+              Cancel
+            </button>
+          )}
           <button
             type="submit"
-            className="py-2 px-4 shadow-sm text-[var(--background)] bg-[var(--primary)] rounded-[var(--radius-md)] hover:bg-[var(--primary)]/90 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/50 disabled:opacity-50"
-            disabled={isSubmitting}
+            className="px-4 py-2 bg-[var(--primary)] text-white rounded-[var(--radius-md)] hover:bg-[var(--primary-hover)] transition-colors flex items-center disabled:bg-[var(--primary)]/70 disabled:cursor-not-allowed"
+            disabled={isSubmitting || isUploadingImage}
           >
-            {isSubmitting ? "Saving..." : initialData ? "Update" : "Create"}
+            {isSubmitting ? (
+              <>
+                <svg
+                  className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                Processing...
+              </>
+            ) : (
+              submitButtonText
+            )}
           </button>
         </div>
       </form>

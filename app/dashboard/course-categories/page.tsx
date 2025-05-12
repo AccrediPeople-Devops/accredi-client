@@ -1,72 +1,22 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import CourseCategoryList from "../../components/course-categories/CourseCategoryList";
-import CourseCategoryForm from "../../components/course-categories/CourseCategoryForm";
 import { CourseCategory } from "../../types/courseCategory";
-import { getCategoryPlaceholderImage } from "../../utils/imageUtils";
 import CourseCategoryService from "../../components/service/courseCategory.service";
-import uploadService from "../../components/service/upload.service";
+import courseService from "../../components/service/course.service";
+import { LoadingSpinner } from "../../components/LoadingSpinner";
 
 export default function CourseCategoriesPage() {
   const [categories, setCategories] = useState<CourseCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<CourseCategory | null>(
-    null
-  );
   const [activeTab, setActiveTab] = useState<"active" | "deleted">("active");
-
-  // // Dummy data for demonstration
-  // const dummyCategories: CourseCategory[] = [
-  //   {
-  //     _id: "680fd284638ed8389d9440bd",
-  //     name: "Web Development",
-  //     description: "Learn web development with modern frameworks and tools",
-  //     courseCount: 5,
-  //     image: [
-  //       {
-  //         url: getCategoryPlaceholderImage("Web Development", 0),
-  //         key: "webdev-image.png",
-  //         _id: "680fd471638ed8389d94414a",
-  //       },
-  //     ],
-  //     isActive: true,
-  //     isDeleted: false,
-  //     createdAt: "2025-04-28T19:09:56.904Z",
-  //     updatedAt: "2025-04-28T19:18:09.675Z",
-  //   },
-  //   {
-  //     _id: "680fd47a638ed8389d944159",
-  //     name: "Mobile App Development",
-  //     description: "Master mobile app development for iOS and Android",
-  //     courseCount: 3,
-  //     image: [
-  //       {
-  //         url: getCategoryPlaceholderImage("Mobile Development", 1),
-  //         key: "mobile-image.png",
-  //         _id: "680fd471638ed8389d94415b",
-  //       },
-  //     ],
-  //     isActive: true,
-  //     isDeleted: false,
-  //     createdAt: "2025-04-28T19:18:18.265Z",
-  //     updatedAt: "2025-04-28T19:18:18.265Z",
-  //   },
-  //   {
-  //     _id: "680fd47a638ed8389d944160",
-  //     name: "Data Science",
-  //     description:
-  //       "Learn data analysis, machine learning and artificial intelligence",
-  //     courseCount: 0,
-  //     image: [],
-  //     isActive: false,
-  //     isDeleted: false,
-  //     createdAt: "2025-04-28T19:18:18.265Z",
-  //     updatedAt: "2025-04-28T19:18:18.265Z",
-  //   },
-  // ];
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   const fetchCategories = async () => {
     setIsLoading(true);
@@ -74,7 +24,25 @@ export default function CourseCategoriesPage() {
     try {
       const res = await CourseCategoryService.getAllCourseCategories();
       if (res?.courseCategories) {
-        setCategories(res.courseCategories);
+        const categoriesData = res.courseCategories;
+        
+        // Get course counts for each category
+        const categoriesWithCounts = await Promise.all(
+          categoriesData.map(async (category: CourseCategory) => {
+            try {
+              const courseCount = await courseService.countCoursesByCategory(category._id);
+              return {
+                ...category,
+                courseCount: courseCount
+              };
+            } catch (error) {
+              console.error(`Error getting course count for category ${category._id}:`, error);
+              return category;
+            }
+          })
+        );
+        
+        setCategories(categoriesWithCounts);
       }
     } catch (err: any) {
       setError(err.response?.data?.message || "Error fetching categories");
@@ -83,377 +51,216 @@ export default function CourseCategoriesPage() {
     }
   };
 
-  const addCategory = async (category: CourseCategory) => {
-    // Create a payload that matches the validator schema, excluding isActive
-    const payload = {
-      name: category.name,
-      description: category.description,
-      image: category.image.map((img) => ({
-        path: img.path,
-        key: img.key,
-        _id: img._id,
-      })),
-    };
-
-    const res = await CourseCategoryService.createCourseCategory(payload);
-    if (res) {
-      return res;
-    }
-  };
-
-  const updateCategory = async (id: string, category: CourseCategory) => {
-    // Create a payload that matches the validator schema, excluding isActive
-    const payload = {
-      name: category.name,
-      description: category.description,
-      image: category.image.map((img) => ({
-        path: img.path,
-        key: img.key,
-        _id: img._id,
-      })),
-    };
-
-    const res = await CourseCategoryService.updateCourseCategory(id, payload);
-    if (res) {
-      return res;
-    }
-  };
-
-  const deleteCategory = async (id: string) => {
-    // Get the category to be deleted
-    const categoryToDelete = categories.find((cat) => cat._id === id);
-
-    // Delete any associated images first if they exist
-    if (
-      categoryToDelete &&
-      categoryToDelete.image &&
-      categoryToDelete.image.length > 0
-    ) {
-      for (const img of categoryToDelete.image) {
-        if (img.key) {
-          try {
-            // Use the upload service to delete the image by key
-            await uploadService.deleteImage(img.key);
-          } catch (error) {
-            console.error(`Error deleting image with key ${img.key}:`, error);
-            // Continue with category deletion even if image deletion fails
-          }
-        }
-      }
-    }
-
-    // Now delete the category
-    const res = await CourseCategoryService.deleteCourseCategory(id);
-    if (res) {
-      return res;
-    }
-  };
-
-  const restoreCategory = async (id: string) => {
-    try {
-      const res = await CourseCategoryService.restoreCourseCategory(id);
-      if (res) {
-        // Optimistically update the UI
-        setCategories(
-          categories.map((category) =>
-            category._id === id ? { ...category, isDeleted: false } : category
-          )
-        );
-
-        // Then refresh data to ensure consistency
-        await fetchCategories();
-      }
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Error restoring category");
-    }
-  };
-
   useEffect(() => {
     try {
       fetchCategories();
     } catch (err: any) {
-      setError(err.response.data.message);
+      setError(err.response?.data?.message || "Error fetching categories");
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  const handleAddCategory = async (
-    newCategory: Omit<
-      CourseCategory,
-      "_id" | "createdAt" | "updatedAt" | "courseCount" | "isDeleted"
-    >
-  ) => {
-    // Make sure the image data is in the expected format
-    const imageData =
-      newCategory.image && newCategory.image.length > 0
-        ? newCategory.image.map((img) => ({
-            path: img.path,
-            key: img.key,
-            _id: img._id,
-          }))
-        : [];
-
-    // In a real application, you would make an API call to add the category
-    const category: CourseCategory = {
-      _id: `temp-id-${Date.now()}`,
-      ...newCategory,
-      image: imageData,
-      courseCount: 0,
-      isDeleted: false,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
+  const handleDeleteClick = async (id: string) => {
+    // Clear previous error
+    setDeleteError("");
+    
     try {
-      const res = await addCategory(category);
-      if (res) {
-        // Add the new category to the list
-        setCategories([...categories, res.courseCategory || category]);
-
-        // If the user wanted the category to be active, update the status
-        if (newCategory.isActive) {
-          try {
-            // Only call this if res.courseCategory exists and has an _id
-            if (res.courseCategory && res.courseCategory._id) {
-              await CourseCategoryService.updateCourseCategoryStatus(
-                res.courseCategory._id,
-                true
-              );
-            }
-          } catch (statusErr) {
-            console.error("Error setting initial active status:", statusErr);
-          }
-        }
+      // Check if category has associated courses
+      const hasAssociatedCourses = await courseService.hasCoursesByCategory(id);
+      
+      if (hasAssociatedCourses) {
+        setDeleteError("Cannot delete category that has associated courses. Please remove all courses from this category first.");
+        return;
       }
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Error adding category");
-    } finally {
-      setIsFormOpen(false);
+      
+      // If no courses, proceed with deletion
+      setCategoryToDelete(id);
+      setIsDeleteModalOpen(true);
+    } catch (err) {
+      console.error("Error checking category courses:", err);
+      setDeleteError("Error checking if category has associated courses.");
     }
   };
 
-  const handleUpdateCategory = async (updatedCategory: CourseCategory) => {
-    // Make sure the image data is in the expected format
-    const imageData =
-      updatedCategory.image && updatedCategory.image.length > 0
-        ? updatedCategory.image.map((img) => ({
-            path: img.path,
-            key: img.key,
-            _id: img._id,
-          }))
-        : [];
+  const handleDeleteCategory = async () => {
+    if (!categoryToDelete) return;
 
-    // Create a properly formatted category with the updated image data, excluding isActive
-    const formattedCategory = {
-      ...updatedCategory,
-      image: imageData,
-    };
-
+    setIsDeleting(true);
     try {
-      // First update the category details
-      const res = await updateCategory(
-        formattedCategory._id,
-        formattedCategory
+      await CourseCategoryService.deleteCourseCategory(categoryToDelete);
+      
+      // Update the UI optimistically
+      setCategories(
+        categories.map((category) =>
+          category._id === categoryToDelete ? { ...category, isDeleted: true } : category
+        )
       );
-
-      // Store the original isActive state to check if it changed
-      const originalCategory = categories.find(
-        (c) => c._id === updatedCategory._id
-      );
-      const didActiveStatusChange =
-        originalCategory &&
-        originalCategory.isActive !== updatedCategory.isActive;
-
-      // If the active status changed, update it separately
-      if (didActiveStatusChange) {
-        try {
-          await CourseCategoryService.updateCourseCategoryStatus(
-            updatedCategory._id,
-            updatedCategory.isActive
-          );
-        } catch (statusErr) {
-          console.error("Error updating active status:", statusErr);
-          // If this fails, we'll still show the updated category info
-        }
-      }
-
-      if (res) {
-        // Update the category in the list
-        setCategories(
-          categories.map((category) =>
-            category._id === updatedCategory._id
-              ? {
-                  ...res.courseCategory,
-                  isActive: didActiveStatusChange
-                    ? updatedCategory.isActive
-                    : res.courseCategory?.isActive,
-                }
-              : category
-          )
-        );
-      }
-
-      setEditingCategory(null);
-      setIsFormOpen(false);
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Error updating category");
-    }
-  };
-
-  const handleDeleteCategory = async (id: string) => {
-    try {
-      const categoryToDelete = categories.find((cat) => cat._id === id);
-
-      // Delete any associated images first if they exist
-      if (
-        categoryToDelete &&
-        categoryToDelete.image &&
-        categoryToDelete.image.length > 0
-      ) {
-        for (const img of categoryToDelete.image) {
-          if (img.key) {
-            try {
-              // Use the upload service to delete the image by key
-              await uploadService.deleteImage(img.key);
-            } catch (error) {
-              console.error(`Error deleting image with key ${img.key}:`, error);
-              // Continue with category deletion even if image deletion fails
-            }
-          }
-        }
-      }
-
-      // Now delete the category
-      await deleteCategory(id);
-
-      // Optimistically update UI first
-      setCategories(categories.filter((category) => category._id !== id));
-
-      // Then refresh data to ensure deleted categories appear in deleted tab
-      await fetchCategories();
+      
+      setIsDeleteModalOpen(false);
+      setCategoryToDelete(null);
     } catch (err: any) {
       setError(err.response?.data?.message || "Error deleting category");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleRestoreCategory = async (id: string) => {
+    try {
+      await CourseCategoryService.restoreCourseCategory(id);
+      
+      // Update the UI optimistically
+      setCategories(
+        categories.map((category) =>
+          category._id === id ? { ...category, isDeleted: false } : category
+        )
+      );
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Error restoring category");
     }
   };
 
   const handleToggleActive = async (id: string, isActive: boolean) => {
     try {
-      // Use the dedicated API for toggling active status
-      const res = await CourseCategoryService.updateCourseCategoryStatus(
-        id,
-        isActive
-      );
-      if (res) {
-        // Update the category in the list with the response data
-        setCategories(
-          categories.map((category) =>
-            category._id === id
-              ? {
-                  ...category,
-                  isActive: res.courseCategory?.isActive || isActive,
-                }
-              : category
-          )
-        );
-      }
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Error updating category status");
-      // Revert the UI change if the API call fails
+      await CourseCategoryService.updateCourseCategoryStatus(id, isActive);
+      
+      // Update the UI optimistically
       setCategories(
         categories.map((category) =>
-          category._id === id ? { ...category, isActive: !isActive } : category
+          category._id === id ? { ...category, isActive } : category
         )
       );
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Error updating category status");
     }
   };
 
-  const handleEditCategory = (category: CourseCategory) => {
-    setEditingCategory(category);
-    setIsFormOpen(true);
-  };
-
-  // Filter categories based on the active tab
-  const filteredCategories = categories.filter((category) =>
-    activeTab === "active" ? !category.isDeleted : category.isDeleted
-  );
-
-  // Add a tab change handler that refreshes data when switching tabs
-  const handleTabChange = async (tab: "active" | "deleted") => {
+  const handleTabChange = (tab: "active" | "deleted") => {
     setActiveTab(tab);
-    await fetchCategories();
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-[var(--foreground)]">
-          Course Categories
-        </h1>
-        {activeTab === "active" && (
-          <button
-            className="px-4 py-2 bg-[var(--primary)] text-[var(--background)] rounded-[var(--radius-md)] shadow-[var(--shadow-sm)] hover:opacity-90 transition-opacity"
-            onClick={() => {
-              setEditingCategory(null);
-              setIsFormOpen(true);
-            }}
+      {/* Header */}
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-2xl font-bold text-[var(--foreground)]">Course Categories</h1>
+          <p className="text-[var(--foreground-muted)]">
+            Manage categories for organizing courses
+          </p>
+        </div>
+        <Link
+          href="/dashboard/course-categories/add"
+          className="px-4 py-2 bg-[var(--primary)] text-white rounded-[var(--radius-md)] flex items-center gap-2 hover:bg-[var(--primary-hover)] transition-colors"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5"
+            viewBox="0 0 20 20"
+            fill="currentColor"
           >
-            Add Category
-          </button>
-        )}
+            <path
+              fillRule="evenodd"
+              d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+              clipRule="evenodd"
+            />
+          </svg>
+          Add Category
+        </Link>
       </div>
 
+      {/* Error message */}
       {error && (
-        <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded-[var(--radius-md)]">
+        <div className="p-4 bg-[var(--error)]/10 border border-[var(--error)]/30 text-[var(--error)] rounded-[var(--radius-md)]">
           {error}
         </div>
       )}
+      
+      {/* Delete Error message */}
+      {deleteError && (
+        <div className="p-4 bg-[var(--error)]/10 border border-[var(--error)]/30 text-[var(--error)] rounded-[var(--radius-md)]">
+          {deleteError}
+        </div>
+      )}
 
-      <div className="border-b border-[var(--primary)]/10">
-        <div className="flex gap-4">
+      {/* Tabs for Active/Deleted */}
+      <div className="border-b border-[var(--border)]">
+        <div className="flex space-x-4">
           <button
-            className={`px-4 py-2 ${
-              activeTab === "active"
-                ? "border-b-2 border-[var(--primary)] font-medium text-[var(--primary)]"
-                : "text-[var(--foreground)]/70"
-            }`}
             onClick={() => handleTabChange("active")}
+            className={`pb-3 px-1 font-medium text-sm transition-colors ${
+              activeTab === "active"
+                ? "border-b-2 border-[var(--primary)] text-[var(--foreground)]"
+                : "text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
+            }`}
           >
             Active Categories
           </button>
           <button
-            className={`px-4 py-2 ${
-              activeTab === "deleted"
-                ? "border-b-2 border-[var(--primary)] font-medium text-[var(--primary)]"
-                : "text-[var(--foreground)]/70"
-            }`}
             onClick={() => handleTabChange("deleted")}
+            className={`pb-3 px-1 font-medium text-sm transition-colors ${
+              activeTab === "deleted"
+                ? "border-b-2 border-[var(--primary)] text-[var(--foreground)]"
+                : "text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
+            }`}
           >
             Deleted Categories
           </button>
         </div>
       </div>
 
-      {isFormOpen && (
-        <CourseCategoryForm
-          initialData={editingCategory}
-          onSubmit={editingCategory ? handleUpdateCategory : handleAddCategory}
-          onCancel={() => {
-            setIsFormOpen(false);
-            setEditingCategory(null);
-          }}
+      {/* Category list */}
+      {isLoading ? (
+        <div className="flex justify-center items-center py-10">
+          <LoadingSpinner size="medium" text="Loading categories..." />
+        </div>
+      ) : (
+        <CourseCategoryList
+          categories={categories.filter(
+            (category) =>
+              activeTab === "active" ? !category.isDeleted : category.isDeleted
+          )}
+          onDelete={handleDeleteClick}
+          onRestore={handleRestoreCategory}
+          onToggleActive={handleToggleActive}
+          activeTab={activeTab}
         />
       )}
 
-      <CourseCategoryList
-        categories={filteredCategories}
-        isLoading={isLoading}
-        onEdit={handleEditCategory}
-        onDelete={handleDeleteCategory}
-        onToggleActive={handleToggleActive}
-        onRestore={activeTab === "deleted" ? restoreCategory : undefined}
-        showDeletedUI={activeTab === "deleted"}
-      />
+      {/* Delete Confirmation Modal */}
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-[var(--background)] rounded-[var(--radius-lg)] p-6 max-w-md w-full">
+            <h3 className="text-lg font-medium text-[var(--foreground)]">Confirm Delete</h3>
+            <p className="mt-2 text-[var(--foreground-muted)]">
+              Are you sure you want to delete this category? This action cannot be undone.
+            </p>
+            <div className="mt-4 flex space-x-2 justify-end">
+              <button
+                onClick={() => setIsDeleteModalOpen(false)}
+                className="px-4 py-2 bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] rounded-[var(--radius-md)] hover:bg-[var(--input-bg)] transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteCategory}
+                disabled={isDeleting}
+                className="px-4 py-2 bg-[var(--error)] text-white rounded-[var(--radius-md)] hover:bg-[var(--error)]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {isDeleting ? (
+                  <>
+                    <LoadingSpinner size="small" />
+                    Deleting...
+                  </>
+                ) : (
+                  <>Delete</>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

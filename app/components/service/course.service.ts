@@ -73,12 +73,51 @@ class CourseService {
    */
   async getCoursesByCategory(categoryId: string) {
     try {
-      const response = await axiosInstance.get(
-        `/courses/v1/category/${categoryId}`
-      );
-      return response.data;
+      try {
+        // First try the direct endpoint
+        const response = await axiosInstance.get(`/courses/v1/category/${categoryId}`);
+        return response.data;
+      } catch (directError: any) {
+        console.log("Direct category endpoint failed:", directError.message);
+        
+        // Fallback: get all courses and filter by category
+        console.log("Using fallback method - fetch all courses and filter by category");
+        const allResponse = await this.getAllCourses();
+        
+        let allCourses = [];
+        if (allResponse && allResponse.courses && Array.isArray(allResponse.courses)) {
+          allCourses = allResponse.courses;
+        } else if (Array.isArray(allResponse)) {
+          allCourses = allResponse;
+        } else if (allResponse && allResponse.data && Array.isArray(allResponse.data)) {
+          allCourses = allResponse.data;
+        }
+        
+        // Log the first course to see its structure
+        if (allCourses.length > 0) {
+          console.log("First course structure:", JSON.stringify(allCourses[0], null, 2));
+        }
+        
+        // Filter courses by categoryId
+        const filteredCourses = allCourses.filter((course: any) => {
+          // Check different possible field names for the category ID
+          return (
+            course.categoryId === categoryId || 
+            course.category === categoryId ||
+            (course.category && course.category._id === categoryId) ||
+            (course.categoryDetails && course.categoryDetails._id === categoryId)
+          );
+        });
+        
+        console.log(`Found ${filteredCourses.length} courses for category ${categoryId}`);
+        return { 
+          status: true, 
+          courses: filteredCourses 
+        };
+      }
     } catch (error) {
-      throw error;
+      console.error("Error getting courses by category:", error);
+      return { status: false, courses: [] };
     }
   }
 
@@ -205,6 +244,36 @@ class CourseService {
       return response.data;
     } catch (error) {
       throw error;
+    }
+  }
+
+  /**
+   * Check if a category has associated courses
+   * @param {string} categoryId - Category ID
+   * @returns {Promise<boolean>}
+   */
+  async hasCoursesByCategory(categoryId: string) {
+    try {
+      const response = await this.getCoursesByCategory(categoryId);
+      return response && response.courses && response.courses.length > 0;
+    } catch (error) {
+      console.error("Error checking if category has courses:", error);
+      return false;
+    }
+  }
+
+  /**
+   * Count courses by category
+   * @param {string} categoryId - Category ID
+   * @returns {Promise<number>}
+   */
+  async countCoursesByCategory(categoryId: string) {
+    try {
+      const response = await this.getCoursesByCategory(categoryId);
+      return response && response.courses ? response.courses.length : 0;
+    } catch (error) {
+      console.error("Error counting courses by category:", error);
+      return 0;
     }
   }
 }

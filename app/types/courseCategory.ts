@@ -2,6 +2,7 @@ export interface ImageItem {
   _id?: string;
   path: string;
   key: string;
+  url?: string;
 }
 
 export interface CourseCategory {

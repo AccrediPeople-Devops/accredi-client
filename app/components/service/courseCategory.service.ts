@@ -9,6 +9,43 @@ class CourseCategoryService {
       throw error;
     }
   }
+  
+  async getCourseCategoryById(id: string) {
+    try {
+      // First try direct endpoint
+      try {
+        const response = await axiosInstance.get(`/courses-categories/v1/${id}`);
+        return response.data;
+      } catch (directError) {
+        console.log("Direct endpoint failed, using fallback method");
+        
+        // Fallback: Fetch all categories and find the matching one
+        const allResponse = await this.getAllCourseCategories();
+        
+        let categories = [];
+        if (allResponse && allResponse.courseCategories && Array.isArray(allResponse.courseCategories)) {
+          categories = allResponse.courseCategories;
+        } else if (Array.isArray(allResponse)) {
+          categories = allResponse;
+        }
+        
+        const foundCategory = categories.find((category: any) => category._id === id);
+        if (foundCategory) {
+          return { status: true, courseCategory: foundCategory };
+        }
+        
+        // Return a not found error
+        return { 
+          status: false, 
+          message: `Category not found with ID: ${id}`
+        };
+      }
+    } catch (error: any) {
+      console.error("Error fetching category:", error);
+      throw error;
+    }
+  }
+  
   async createCourseCategory(data: any) {
     try {
       const response = await axiosInstance.post("/courses-categories/v1", data);

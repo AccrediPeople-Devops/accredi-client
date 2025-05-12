@@ -7,6 +7,7 @@ import Link from "next/link";
 import courseService from "../../../components/service/course.service";
 import courseCategoryService from "../../../components/service/courseCategory.service";
 import config from "../../../components/config/config";
+import { LoadingSpinner } from "../../../components/LoadingSpinner";
 
 interface FileUpload {
   url: string;
@@ -42,9 +43,12 @@ interface Category {
 export default function CourseDetailsPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }> | { id: string };
 }) {
   const router = useRouter();
+  const unwrappedParams = React.use(params as Promise<{ id: string }>);
+  const courseId = unwrappedParams.id;
+  
   const [course, setCourse] = useState<Course | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -66,7 +70,7 @@ export default function CourseDetailsPage({
         const courseResponse = await courseService.getAllCourses();
         if (courseResponse && courseResponse.courses) {
           const foundCourse = courseResponse.courses.find(
-            (c: any) => c._id === params.id
+            (c: any) => c._id === courseId
           );
 
           if (foundCourse) {
@@ -131,7 +135,7 @@ export default function CourseDetailsPage({
     };
 
     fetchData();
-  }, [params.id]);
+  }, [courseId]);
 
   const getCategoryName = (categoryId: string) => {
     const category = categories.find((cat) => cat._id === categoryId);
@@ -173,7 +177,7 @@ export default function CourseDetailsPage({
     if (!course) return;
 
     try {
-      await courseService.updateCourseStatus(course._id, !course.isActive);
+      await courseService.toggleCourseActive(course._id, !course.isActive);
       setCourse({
         ...course,
         isActive: !course.isActive,
@@ -186,44 +190,39 @@ export default function CourseDetailsPage({
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-96">
-        <svg
-          className="animate-spin h-10 w-10 text-[#5B2C6F]"
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-        >
-          <circle
-            className="opacity-25"
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            strokeWidth="4"
-          ></circle>
-          <path
-            className="opacity-75"
-            fill="currentColor"
-            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-          ></path>
-        </svg>
+      <div className="flex justify-center items-center py-20">
+        <LoadingSpinner size="large" text="Loading course details..." />
       </div>
     );
   }
 
   if (!course) {
     return (
-      <div className="bg-[#2A2A2A] rounded-xl p-6">
-        <h1 className="text-2xl font-bold text-white mb-4">Course Not Found</h1>
-        <p className="text-white mb-6">
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-[var(--foreground)]">Course Details</h1>
+          <Link
+            href="/dashboard/courses"
+            className="px-4 py-2 bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] rounded-[var(--radius-md)] hover:bg-[var(--input-bg)] transition-colors flex items-center gap-2"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                clipRule="evenodd"
+              />
+            </svg>
+            Back to Courses
+          </Link>
+        </div>
+        <div className="p-4 bg-[var(--error)]/10 border border-[var(--error)]/30 text-[var(--error)] rounded-[var(--radius-md)]">
           The course you are looking for does not exist or has been removed.
-        </p>
-        <Link
-          href="/dashboard/courses"
-          className="px-4 py-2 bg-[#5B2C6F] text-white rounded-lg hover:bg-[#5B2C6F]/90 transition-colors"
-        >
-          Back to Courses
-        </Link>
+        </div>
       </div>
     );
   }
@@ -231,55 +230,33 @@ export default function CourseDetailsPage({
   return (
     <div className="space-y-6">
       {/* Header with actions */}
-      <div className="p-6 bg-[#2A2A2A] rounded-xl flex flex-wrap justify-between items-center">
+      <div className="flex items-center justify-between">
         <div>
-          <div className="flex items-center mb-1">
-            <Link
-              href="/dashboard/courses"
-              className="flex items-center text-[#D7BDE2] hover:text-white transition-colors mr-2"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4 mr-1"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                />
-              </svg>
-              Back
-            </Link>
-            <h1 className="text-2xl font-bold text-white">{course.title}</h1>
-          </div>
+          <h1 className="text-2xl font-bold text-[var(--foreground)]">{course.title}</h1>
           <div className="flex items-center space-x-3">
-            <span className="text-[#D7BDE2]">
+            <span className="text-[var(--foreground-muted)]">
               {getCategoryName(course.categoryId)}
             </span>
-            <span className="w-1 h-1 bg-[#D7BDE2] rounded-full"></span>
+            <span className="w-1 h-1 bg-[var(--foreground-muted)] rounded-full"></span>
             <span
-              className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+              className={`px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full ${
                 course.isActive
-                  ? "bg-green-100 text-green-800"
-                  : "bg-red-100 text-red-800"
+                  ? "bg-[var(--success)]/10 text-[var(--success)]"
+                  : "bg-[var(--warning)]/10 text-[var(--warning)]"
               }`}
             >
               {course.isActive ? "Active" : "Inactive"}
             </span>
           </div>
         </div>
-        <div className="flex space-x-3 mt-4 sm:mt-0">
+        <div className="flex gap-2">
           <Link
             href={`/dashboard/courses/edit/${course._id}`}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+            className="px-4 py-2 bg-[var(--primary)] text-white rounded-[var(--radius-md)] hover:bg-[var(--primary-hover)] transition-colors flex items-center gap-2"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 mr-2"
+              className="h-5 w-5"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -291,15 +268,15 @@ export default function CourseDetailsPage({
                 d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
               />
             </svg>
-            Edit Course
+            Edit
           </Link>
           <button
             onClick={handleDeleteClick}
-            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center"
+            className="px-4 py-2 bg-[var(--error)] text-white rounded-[var(--radius-md)] hover:bg-[var(--error)]/90 transition-colors flex items-center gap-2"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 mr-2"
+              className="h-5 w-5"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -313,6 +290,24 @@ export default function CourseDetailsPage({
             </svg>
             Delete
           </button>
+          <Link
+            href="/dashboard/courses"
+            className="px-4 py-2 bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] rounded-[var(--radius-md)] hover:bg-[var(--input-bg)] transition-colors flex items-center gap-2"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                clipRule="evenodd"
+              />
+            </svg>
+            Back
+          </Link>
         </div>
       </div>
 
@@ -320,13 +315,14 @@ export default function CourseDetailsPage({
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
           {/* Basic Info */}
-          <div className="bg-[#2A2A2A] rounded-xl p-6">
-            <h2 className="text-xl font-semibold text-white mb-4">
-              Basic Information
-            </h2>
-
-            <div className="mb-6">
-              <div className="relative aspect-video rounded-xl overflow-hidden">
+          <div className="bg-[var(--background)] border border-[var(--border)] rounded-[var(--radius-lg)] overflow-hidden">
+            <div className="p-6 border-b border-[var(--border)]">
+              <h2 className="text-lg font-medium text-[var(--foreground)]">
+                Basic Information
+              </h2>
+            </div>
+            <div className="p-6 space-y-6">
+              <div className="relative aspect-video rounded-[var(--radius-md)] overflow-hidden">
                 {course.upload.courseImage[0] && (
                   <Image
                     src={course.upload.courseImage[0].url}
@@ -336,82 +332,92 @@ export default function CourseDetailsPage({
                   />
                 )}
               </div>
-            </div>
 
-            <div className="mb-4">
-              <h3 className="text-sm font-medium text-white mb-1">
-                Short Description
-              </h3>
-              <p className="text-white/70">{course.shortDescription}</p>
-            </div>
+              <div>
+                <h3 className="text-sm font-medium text-[var(--foreground-muted)] mb-1">
+                  Short Description
+                </h3>
+                <p className="text-[var(--foreground)]">{course.shortDescription}</p>
+              </div>
 
-            <div>
-              <h3 className="text-sm font-medium text-white mb-1">
-                Full Description
-              </h3>
-              <div
-                className="text-white/70 prose prose-invert prose-sm max-w-none"
-                dangerouslySetInnerHTML={{ __html: course.description }}
-              />
+              <div>
+                <h3 className="text-sm font-medium text-[var(--foreground-muted)] mb-1">
+                  Full Description
+                </h3>
+                <div
+                  className="text-[var(--foreground)] prose max-w-none"
+                  dangerouslySetInnerHTML={{ __html: course.description }}
+                />
+              </div>
             </div>
           </div>
 
           {/* Key Features */}
-          <div className="bg-[#2A2A2A] rounded-xl p-6">
-            <h2 className="text-xl font-semibold text-white mb-4">
-              Key Features
-            </h2>
-
-            <div className="flex flex-wrap gap-2">
-              {course.keyFeatures.map((feature, index) => (
-                <div
-                  key={index}
-                  className="bg-[#5B2C6F]/20 text-white px-3 py-1.5 rounded-full"
-                >
-                  {feature}
-                </div>
-              ))}
+          <div className="bg-[var(--background)] border border-[var(--border)] rounded-[var(--radius-lg)] overflow-hidden">
+            <div className="p-6 border-b border-[var(--border)]">
+              <h2 className="text-lg font-medium text-[var(--foreground)]">
+                Key Features
+              </h2>
+            </div>
+            <div className="p-6">
+              <div className="flex flex-wrap gap-2">
+                {course.keyFeatures && course.keyFeatures.length > 0 ? (
+                  course.keyFeatures.map((feature, index) => (
+                    <div
+                      key={index}
+                      className="bg-[var(--primary)]/10 text-[var(--primary)] px-3 py-1.5 rounded-full text-sm"
+                    >
+                      {feature}
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-[var(--foreground-muted)]">No features specified</p>
+                )}
+              </div>
             </div>
           </div>
 
           {/* Course Brochure */}
           {course.broucher[0] && (
-            <div className="bg-[#2A2A2A] rounded-xl p-6">
-              <h2 className="text-xl font-semibold text-white mb-4">
-                Course Brochure
-              </h2>
-
-              <div className="border border-[#3A3A55] rounded-lg p-4 flex items-center justify-between">
-                <div className="flex items-center">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-10 w-10 text-[#5B2C6F]"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                    />
-                  </svg>
-                  <div className="ml-3">
-                    <div className="text-white font-medium">
-                      Course Brochure
+            <div className="bg-[var(--background)] border border-[var(--border)] rounded-[var(--radius-lg)] overflow-hidden">
+              <div className="p-6 border-b border-[var(--border)]">
+                <h2 className="text-lg font-medium text-[var(--foreground)]">
+                  Course Brochure
+                </h2>
+              </div>
+              <div className="p-6 space-y-6">
+                <div className="border border-[var(--border)] rounded-lg p-4 flex items-center justify-between">
+                  <div className="flex items-center">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-10 w-10 text-[var(--primary)]"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      />
+                    </svg>
+                    <div className="ml-3">
+                      <div className="text-[var(--foreground)] font-medium">
+                        Course Brochure
+                      </div>
+                      <div className="text-[var(--foreground-muted)] text-sm">PDF Document</div>
                     </div>
-                    <div className="text-white/50 text-sm">PDF Document</div>
                   </div>
+                  <a
+                    href={course.broucher[0].url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3 py-1 bg-[var(--primary)] text-[var(--foreground)] text-sm rounded-lg hover:bg-[var(--primary)]/90 transition-colors"
+                  >
+                    Download
+                  </a>
                 </div>
-                <a
-                  href={course.broucher[0].url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-3 py-1 bg-[#5B2C6F] text-white text-sm rounded-lg hover:bg-[#5B2C6F]/90 transition-colors"
-                >
-                  Download
-                </a>
               </div>
             </div>
           )}
@@ -420,36 +426,37 @@ export default function CourseDetailsPage({
         {/* Sidebar */}
         <div className="space-y-6">
           {/* Course Details */}
-          <div className="bg-[#2A2A2A] rounded-xl p-6">
-            <h2 className="text-xl font-semibold text-white mb-4">Details</h2>
-
-            <div className="space-y-4">
+          <div className="bg-[var(--background)] border border-[var(--border)] rounded-[var(--radius-lg)] overflow-hidden">
+            <div className="p-6 border-b border-[var(--border)]">
+              <h2 className="text-lg font-medium text-[var(--foreground)]">Details</h2>
+            </div>
+            <div className="p-6 space-y-4">
               <div>
-                <h3 className="text-sm font-medium text-white/50 mb-1">
+                <h3 className="text-sm font-medium text-[var(--foreground-muted)] mb-1">
                   Category
                 </h3>
-                <p className="text-white">
+                <p className="text-[var(--foreground)]">
                   {getCategoryName(course.categoryId)}
                 </p>
               </div>
 
               <div>
-                <h3 className="text-sm font-medium text-white/50 mb-1">
+                <h3 className="text-sm font-medium text-[var(--foreground-muted)] mb-1">
                   Added on
                 </h3>
-                <p className="text-white">{formatDate(course.createdAt)}</p>
+                <p className="text-[var(--foreground)]">{formatDate(course.createdAt)}</p>
               </div>
 
               <div>
-                <h3 className="text-sm font-medium text-white/50 mb-1">
+                <h3 className="text-sm font-medium text-[var(--foreground-muted)] mb-1">
                   Status
                 </h3>
                 <div className="mt-1">
                   <span
                     className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
                       course.isActive
-                        ? "bg-green-100 text-green-800"
-                        : "bg-red-100 text-red-800"
+                        ? "bg-[var(--success)]/10 text-[var(--success)]"
+                        : "bg-[var(--warning)]/10 text-[var(--warning)]"
                     }`}
                   >
                     {course.isActive ? "Active" : "Inactive"}
@@ -460,105 +467,83 @@ export default function CourseDetailsPage({
           </div>
 
           {/* Certificate & Badges */}
-          <div className="bg-[#2A2A2A] rounded-xl p-6">
-            <h2 className="text-xl font-semibold text-white mb-4">
-              Certificate & Badges
-            </h2>
-
-            {course.upload.courseSampleCertificate[0] && (
-              <div className="mb-4">
-                <h3 className="text-sm font-medium text-white mb-2">
-                  Sample Certificate
-                </h3>
-                <div className="relative aspect-video rounded-lg overflow-hidden">
-                  <Image
-                    src={course.upload.courseSampleCertificate[0].url}
-                    alt="Sample Certificate"
-                    fill
-                    style={{ objectFit: "cover" }}
-                  />
+          <div className="bg-[var(--background)] border border-[var(--border)] rounded-[var(--radius-lg)] overflow-hidden">
+            <div className="p-6 border-b border-[var(--border)]">
+              <h2 className="text-lg font-medium text-[var(--foreground)]">
+                Certificate & Badges
+              </h2>
+            </div>
+            <div className="p-6 space-y-4">
+              {course.upload.courseSampleCertificate[0] && (
+                <div>
+                  <h3 className="text-sm font-medium text-[var(--foreground-muted)] mb-2">
+                    Sample Certificate
+                  </h3>
+                  <div className="relative aspect-video rounded-lg overflow-hidden">
+                    <Image
+                      src={course.upload.courseSampleCertificate[0].url}
+                      alt="Sample Certificate"
+                      fill
+                      style={{ objectFit: "cover" }}
+                    />
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {course.upload.courseBadge.length > 0 && (
-              <div>
-                <h3 className="text-sm font-medium text-white mb-2">
-                  Course Badges
-                </h3>
-                <div className="grid grid-cols-3 gap-2">
-                  {course.upload.courseBadge.map((badge, index) => (
-                    <div
-                      key={index}
-                      className="relative aspect-square rounded-lg overflow-hidden"
-                    >
-                      <Image
-                        src={badge.url}
-                        alt={`Badge ${index + 1}`}
-                        fill
-                        style={{ objectFit: "cover" }}
-                      />
-                    </div>
-                  ))}
+              {course.upload.courseBadge.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-medium text-[var(--foreground-muted)] mb-2">
+                    Course Badges
+                  </h3>
+                  <div className="grid grid-cols-3 gap-2">
+                    {course.upload.courseBadge.map((badge, index) => (
+                      <div
+                        key={index}
+                        className="relative aspect-square rounded-lg overflow-hidden"
+                      >
+                        <Image
+                          src={badge.url}
+                          alt={`Badge ${index + 1}`}
+                          fill
+                          style={{ objectFit: "cover" }}
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Delete confirmation modal */}
+      {/* Delete Confirmation Modal */}
       {showDeleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-          <div className="bg-[#2A2A2A] rounded-xl p-6 max-w-md w-full">
-            <h3 className="text-xl font-bold text-white mb-4">
-              Confirm Delete
-            </h3>
-            <p className="text-white mb-6">
-              Are you sure you want to delete "{course.title}"? This action
-              cannot be undone.
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-[var(--background)] rounded-[var(--radius-lg)] p-6 max-w-md w-full">
+            <h3 className="text-lg font-medium text-[var(--foreground)]">Confirm Delete</h3>
+            <p className="mt-2 text-[var(--foreground-muted)]">
+              Are you sure you want to delete this course? This action cannot be undone.
             </p>
-            <div className="flex justify-end space-x-4">
+            <div className="mt-4 flex space-x-2 justify-end">
               <button
-                type="button"
                 onClick={() => setShowDeleteModal(false)}
-                className="px-4 py-2 bg-transparent border border-[#5B2C6F] text-white rounded-lg hover:bg-[#5B2C6F]/10 transition-colors"
-                disabled={isDeleting}
+                className="px-4 py-2 bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] rounded-[var(--radius-md)] hover:bg-[var(--input-bg)] transition-colors"
               >
                 Cancel
               </button>
               <button
-                type="button"
                 onClick={confirmDelete}
                 disabled={isDeleting}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center"
+                className="px-4 py-2 bg-[var(--error)] text-white rounded-[var(--radius-md)] hover:bg-[var(--error)]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 {isDeleting ? (
                   <>
-                    <svg
-                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
+                    <LoadingSpinner size="small" />
                     Deleting...
                   </>
                 ) : (
-                  "Delete Course"
+                  "Delete"
                 )}
               </button>
             </div>
