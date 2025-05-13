@@ -95,7 +95,7 @@ export default function DashboardLayout({
           {/* Footer */}
           <footer className="py-4 px-6 border-t border-[var(--border)]">
             <div className="text-center text-[var(--foreground-muted)] text-sm">
-              AccrediLearn Admin Dashboard &copy; {new Date().getFullYear()}
+              AccrediPeople Admin Dashboard &copy; {new Date().getFullYear()}
             </div>
           </footer>
         </div>
