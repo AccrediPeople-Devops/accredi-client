@@ -291,7 +291,7 @@ export default function Sidebar({ isMobileOpen, toggleSidebar }: SidebarProps) {
             <div className="flex items-center justify-center">
               <div className="text-xl font-bold text-[var(--foreground)]">
                 <span className="text-[var(--primary)]">Accredi</span>
-                Learn
+                People
               </div>
             </div>
           </div>
