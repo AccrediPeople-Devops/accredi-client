@@ -72,11 +72,11 @@ export default function CurriculumDetailPage() {
 
   const confirmDelete = async () => {
     setIsDeleting(true);
-    try {
-      await curriculumService.deleteCurriculum(id);
-      router.push("/dashboard/curriculum");
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Error deleting curriculum");
+      try {
+        await curriculumService.deleteCurriculum(id);
+        router.push("/dashboard/curriculum");
+      } catch (err: any) {
+        setError(err.response?.data?.message || "Error deleting curriculum");
     } finally {
       setIsDeleting(false);
       setShowDeleteModal(false);

@@ -469,14 +469,14 @@ export default function CourseCategoryForm({
 
         <div className="flex justify-end space-x-3 mt-6">
           {onCancel && (
-            <button
-              type="button"
-              onClick={onCancel}
+          <button
+            type="button"
+            onClick={onCancel}
               className="px-4 py-2 border border-[var(--border)] rounded-[var(--radius-md)] text-[var(--foreground)] hover:bg-[var(--input-bg)] transition-colors"
               disabled={isSubmitting}
-            >
-              Cancel
-            </button>
+          >
+            Cancel
+          </button>
           )}
           <button
             type="submit"

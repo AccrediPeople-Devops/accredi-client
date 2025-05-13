@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { use, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -10,15 +10,9 @@ import uploadService from "../../../components/service/upload.service";
 import { LoadingSpinner } from "../../../components/LoadingSpinner";
 import config from "../../../components/config/config";
 
-export default function ReviewDetailsPage({
-  params,
-}: {
-  params: Promise<{ id: string }> | { id: string };
-}) {
+export default function ReviewDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: reviewId } = use(params);
   const router = useRouter();
-  const unwrappedParams = React.use(params as Promise<{ id: string }>);
-  const reviewId = unwrappedParams.id;
-
   const [review, setReview] = useState<Review | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");

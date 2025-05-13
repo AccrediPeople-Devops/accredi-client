@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import scheduleService from "../../../components/service/schedule.service";
@@ -552,16 +552,7 @@ function ScheduleDetails({ id }: { id: string }) {
 }
 
 // Main page component
-export default function ScheduleDetailsPage({
-  params,
-}: {
-  params: { id: string };
-}) {
-  // Handle params correctly according to Next.js 15.3.1+ requirements
-  // @ts-ignore - Next.js typing is still evolving for React.use with params
-  const resolvedParams = React.use(params);
-  // Use type assertion to help TypeScript understand the structure
-  const id = (resolvedParams as { id: string }).id;
-  
+export default function ScheduleDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   return <ScheduleDetails id={id} />;
 } 

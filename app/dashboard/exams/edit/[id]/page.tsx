@@ -528,8 +528,7 @@ function EditExamContent({ id }: { id: string }) {
 }
 
 // Main component that unwraps the params promise
-export default function EditExamPage({ params }: { params: Promise<{ id: string }> | { id: string } }) {
-  // Unwrap the params using React.use()
-  const unwrappedParams = React.use(params as Promise<{ id: string }>);
-  return <EditExamContent id={unwrappedParams.id} />;
+export default async function EditExamPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  return <EditExamContent id={id} />;
 } 

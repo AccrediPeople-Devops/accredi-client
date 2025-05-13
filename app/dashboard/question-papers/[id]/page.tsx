@@ -10,17 +10,8 @@ import { LoadingSpinner } from "../../../components/LoadingSpinner";
 import Modal from "../../../components/Modal";
 
 // Wrapper component to handle params
-export default function QuestionPaperDetailPageWrapper({
-  params,
-}: {
-  params: { id: string };
-}) {
-  // Handle params correctly according to Next.js 15.3.1+ requirements
-  // @ts-ignore - Next.js typing is still evolving for React.use with params
-  const resolvedParams = React.use(params);
-  // Use type assertion to help TypeScript understand the structure
-  const id = (resolvedParams as { id: string }).id;
-  
+export default async function QuestionPaperDetailPageWrapper({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   return <QuestionPaperDetailPage id={id} />;
 }
 

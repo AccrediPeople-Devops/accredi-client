@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -40,14 +40,9 @@ interface Category {
   isDeleted: boolean;
 }
 
-export default function CourseDetailsPage({
-  params,
-}: {
-  params: Promise<{ id: string }> | { id: string };
-}) {
+export default function CourseDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: courseId } = use(params);
   const router = useRouter();
-  const unwrappedParams = React.use(params as Promise<{ id: string }>);
-  const courseId = unwrappedParams.id;
   
   const [course, setCourse] = useState<Course | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
