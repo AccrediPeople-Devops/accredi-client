@@ -8,9 +8,6 @@ const nextConfig = {
       "api.accredipeoplecertifications.com",
     ],
   },
-  server: {
-    port: 8080,
-  },
 };
 
 module.exports = nextConfig;
