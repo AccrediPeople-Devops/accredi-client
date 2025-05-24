@@ -8,7 +8,6 @@ import { ThemeProvider } from "@/app/context/ThemeContext";
 import { Toaster } from "react-hot-toast";
 import { Inter } from "next/font/google";
 import "../globals.css";
-
 const inter = Inter({ subsets: ["latin"] });
 
 export default function DashboardLayout({
