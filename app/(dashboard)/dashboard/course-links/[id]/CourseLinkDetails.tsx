@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { LoadingSpinner } from "../../../components/LoadingSpinner";
+import { LoadingSpinner } from "../../../../components/LoadingSpinner";
 
 interface CourseLink {
   _id: string;

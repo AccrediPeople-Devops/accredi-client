@@ -3,12 +3,12 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import curriculumService from "../../../components/service/curriculum.service";
-import courseService from "../../../components/service/course.service";
-import { Curriculum } from "../../../types/curriculum";
-import { Course } from "../../../types/course";
-import Modal from "../../../components/Modal";
-import { LoadingSpinner } from "../../../components/LoadingSpinner";
+import curriculumService from "../../../../components/service/curriculum.service";
+import courseService from "../../../../components/service/course.service";
+import { Curriculum } from "../../../../types/curriculum";
+import { Course } from "../../../../types/course";
+import Modal from "../../../../components/Modal";
+import { LoadingSpinner } from "../../../../components/LoadingSpinner";
 
 export default function CurriculumDetailPage() {
   const params = useParams();
