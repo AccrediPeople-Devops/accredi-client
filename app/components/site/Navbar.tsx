@@ -44,7 +44,7 @@ const Navbar = () => {
             <div className="h-11 w-[138px] relative overflow-hidden">
               <Link href="/">
                 <Image
-                  src="/Logo/Only Transperent/full_trimmed_transparent_white.png"
+                  src="/Logo/Only_Transperent/full_trimmed_transparent_base.png"
                   alt="Accredi Logo"
                   fill
                   priority
@@ -88,7 +88,7 @@ const Navbar = () => {
 
             {/* Sign In Button */}
             <Link
-              href="/signin"
+              href="/login"
               className="relative pr-2.5 pl-4 py-2.5 hover:bg-gray-50 rounded-lg flex items-center gap-0.5 text-sm text-gray-800 font-normal cursor-pointer duration-300"
             >
               Sign In

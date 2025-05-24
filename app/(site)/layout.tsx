@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import Navbar from "@/app/components/site/Navbar";
+import "../globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -14,10 +15,13 @@ export default function SiteLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
   return (
     <div className={`${inter.className} min-h-screen bg-white`}>
       <Navbar />
-      <main className="bg-white">{children}</main>
+      <main className="container mx-auto px-4 py-8">
+        {children}
+      </main>
     </div>
   );
 } 
