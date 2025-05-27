@@ -6,6 +6,7 @@ const nextConfig = {
       "via.placeholder.com",
       "courses.daylink.in",
       "api.accredipeoplecertifications.com",
+      "goldstandardcertifications.com",
     ],
   },
 };
