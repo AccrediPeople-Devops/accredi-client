@@ -76,6 +76,7 @@ export default function LoginPage() {
               fill
               style={{ objectFit: "contain" }}
               priority
+              unoptimized
             />
           </div>
           <div className="text-white text-center">

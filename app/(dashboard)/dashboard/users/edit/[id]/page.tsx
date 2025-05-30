@@ -416,6 +416,7 @@ export default function EditUserPage() {
                     alt="Profile preview"
                     layout="fill"
                     objectFit="cover"
+                    unoptimized
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-[var(--foreground-muted)]">

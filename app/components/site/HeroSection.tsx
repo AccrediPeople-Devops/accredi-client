@@ -76,7 +76,7 @@ export default function HeroSection() {
                     <div className="flex items-center gap-4 animate-scroll-x will-change-transform" style={{animation: 'scroll-x 18s linear infinite'}}>
                       {trustedLogosDoubled.map((logo, i) => (
                         <div key={logo.alt + i} className="w-20 h-7 relative flex-shrink-0">
-                          <Image src={logo.src} alt={logo.alt} fill className="object-contain" />
+                          <Image src={logo.src} alt={logo.alt} fill className="object-contain" unoptimized />
                         </div>
                       ))}
                     </div>
@@ -105,7 +105,7 @@ export default function HeroSection() {
                 {/* Learner rating */}
                 <div className="flex gap-4 items-center mt-2">
                   <div className="flex -space-x-2">
-                    <Image src="https://d2o2utebsixu4k.cloudfront.net/Banner%20user%20icons%20combo%2002-f30dfde5cd784231ac9a68c5c1498876.svg" alt="Rated by Learners" width={120} height={40} className="rounded-full" style={{ width: 'auto', height: 'auto' }} />
+                    <Image src="https://d2o2utebsixu4k.cloudfront.net/Banner%20user%20icons%20combo%2002-f30dfde5cd784231ac9a68c5c1498876.svg" alt="Rated by Learners" width={120} height={40} className="rounded-full" style={{ width: 'auto', height: 'auto' }} unoptimized />
                   </div>
                   <div className="flex flex-col gap-1">
                     <div className="text-sm text-gray-500">Rated by Learners</div>
@@ -127,6 +127,7 @@ export default function HeroSection() {
                     fill
                     className="object-contain"
                     priority
+                    unoptimized
                   />
                   {/* Floating testimonial cards - static for now */}
                   {/* <div className="absolute left-0 top-10 bg-white rounded-2xl shadow-lg px-4 py-2 flex flex-col items-center gap-1 w-48">

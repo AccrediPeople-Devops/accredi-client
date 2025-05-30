@@ -170,6 +170,7 @@ export default function ModesOfTrainingSection() {
                   height={400}
                   className="w-full h-auto rounded-2xl shadow-lg"
                   loading="lazy"
+                  unoptimized
                 />
               </div>
             </div>
@@ -204,6 +205,7 @@ export default function ModesOfTrainingSection() {
                   height={400}
                   className="w-full h-auto rounded-2xl shadow-lg"
                   loading="lazy"
+                  unoptimized
                 />
               </div>
             </div>

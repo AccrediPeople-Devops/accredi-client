@@ -142,6 +142,7 @@ export default function ImageUpload({
               alt="Image preview"
               fill
               style={{ objectFit: "cover" }}
+              unoptimized
             />
             <button
               type="button"

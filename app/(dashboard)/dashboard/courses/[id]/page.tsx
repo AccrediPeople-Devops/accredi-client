@@ -324,6 +324,7 @@ export default function CourseDetailsPage({ params }: { params: Promise<{ id: st
                     alt={course.title}
                     fill
                     style={{ objectFit: "cover" }}
+                    unoptimized
                   />
                 )}
               </div>
@@ -480,6 +481,7 @@ export default function CourseDetailsPage({ params }: { params: Promise<{ id: st
                       alt="Sample Certificate"
                       fill
                       style={{ objectFit: "cover" }}
+                      unoptimized
                     />
                   </div>
                 </div>
@@ -501,6 +503,7 @@ export default function CourseDetailsPage({ params }: { params: Promise<{ id: st
                           alt={`Badge ${index + 1}`}
                           fill
                           style={{ objectFit: "cover" }}
+                          unoptimized
                         />
                       </div>
                     ))}

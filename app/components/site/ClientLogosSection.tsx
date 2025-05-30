@@ -102,6 +102,7 @@ export default function ClientLogosSection() {
                       fill 
                       className="object-contain"
                       loading="lazy"
+                      unoptimized
                     />
                   </div>
                 ))}

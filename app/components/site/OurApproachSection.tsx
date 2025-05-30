@@ -4,7 +4,7 @@ import React from "react";
 
 export default function OurApproachSection() {
   return (
-    <section className="py-32 px-16 bg-white">
+    <section className="py-32 px-16 bg-white" id="our-approach">
       <div className="px-5 md:px-0 w-full 2xl:max-w-7xl mx-auto">
         {/* Header Section */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center mb-16">
@@ -181,6 +181,7 @@ export default function OurApproachSection() {
                 height={400}
                 className="mx-auto w-full"
                 loading="lazy"
+                unoptimized
               />
             </div>
           </div>

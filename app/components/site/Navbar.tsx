@@ -7,108 +7,153 @@ import { HiOutlineRefresh, HiOutlineDesktopComputer, HiOutlineCloud, HiOutlineCo
 import { BiData, BiBarChartAlt2 } from "react-icons/bi";
 
 const DOMAIN_ICONS: Record<string, React.ReactElement> = {
-  "Agile Management": <HiOutlineRefresh className="w-4 h-4 mr-2" />,
   "Project Management": <HiOutlineDesktopComputer className="w-4 h-4 mr-2" />,
+  "Quality Management": <HiOutlineChartBar className="w-4 h-4 mr-2" />,
+  "Agile and Scrum": <HiOutlineRefresh className="w-4 h-4 mr-2" />,
+  "Soft Skills Courses": <HiOutlineCog className="w-4 h-4 mr-2" />,
   "Cloud Computing": <HiOutlineCloud className="w-4 h-4 mr-2" />,
-  "IT Service Management": <HiOutlineCog className="w-4 h-4 mr-2" />,
-  "Data Science": <BiData className="w-4 h-4 mr-2" />,
-  "DevOps": <HiOutlineCode className="w-4 h-4 mr-2" />,
-  "BI And Visualization": <BiBarChartAlt2 className="w-4 h-4 mr-2" />,
-  "Cyber Security": <HiOutlineLockClosed className="w-4 h-4 mr-2" />,
-  "Web Development": <HiOutlineCode className="w-4 h-4 mr-2" />,
-  "Blockchain": <HiOutlineDesktopComputer className="w-4 h-4 mr-2" />,
-  "Programming": <HiOutlineCode className="w-4 h-4 mr-2" />,
+  "E-Learning": <HiOutlineCode className="w-4 h-4 mr-2" />,
 };
 
-const DUMMY_DOMAINS = [
-  "Agile Management",
+const ACCREDI_DOMAINS = [
   "Project Management",
+  "Quality Management", 
+  "Agile and Scrum",
+  "Soft Skills Courses",
   "Cloud Computing",
-  "IT Service Management",
-  "Data Science",
-  "DevOps",
-  "BI And Visualization",
-  "Cyber Security",
-  "Web Development",
-  "Blockchain",
-  "Programming",
+  "E-Learning"
 ];
 
 const DOMAIN_COURSES: Record<string, any> = {
-  "Agile Management": {
-    description: "Master Agile methodologies for efficient and timely project delivery.",
-    certifications: [
+  "Project Management": {
+    description: "Master project management methodologies with industry-leading certifications and training programs.",
+    courses: [
       {
-        provider: "Scrum Alliance",
-        hours: "16 Hours",
+        title: "PMP® Certification Training – Leading Instructor-led Online PMP® Course in the USA & Canada",
+        slug: "pmp-certification-training",
+        provider: "PMI",
+        hours: "36 Hours",
         badge: "Best Seller",
         badgeColor: "bg-orange-500",
-        title: "Certified ScrumMaster (CSM) Certification",
         icon: "🏆"
       },
       {
-        provider: "Scrum Alliance",
-        hours: "16 Hours",
-        badge: "Best Seller",
-        badgeColor: "bg-orange-500",
-        title: "Certified Scrum Product Owner (CSPO) Certification",
-        icon: "🏆"
+        title: "Project Management Fundamentals Training",
+        slug: "project-management-fundamentals",
+        provider: "Accredi",
+        hours: "24 Hours",
+        icon: "📊"
       },
       {
-        provider: "Scaled Agile",
-        hours: "16 Hours",
-        badge: "Trending",
-        badgeColor: "bg-[#B39DDB]",
-        title: "Leading SAFe 6.0 Certification",
-        icon: "📈"
-      },
-      {
-        provider: "Scrum.org",
-        hours: "16 Hours",
-        title: "Professional Scrum Master (PSM) Certification",
-        icon: "⚡"
-      }
-    ],
-    advanced: [
-      {
-        provider: "Scaled Agile, Inc.",
+        title: "PMI Risk Management Professional (PMI-RMP)®",
+        slug: "pmi-rmp-certification",
+        provider: "PMI",
         hours: "32 Hours",
-        badge: "Recommended",
+        badge: "Popular",
+        badgeColor: "bg-[#4F46E5]",
+        icon: "⚠️"
+      },
+      {
+        title: "Program Management Professional (PgMP)®",
+        slug: "pgmp-certification",
+        provider: "PMI",
+        hours: "40 Hours",
+        badge: "Advanced",
         badgeColor: "bg-green-500",
-        title: "Implementing SAFe 6.0 (SPC) Certification",
         icon: "🎯"
-      }
-    ],
-    masters: [
-      {
-        hours: "32 Hours",
-        badge: "Trending",
-        badgeColor: "bg-[#B39DDB]",
-        title: "Agile Management Master's Program",
-        icon: "🎓"
       }
     ]
   },
-  "Data Science": {
-    description: "Master data science techniques and tools for data-driven decision making.",
-    certifications: [
+  "Quality Management": {
+    description: "Enhance quality management skills with Six Sigma and Lean methodologies certification training.",
+    courses: [
       {
-        provider: "Microsoft",
+        title: "Lean Six Sigma Green Belt Certification Training",
+        slug: "lean-six-sigma-green-belt",
+        provider: "IASSC",
+        hours: "32 Hours",
+        badge: "Popular",
+        badgeColor: "bg-[#4F46E5]",
+        icon: "🟢"
+      },
+      {
+        title: "Lean Six Sigma Black Belt Certification Training",
+        slug: "lean-six-sigma-black-belt",
+        provider: "IASSC",
+        hours: "40 Hours",
+        badge: "Advanced",
+        badgeColor: "bg-green-500",
+        icon: "⚫"
+      }
+    ]
+  },
+  "Agile and Scrum": {
+    description: "Master Agile methodologies and Scrum framework for efficient project delivery and team collaboration.",
+    courses: [
+      {
+        title: "Agile Certified Practitioner (PMI-ACP)® Training",
+        slug: "pmi-acp-certification",
+        provider: "PMI",
+        hours: "24 Hours",
+        badge: "Trending",
+        badgeColor: "bg-[#B39DDB]",
+        icon: "🚀"
+      }
+    ]
+  },
+  "Soft Skills Courses": {
+    description: "Develop essential soft skills for effective leadership, communication, and project management.",
+    courses: [
+      {
+        title: "Conflict Management Training",
+        slug: "conflict-management-training",
+        provider: "Accredi",
+        hours: "16 Hours",
+        icon: "🤝"
+      },
+      {
+        title: "Project Management Techniques Training",
+        slug: "project-management-techniques",
+        provider: "Accredi",
+        hours: "20 Hours",
+        icon: "🛠️"
+      }
+    ]
+  },
+  "Cloud Computing": {
+    description: "Build cloud expertise with AWS certification training and cloud architecture best practices.",
+    courses: [
+      {
+        title: "AWS® Certified Cloud Practitioner Training",
+        slug: "aws-cloud-practitioner",
+        provider: "AWS",
         hours: "24 Hours",
         badge: "Popular",
         badgeColor: "bg-[#4F46E5]",
-        title: "Azure Data Scientist Associate",
-        icon: "📊"
-      }
-    ],
-    advanced: [],
-    masters: [
+        icon: "☁️"
+      },
       {
-        hours: "40 Hours",
-        badge: "Comprehensive",
-        badgeColor: "bg-[#4F46E5]",
-        title: "Data Science Master's Program",
-        icon: "🎓"
+        title: "AWS® Certified Solutions Architect - Associate Training",
+        slug: "aws-solutions-architect-associate",
+        provider: "AWS",
+        hours: "32 Hours",
+        badge: "Best Seller",
+        badgeColor: "bg-orange-500",
+        icon: "🏗️"
+      }
+    ]
+  },
+  "E-Learning": {
+    description: "Flexible online learning options for professional development and certification preparation.",
+    courses: [
+      {
+        title: "PMP® Certification Training – Leading Online PMP® Course in USA & Canada",
+        slug: "pmp-online-certification",
+        provider: "PMI",
+        hours: "36 Hours",
+        badge: "Online",
+        badgeColor: "bg-[#B39DDB]",
+        icon: "💻"
       }
     ]
   }
@@ -120,7 +165,7 @@ const Navbar = () => {
   const [isMobileMenuAnimating, setIsMobileMenuAnimating] = useState(false);
   const [isMobileCoursesOpen, setIsMobileCoursesOpen] = useState(false);
   const [selectedMobileDomain, setSelectedMobileDomain] = useState<string | null>(null);
-  const [activeDomain, setActiveDomain] = useState(DUMMY_DOMAINS[0]);
+  const [activeDomain, setActiveDomain] = useState(ACCREDI_DOMAINS[0]);
   const menuRef = useRef<HTMLDivElement>(null);
   const allCoursesBtnRef = useRef<HTMLButtonElement>(null);
   const navRef = useRef<HTMLDivElement>(null);
@@ -146,7 +191,7 @@ const Navbar = () => {
       title: "Company",
       items: [
         { label: "About Us", href: "/about" },
-        { label: "Our Approach", href: "/approach" },
+        { label: "Our Approach", href: "/about#our-approach" },
         { label: "Contact Us", href: "/contact" },
       ],
     },
@@ -154,9 +199,8 @@ const Navbar = () => {
       title: "Quick Links",
       items: [
         { label: "Blogs", href: "/blog" },
-        { label: "Discounts", href: "/discounts" },
-        { label: "Refer & Earn", href: "/refer" },
-        { label: "Mil/Vet Discount", href: "/military-veteran-discount" },
+        { label: "Refer & Earn", href: "/refer-earn" },
+        { label: "Mil/Vet Discount", href: "/mil-vet-discount" },
         { label: "Unemployed Discount", href: "/unemployed-discount" },
       ],
     },
@@ -179,14 +223,15 @@ const Navbar = () => {
             <div className="flex gap-5 items-center">
               <div className="h-11 w-[138px] relative overflow-hidden">
                 <Link href="/">
-                  <Image
-                    src="/Logo/Only_Transperent/full_trimmed_transparent_base.png"
-                    alt="Accredi Logo"
-                    fill
-                    priority
-                    sizes="138px"
-                    style={{ objectFit: "contain" }}
-                  />
+                <Image
+                  src="/Logo/Only_Transperent/full_trimmed_transparent_base.png"
+                  alt="Accredi Logo"
+                  width={138}
+                  height={44}
+                  priority
+                  unoptimized
+                  className="object-contain w-full h-full"
+                />
                 </Link>
               </div>
               {/* All Courses Mega Menu - Hidden on mobile */}
@@ -239,7 +284,6 @@ const Navbar = () => {
                   </div>
                 </div>
               ))}
-
               {/* Reviews Link */}
               <Link
                 href="/reviews"
@@ -308,7 +352,7 @@ const Navbar = () => {
             <div className="w-72 bg-gray-50 h-full py-6 px-0 flex flex-col border-r border-gray-200 overflow-y-auto text-[15px]">
               <div className="font-semibold text-gray-700 mb-3 pl-8 text-[15px]">Domains</div>
               <ul className="flex-1">
-                {DUMMY_DOMAINS.map((domain) => (
+                {ACCREDI_DOMAINS.map((domain) => (
                   <li
                     key={domain}
                     className={`flex items-center px-8 py-2 cursor-pointer text-[15px] transition
@@ -320,7 +364,7 @@ const Navbar = () => {
                   >
                     {DOMAIN_ICONS[domain] ?? <HiOutlineDesktopComputer className="w-4 h-4 mr-2" />}
                     {domain}
-                                          {activeDomain === domain && (
+                    {activeDomain === domain && (
                       <svg className="ml-auto w-4 h-4 text-[#4F46E5]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                       </svg>
@@ -329,86 +373,87 @@ const Navbar = () => {
                 ))}
               </ul>
               <Link
-                href="/domains"
+                href="/courses"
                 className="block mt-4 text-[14px] font-bold text-gray-900 hover:underline pl-8"
               >
-                Browse All Domains <span aria-hidden>→</span>
+                Browse All Courses <span aria-hidden>→</span>
               </Link>
             </div>
             {/* Main Content */}
             <div className="flex-1 bg-white h-full p-8 overflow-y-auto text-[15px] flex flex-col justify-start" style={{ borderRadius: "0 0 20px 0" }}>
               <div className="font-bold text-lg text-gray-800 mb-1">{activeDomain}</div>
               <div className="text-xs text-gray-500 mb-4">
-                Master {activeDomain.toLowerCase()} methodologies for efficient and timely project delivery.
-                <Link href="#" className="ml-2 text-[#4F46E5] text-xs font-medium hover:underline">View All {activeDomain} Courses</Link>
+                {DOMAIN_COURSES[activeDomain]?.description || `Master ${activeDomain.toLowerCase()} methodologies for efficient and timely project delivery.`}
+                <Link href={`/courses?domain=${activeDomain.toLowerCase().replace(/\s+/g, '-')}`} className="ml-2 text-[#4F46E5] text-xs font-medium hover:underline">View All {activeDomain} Courses</Link>
               </div>
-              <div className="grid grid-cols-2 gap-6">
-                <div>
-                  <div className="font-semibold text-gray-800 mb-1 text-[14px]">Certifications</div>
-                  <ul className="space-y-1">
-                    <li className="flex items-center gap-2 text-[14px]">
-                      <span className="font-semibold text-gray-900">Scrum Alliance</span>
-                      <span className="text-gray-400">• 16 Hours</span>
-                      <span className="ml-2 px-2 py-0.5 bg-orange-100 text-orange-700 text-xs rounded">Best Seller</span>
-                    </li>
-                    <li className="text-gray-700 text-[14px]">Certified ScrumMaster (CSM) Certification</li>
-                    <li className="flex items-center gap-2 text-[14px]">
-                      <span className="font-semibold text-gray-900">Scrum Alliance</span>
-                      <span className="text-gray-400">• 16 Hours</span>
-                      <span className="ml-2 px-2 py-0.5 bg-orange-100 text-orange-700 text-xs rounded">Best Seller</span>
-                    </li>
-                    <li className="text-gray-700 text-[14px]">Certified Scrum Product Owner (CSPO) Certification</li>
-                    <li className="flex items-center gap-2 text-[14px]">
-                      <span className="font-semibold text-gray-900">Scaled Agile</span>
-                      <span className="text-gray-400">• 16 Hours</span>
-                      <span className="ml-2 px-2 py-0.5 bg-[#EDE9FE] text-[#B39DDB] text-xs rounded">Trending</span>
-                    </li>
-                    <li className="text-gray-700 text-[14px]">Leading SAFe 6.0 Certification</li>
-                  </ul>
-                  <hr className="my-4 border-gray-200" />
-                  <div className="font-semibold text-gray-800 mb-1 text-[14px]">Advanced Certifications</div>
-                  <ul className="space-y-1">
-                    <li className="flex items-center gap-2 text-[14px]">
-                      <span className="font-semibold text-gray-900">Scaled Agile, Inc.</span>
-                      <span className="text-gray-400">• 32 Hours</span>
-                      <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded">Recommended</span>
-                    </li>
-                    <li className="text-gray-700 text-[14px]">Implementing SAFe 6.0 (SPC) Certification</li>
-                  </ul>
-                </div>
-                <div>
-                  <div className="font-semibold text-gray-800 mb-1 text-[14px]">Masters</div>
-                  <ul className="space-y-1">
-                    <li className="flex items-center gap-2 text-[14px]">
-                      <span className="font-semibold text-gray-900">32 Hours</span>
-                      <span className="ml-2 px-2 py-0.5 bg-[#EDE9FE] text-[#B39DDB] text-xs rounded">Trending</span>
-                    </li>
-                    <li className="text-gray-700 text-[14px]">Agile Management Master's Program</li>
-                  </ul>
-                  <hr className="my-4 border-gray-200" />
-                  <div className="font-semibold text-gray-800 mb-1 text-[14px]">On-Demand Courses</div>
-                  <ul className="space-y-1">
-                    <li className="text-gray-700 text-[14px]">Agile and Scrum <span className="ml-1 text-xs text-[#4F46E5]">→</span></li>
-                  </ul>
-                  <hr className="my-4 border-gray-200" />
-                  <div className="font-semibold text-gray-800 mb-1 text-[14px]">Roles</div>
-                  <ul className="space-y-1">
-                    <li className="text-gray-700 text-[14px]">Scrum Master <span className="ml-1 text-xs text-[#4F46E5]">→</span></li>
-                    <li className="text-gray-700 text-[14px]">Product Owner <span className="ml-1 text-xs text-[#4F46E5]">→</span></li>
-                  </ul>
-                </div>
+              
+              {/* Course List */}
+              <div className="space-y-4">
+                <div className="font-semibold text-gray-800 mb-3 text-[14px]">Available Courses</div>
+                {DOMAIN_COURSES[activeDomain]?.courses?.map((course: any, idx: number) => (
+                  <Link
+                    key={idx}
+                    href={`/courses/${course.slug}`}
+                    className="block p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow group"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="text-2xl">{course.icon}</div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          {course.provider && (
+                            <>
+                              <span className="text-xs font-medium text-gray-700">{course.provider}</span>
+                              <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
+                            </>
+                          )}
+                          <span className="text-xs text-gray-500">{course.hours}</span>
+                          {course.badge && (
+                            <span className={`px-2 py-0.5 text-xs text-white rounded ${course.badgeColor}`}>
+                              {course.badge}
+                            </span>
+                          )}
+                        </div>
+                        <h4 className="text-sm font-medium text-gray-900 group-hover:text-[#4F46E5] transition-colors leading-tight">
+                          {course.title}
+                        </h4>
+                      </div>
+                      <svg className="w-4 h-4 text-gray-400 group-hover:text-[#4F46E5] transition-colors" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                  </Link>
+                )) || (
+                  <div className="text-center py-8 text-gray-500">
+                    Course details coming soon for {activeDomain}
+                  </div>
+                )}
               </div>
             </div>
             {/* Right Sidebar */}
             <div className="w-72 bg-white h-full py-6 px-6 border-l border-gray-200 flex flex-col overflow-y-auto text-[14px]">
-              <div className="font-semibold text-gray-700 mb-3">Top Resources</div>
+              <div className="font-semibold text-gray-700 mb-3">Popular Resources</div>
               <ul>
-                <li className="mb-2 text-[#4F46E5] cursor-pointer">Scrum Tutorial <span aria-hidden>→</span></li>
-                <li className="mb-2 text-[#4F46E5] cursor-pointer">CSM VS CSPO <span aria-hidden>→</span></li>
-                <li className="mb-2 text-[#4F46E5] cursor-pointer">CSM vs PSM <span aria-hidden>→</span></li>
-                <li className="mb-2 text-[#4F46E5] cursor-pointer">Scrum Practice Test <span aria-hidden>→</span></li>
-                <li className="mb-2 text-[#4F46E5] cursor-pointer">PO Interview Qs <span aria-hidden>→</span></li>
+                <li className="mb-2 text-[#4F46E5] cursor-pointer hover:underline">PMP Study Guide <span aria-hidden>→</span></li>
+                <li className="mb-2 text-[#4F46E5] cursor-pointer hover:underline">Project Management Tips <span aria-hidden>→</span></li>
+                <li className="mb-2 text-[#4F46E5] cursor-pointer hover:underline">Certification Comparison <span aria-hidden>→</span></li>
+                <li className="mb-2 text-[#4F46E5] cursor-pointer hover:underline">Free Practice Tests <span aria-hidden>→</span></li>
+                <li className="mb-2 text-[#4F46E5] cursor-pointer hover:underline">Career Guidance <span aria-hidden>→</span></li>
               </ul>
+              
+              <hr className="my-4 border-gray-200" />
+              
+              <div className="font-semibold text-gray-700 mb-3">Need Help?</div>
+              <div className="space-y-2">
+                <Link href="/contact" className="block text-sm text-gray-600 hover:text-[#4F46E5] transition-colors">
+                  Contact Our Advisors
+                </Link>
+                <Link href="/blog" className="block text-sm text-gray-600 hover:text-[#4F46E5] transition-colors">
+                  Read Our Blog
+                </Link>
+                <Link href="/about" className="block text-sm text-gray-600 hover:text-[#4F46E5] transition-colors">
+                  About Accredi
+                </Link>
+              </div>
             </div>
           </div>
         </React.Fragment>
@@ -433,9 +478,11 @@ const Navbar = () => {
                   <Image
                     src="/Logo/Only_Transperent/full_trimmed_transparent_base.png"
                     alt="Accredi Logo"
-                    fill
-                    sizes="110px"
-                    style={{ objectFit: "contain" }}
+                    width={110}
+                    height={32}
+                    priority
+                    unoptimized
+                    className="object-contain w-full h-full"
                   />
                 </div>
                 <button onClick={closeMobileMenu} className="p-2">
@@ -481,6 +528,17 @@ const Navbar = () => {
                       onClick={closeMobileMenu}
                     >
                       <span className="text-sm font-medium">Reviews</span>
+                    </Link>
+                  </div>
+                  
+                  {/* About Us Link */}
+                  <div className="border-b border-gray-100">
+                    <Link
+                      href="/about"
+                      className="flex items-center justify-between py-3 text-gray-800"
+                      onClick={closeMobileMenu}
+                    >
+                      <span className="text-sm font-medium">About Us</span>
                     </Link>
                   </div>
                   
@@ -548,7 +606,7 @@ const Navbar = () => {
               <div className="flex-1 overflow-y-auto">
                 {!selectedMobileDomain ? (
                   // Domains List
-                  DUMMY_DOMAINS.map((domain) => (
+                  ACCREDI_DOMAINS.map((domain) => (
                     <button
                       key={domain}
                       onClick={() => setSelectedMobileDomain(domain)}
@@ -591,16 +649,24 @@ const Navbar = () => {
                     {/* Course Categories */}
                     {DOMAIN_COURSES[selectedMobileDomain] ? (
                       <div className="space-y-6">
-                        {/* Certifications */}
-                        {DOMAIN_COURSES[selectedMobileDomain].certifications?.length > 0 && (
+                        {/* Courses */}
+                        {DOMAIN_COURSES[selectedMobileDomain].courses?.length > 0 && (
                           <div>
-                            <h3 className="text-lg font-bold text-gray-900 mb-4">Certifications</h3>
+                            <h3 className="text-lg font-bold text-gray-900 mb-4">Available Courses</h3>
                             <div className="space-y-4">
-                              {DOMAIN_COURSES[selectedMobileDomain].certifications.map((course: any, idx: number) => (
-                                <div key={idx} className="flex gap-3 p-3 border border-gray-200 rounded-lg">
+                              {DOMAIN_COURSES[selectedMobileDomain].courses.map((course: any, idx: number) => (
+                                <Link
+                                  key={idx}
+                                  href={`/courses/${course.slug}`}
+                                  onClick={() => {
+                                    setIsMobileCoursesOpen(false);
+                                    setSelectedMobileDomain(null);
+                                  }}
+                                  className="flex gap-3 p-3 border border-gray-200 rounded-lg hover:shadow-md transition-shadow"
+                                >
                                   <div className="text-2xl">{course.icon}</div>
                                   <div className="flex-1">
-                                    <div className="flex items-center gap-2 mb-1">
+                                    <div className="flex items-center gap-2 mb-1 flex-wrap">
                                       {course.provider && (
                                         <>
                                           <span className="text-xs text-gray-500">{course.provider}</span>
@@ -614,65 +680,12 @@ const Navbar = () => {
                                         </span>
                                       )}
                                     </div>
-                                    <p className="text-sm font-medium text-gray-900">{course.title}</p>
+                                    <p className="text-sm font-medium text-gray-900 leading-tight">{course.title}</p>
                                   </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Advanced Certifications */}
-                        {DOMAIN_COURSES[selectedMobileDomain].advanced?.length > 0 && (
-                          <div>
-                            <h3 className="text-lg font-bold text-gray-900 mb-4">Advanced Certifications</h3>
-                            <div className="space-y-4">
-                              {DOMAIN_COURSES[selectedMobileDomain].advanced.map((course: any, idx: number) => (
-                                <div key={idx} className="flex gap-3 p-3 border border-gray-200 rounded-lg">
-                                  <div className="text-2xl">{course.icon}</div>
-                                  <div className="flex-1">
-                                    <div className="flex items-center gap-2 mb-1">
-                                      {course.provider && (
-                                        <>
-                                          <span className="text-xs text-gray-500">{course.provider}</span>
-                                          <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
-                                        </>
-                                      )}
-                                      <span className="text-xs text-gray-500">{course.hours}</span>
-                                      {course.badge && (
-                                        <span className={`px-2 py-0.5 text-xs text-white rounded ${course.badgeColor}`}>
-                                          {course.badge}
-                                        </span>
-                                      )}
-                                    </div>
-                                    <p className="text-sm font-medium text-gray-900">{course.title}</p>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Masters */}
-                        {DOMAIN_COURSES[selectedMobileDomain].masters?.length > 0 && (
-                          <div>
-                            <h3 className="text-lg font-bold text-gray-900 mb-4">Masters</h3>
-                            <div className="space-y-4">
-                              {DOMAIN_COURSES[selectedMobileDomain].masters.map((course: any, idx: number) => (
-                                <div key={idx} className="flex gap-3 p-3 border border-gray-200 rounded-lg">
-                                  <div className="text-2xl">{course.icon}</div>
-                                  <div className="flex-1">
-                                    <div className="flex items-center gap-2 mb-1">
-                                      <span className="text-xs text-gray-500">{course.hours}</span>
-                                      {course.badge && (
-                                        <span className={`px-2 py-0.5 text-xs text-white rounded ${course.badgeColor}`}>
-                                          {course.badge}
-                                        </span>
-                                      )}
-                                    </div>
-                                    <p className="text-sm font-medium text-gray-900">{course.title}</p>
-                                  </div>
-                                </div>
+                                  <svg className="w-5 h-5 text-gray-400 flex-shrink-0 self-center" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                                  </svg>
+                                </Link>
                               ))}
                             </div>
                           </div>
@@ -688,14 +701,21 @@ const Navbar = () => {
                 )}
               </div>
               
-              {/* Bottom Button */}
+              {/* Bottom Section */}
               <div className="p-4 border-t">
-                <button className="w-full flex items-center justify-center gap-2 py-3 border border-gray-300 rounded-lg text-sm font-medium text-gray-800">
-                  Browse All Domains
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600">Need help choosing?</span>
+                  <Link 
+                    href="/contact" 
+                    className="text-[#4F46E5] font-medium"
+                    onClick={() => {
+                      setIsMobileCoursesOpen(false);
+                      setSelectedMobileDomain(null);
+                    }}
+                  >
+                    Contact Us
+                  </Link>
+                </div>
               </div>
             </div>
           </div>

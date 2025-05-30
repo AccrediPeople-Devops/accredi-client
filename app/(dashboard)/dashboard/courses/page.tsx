@@ -412,6 +412,7 @@ export default function CoursesPage() {
                                 width={40}
                                 height={40}
                                 className="h-full w-full object-cover"
+                                unoptimized
                               />
                             ) : (
               <Image
@@ -420,6 +421,7 @@ export default function CoursesPage() {
                                 width={40}
                                 height={40}
                                 className="h-full w-full object-cover"
+                                unoptimized
               />
                             )}
             </div>

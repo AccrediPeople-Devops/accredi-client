@@ -62,7 +62,7 @@ export default function CertificationsSection() {
             {certificationsDoubled.map((cert, i) => (
               <div key={cert.alt + i} className="flex flex-col items-center justify-center gap-2 min-w-[90px]">
                 <div className="w-16 h-16 md:w-20 md:h-20 relative">
-                  <Image src={cert.src} alt={cert.alt} fill className="object-contain" />
+                  <Image src={cert.src} alt={cert.alt} fill className="object-contain" unoptimized />
                 </div>
                 <div className="text-xs text-gray-600 text-center truncate max-w-[90px]">{cert.alt}</div>
               </div>
