@@ -1,14 +1,15 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, use } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Breadcrumb from "@/app/components/site/Breadcrumb";
 
 interface CoursePageProps {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 export default function CoursePage({ params }: CoursePageProps) {
+  const unwrappedParams = use(params);
   const [showBrochureModal, setShowBrochureModal] = useState(false);
   const [brochureFormData, setBrochureFormData] = useState({
     name: '',

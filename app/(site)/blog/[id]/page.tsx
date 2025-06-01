@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, use } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Breadcrumb from "@/app/components/site/Breadcrumb";
 
-export default function BlogDetailsPage({ params }: { params: { id: string } }) {
+export default function BlogDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+  const unwrappedParams = use(params);
   const [rating, setRating] = useState(0);
   const [likeCount, setLikeCount] = useState(234);
   const [isLiked, setIsLiked] = useState(false);
@@ -21,7 +22,7 @@ export default function BlogDetailsPage({ params }: { params: { id: string } }) 
   ];
 
   const blogPost = {
-    id: params.id,
+    id: unwrappedParams.id,
     title: "Complete Guide to PMP Certification: Everything You Need to Know",
     excerpt: "Discover the comprehensive roadmap to becoming a certified Project Management Professional and accelerate your career in project management.",
     content: `
