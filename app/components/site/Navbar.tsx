@@ -279,7 +279,7 @@ const Navbar = () => {
     {
       title: "For Business",
       items: [
-        { label: "Enterprise", href: "/enterprise" },
+        { label: "Enterprise", href: "/enterprises" },
         { label: "Become Instructor", href: "/become-instructor" },
       ],
     },

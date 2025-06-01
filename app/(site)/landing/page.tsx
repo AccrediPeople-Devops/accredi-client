@@ -18,7 +18,12 @@ export default function LandingPage() {
       <OurApproachSection />
       <ModesOfTrainingSection />
       <ProfessionalTrainingSection />
-      <TestimonialsSection />
+      <div id="testimonials">
+        <TestimonialsSection />
+      </div>
+      <div id="certifications">
+        <CertificationsSection />
+      </div>
       <ClientLogosSection />
       <ContactCTASection />
     </>

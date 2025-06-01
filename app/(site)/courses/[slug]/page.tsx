@@ -250,17 +250,22 @@ export default function CoursePage({ params }: CoursePageProps) {
   ];
 
   return (
-    <div className="min-h-screen">
-      {/* Breadcrumb Section */}
-      <div className="bg-white py-4">
-        <div className="lg:container lg:mx-auto lg:max-w-7xl px-3.5 lg:px-8">
-          <Breadcrumb items={breadcrumbItems} />
-        </div>
-      </div>
-
+    <div className="min-h-screen site-section-bg">
       {/* Hero Section */}
-      <section className="py-12 lg:py-20 bg-white">
-        <div className="lg:container lg:mx-auto lg:max-w-7xl px-3.5 lg:px-8">
+      <section className="relative py-20 lg:py-32 overflow-hidden site-section-bg">
+        {/* Background Elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-20 left-20 w-96 h-96 bg-[#4F46E5]/5 site-light:bg-[#4F46E5]/10 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-20 right-20 w-80 h-80 bg-[#10B981]/5 site-light:bg-[#10B981]/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#F59E0B]/5 site-light:bg-[#F59E0B]/10 rounded-full blur-3xl animate-pulse delay-2000"></div>
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Breadcrumb */}
+          <div className="mb-8">
+            <Breadcrumb items={breadcrumbItems} />
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
             
             {/* Content - Left Side */}
@@ -268,31 +273,45 @@ export default function CoursePage({ params }: CoursePageProps) {
               <div className="space-y-6">
                 
                 {/* Category */}
-                <div className="text-sm font-semibold text-gray-700 uppercase tracking-wider">
-                  {courseData.category}
+                <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-4 py-2">
+                  <div className="w-2 h-2 bg-[#4F46E5] rounded-full animate-pulse"></div>
+                  <span className="text-[#4F46E5] text-sm font-semibold uppercase tracking-wider">
+                    {courseData.category}
+                  </span>
                 </div>
 
                 {/* Title */}
                 <div>
-                  <h1 className="text-3xl lg:text-4xl xl:text-5xl font-extrabold text-gray-900 mb-4 leading-tight">
-                    {courseData.title}
+                  <h1 className="text-4xl lg:text-5xl xl:text-6xl font-black mb-6 leading-tight">
+                    <span className="site-text-primary">{courseData.title.split('®')[0]}® </span>
+                    <span className="bg-gradient-to-r from-[#4F46E5] to-[#10B981] bg-clip-text text-transparent">
+                      Certification Training
+                    </span>
                   </h1>
-                  <p className="text-lg lg:text-xl text-gray-800 font-medium">
+                  <p className="text-xl site-text-secondary font-medium leading-relaxed">
                     {courseData.description}
                   </p>
                 </div>
 
                 {/* Features List */}
-                <div className="space-y-4">
+                <div className="site-glass backdrop-blur-xl rounded-3xl p-6 shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500">
+                  <h3 className="text-lg font-bold site-text-primary mb-4 flex items-center gap-2">
+                    <div className="w-6 h-6 bg-gradient-to-br from-[#4F46E5] to-[#10B981] rounded-lg flex items-center justify-center">
+                      <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    What You'll Get
+                  </h3>
                   <ul className="space-y-3">
                     {courseData.features.map((feature, index) => (
                       <li key={index} className="flex items-start gap-3">
                         <div className="flex-shrink-0 w-5 h-5 mt-0.5">
-                          <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                          <svg className="w-5 h-5 text-[#10B981]" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                           </svg>
                         </div>
-                        <span className="text-gray-700 leading-relaxed">{feature}</span>
+                        <span className="site-text-secondary leading-relaxed">{feature}</span>
                       </li>
                     ))}
                   </ul>
@@ -302,16 +321,19 @@ export default function CoursePage({ params }: CoursePageProps) {
                 <div className="flex flex-col md:flex-row gap-4 pt-6">
                   <button
                     onClick={scrollToSchedule}
-                    className="flex items-center justify-center px-6 py-4 border-2 border-gray-900 text-gray-900 font-bold rounded-lg hover:bg-gray-900 hover:text-white transition-all duration-300 min-w-[180px]"
+                    className="group flex items-center justify-center px-8 py-4 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#7C3AED] hover:to-[#6D28D9] text-white font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:shadow-[#4F46E5]/25 min-w-[200px]"
                   >
+                    <svg className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
                     View Schedules
                   </button>
                   
                   <button
                     onClick={() => setShowBrochureModal(true)}
-                    className="flex items-center justify-center gap-3 px-6 py-4 bg-gray-900 text-white font-bold rounded-lg hover:bg-[#4F46E5] transition-all duration-300 min-w-[180px]"
+                    className="group flex items-center justify-center gap-3 px-8 py-4 site-glass backdrop-blur-sm site-border border hover:bg-white/20 site-light:hover:bg-white/60 site-text-primary font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 min-w-[200px]"
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
                     </svg>
                     Download Brochure
@@ -324,7 +346,7 @@ export default function CoursePage({ params }: CoursePageProps) {
             <div className="lg:col-span-5 flex flex-col items-center lg:items-end">
               <div className="relative">
                 {/* Course Image */}
-                <div className="relative w-full max-w-lg h-80 lg:h-96 rounded-2xl overflow-hidden mb-6">
+                <div className="relative w-full max-w-lg h-80 lg:h-96 site-glass backdrop-blur-xl rounded-3xl overflow-hidden mb-6 shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500">
                   {/* Gradient Overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent z-10"></div>
                   
@@ -335,23 +357,32 @@ export default function CoursePage({ params }: CoursePageProps) {
                     className="object-cover"
                     unoptimized
                   />
+                  
+                  {/* Floating Badge */}
+                  <div className="absolute top-4 left-4 z-20">
+                    <div className="inline-flex items-center px-3 py-2 bg-gradient-to-r from-[#10B981] to-[#059669] text-white rounded-full text-sm font-bold">
+                      <div className="w-2 h-2 bg-white rounded-full mr-2 animate-pulse"></div>
+                      Live Training
+                    </div>
+                  </div>
                 </div>
 
                 {/* Authorization Badge and Share */}
                 <div className="flex items-center justify-between gap-4">
                   {/* PMI Badge */}
-                  <div className="flex items-center bg-[#B39DDB]/20 rounded-full pl-12 pr-4 py-3 relative">
-                    <div className="absolute -left-2 w-12 h-12 bg-[#4F46E5] rounded-full flex items-center justify-center">
+                  <div className="site-glass backdrop-blur-xl rounded-2xl p-4 shadow-xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500 flex items-center gap-3">
+                    <div className="w-12 h-12 bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] rounded-xl flex items-center justify-center">
                       <span className="text-white font-bold text-sm">PMI</span>
                     </div>
-                    <span className="text-[#4F46E5] font-semibold text-sm">
-                      {courseData.authorizedPartner}
-                    </span>
+                    <div>
+                      <div className="text-sm font-bold site-text-primary">Authorized Partner</div>
+                      <div className="text-xs site-text-muted">Official Training Provider</div>
+                    </div>
                   </div>
 
                   {/* Share Button */}
-                  <button className="w-12 h-12 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors">
-                    <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <button className="site-glass backdrop-blur-xl w-12 h-12 rounded-xl flex items-center justify-center hover:bg-white/20 site-light:hover:bg-white/60 transition-all duration-300 hover:scale-110 shadow-xl">
+                    <svg className="w-5 h-5 site-text-secondary" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
                     </svg>
                   </button>
@@ -363,17 +394,26 @@ export default function CoursePage({ params }: CoursePageProps) {
       </section>
 
       {/* Course Overview Section */}
-      <section className="py-16 bg-gradient-to-br from-gray-50 to-white">
-        <div className="lg:container lg:mx-auto lg:max-w-7xl px-3.5 lg:px-8">
+      <section className="py-16 md:py-24 site-section-bg relative overflow-hidden">
+        <div className="absolute inset-0">
+          <div className="absolute top-20 right-20 w-64 h-64 bg-[#4F46E5]/5 site-light:bg-[#4F46E5]/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 left-20 w-80 h-80 bg-[#10B981]/5 site-light:bg-[#10B981]/10 rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             
             {/* Content */}
             <div className="space-y-8">
               <div className="space-y-4">
-                <h2 className="text-3xl lg:text-4xl font-bold text-gray-900">
-                  Course Overview
+                <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-4 py-2 mb-6">
+                  <div className="w-2 h-2 bg-[#10B981] rounded-full animate-pulse"></div>
+                  <span className="text-[#10B981] text-sm font-semibold uppercase tracking-wider">Overview</span>
+                </div>
+                <h2 className="text-4xl lg:text-5xl font-black site-text-primary mb-6">
+                  <strong>Course Overview</strong>
                 </h2>
-                <p className="text-lg text-gray-600 leading-relaxed">
+                <p className="text-lg site-text-secondary leading-relaxed">
                   Our comprehensive {courseData.title} is designed to equip professionals 
                   with the essential skills and knowledge needed to excel in project management. 
                   This intensive training program combines theoretical foundations with practical 
@@ -383,95 +423,104 @@ export default function CoursePage({ params }: CoursePageProps) {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Stats Cards */}
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <div className="site-glass backdrop-blur-xl rounded-3xl p-6 shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500 hover:scale-105 group">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 bg-[#4F46E5]/10 rounded-lg flex items-center justify-center">
-                      <svg className="w-5 h-5 text-[#4F46E5]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <div className="w-10 h-10 bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-900">Duration</h3>
+                    <h3 className="text-lg font-semibold site-text-primary">Duration</h3>
                   </div>
-                  <p className="text-2xl font-bold text-[#4F46E5]">36 Hours</p>
-                  <p className="text-sm text-gray-600 mt-1">Comprehensive Training</p>
+                  <p className="text-2xl font-black bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] bg-clip-text text-transparent">36 Hours</p>
+                  <p className="text-sm site-text-muted mt-1">Comprehensive Training</p>
                 </div>
 
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <div className="site-glass backdrop-blur-xl rounded-3xl p-6 shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500 hover:scale-105 group">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                      <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <div className="w-10 h-10 bg-gradient-to-br from-[#10B981] to-[#059669] rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-900">Success Rate</h3>
+                    <h3 className="text-lg font-semibold site-text-primary">Success Rate</h3>
                   </div>
-                  <p className="text-2xl font-bold text-green-600">98%</p>
-                  <p className="text-sm text-gray-600 mt-1">First Attempt Pass Rate</p>
+                  <p className="text-2xl font-black bg-gradient-to-r from-[#10B981] to-[#059669] bg-clip-text text-transparent">98%</p>
+                  <p className="text-sm site-text-muted mt-1">First Attempt Pass Rate</p>
                 </div>
 
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <div className="site-glass backdrop-blur-xl rounded-3xl p-6 shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500 hover:scale-105 group">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-                      <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <div className="w-10 h-10 bg-gradient-to-br from-[#F59E0B] to-[#EF4444] rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                       </svg>
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-900">Students</h3>
+                    <h3 className="text-lg font-semibold site-text-primary">Students</h3>
                   </div>
-                  <p className="text-2xl font-bold text-orange-600">15,000+</p>
-                  <p className="text-sm text-gray-600 mt-1">Successfully Trained</p>
+                  <p className="text-2xl font-black bg-gradient-to-r from-[#F59E0B] to-[#EF4444] bg-clip-text text-transparent">15,000+</p>
+                  <p className="text-sm site-text-muted mt-1">Successfully Trained</p>
                 </div>
 
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <div className="site-glass backdrop-blur-xl rounded-3xl p-6 shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500 hover:scale-105 group">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 bg-[#B39DDB]/20 rounded-lg flex items-center justify-center">
-                      <svg className="w-5 h-5 text-[#B39DDB]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <div className="w-10 h-10 bg-gradient-to-br from-[#8B5CF6] to-[#6D28D9] rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                       </svg>
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-900">Rating</h3>
+                    <h3 className="text-lg font-semibold site-text-primary">Rating</h3>
                   </div>
-                  <p className="text-2xl font-bold text-[#B39DDB]">4.8/5</p>
-                  <p className="text-sm text-gray-600 mt-1">Student Reviews</p>
+                  <p className="text-2xl font-black bg-gradient-to-r from-[#8B5CF6] to-[#6D28D9] bg-clip-text text-transparent">4.8/5</p>
+                  <p className="text-sm site-text-muted mt-1">Student Reviews</p>
                 </div>
               </div>
             </div>
 
             {/* Image Placeholder */}
             <div className="relative">
-              <div className="bg-gradient-to-br from-[#4F46E5]/10 to-[#B39DDB]/10 rounded-2xl p-8 h-96 flex items-center justify-center">
+              <div className="site-glass backdrop-blur-xl rounded-3xl p-8 h-96 flex items-center justify-center shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500">
                 {/* Placeholder for course overview image */}
                 <div className="text-center space-y-4">
-                  <div className="w-24 h-24 bg-[#4F46E5]/20 rounded-full flex items-center justify-center mx-auto">
-                    <svg className="w-12 h-12 text-[#4F46E5]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <div className="w-24 h-24 bg-gradient-to-br from-[#4F46E5] to-[#10B981] rounded-full flex items-center justify-center mx-auto">
+                    <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                   </div>
-                  <p className="text-gray-500 font-medium">Course Overview Image</p>
-                  <p className="text-sm text-gray-400">Image will be added here</p>
+                  <p className="site-text-secondary font-medium">Course Overview Image</p>
+                  <p className="text-sm site-text-muted">Interactive content preview</p>
                 </div>
               </div>
               
               {/* Decorative Elements */}
-              <div className="absolute -top-4 -right-4 w-8 h-8 bg-[#4F46E5] rounded-full opacity-60"></div>
-              <div className="absolute -bottom-4 -left-4 w-6 h-6 bg-[#B39DDB] rounded-full opacity-60"></div>
+              <div className="absolute -top-4 -right-4 w-8 h-8 bg-[#4F46E5] rounded-full opacity-60 animate-pulse"></div>
+              <div className="absolute -bottom-4 -left-4 w-6 h-6 bg-[#10B981] rounded-full opacity-60 animate-pulse delay-1000"></div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Key Features & Certificate Section */}
-      <section className="py-16 bg-white">
-        <div className="lg:container lg:mx-auto lg:max-w-7xl px-3.5 lg:px-8">
+      <section className="py-16 md:py-24 site-section-bg relative overflow-hidden">
+        <div className="absolute inset-0">
+          <div className="absolute top-10 left-10 w-48 h-48 bg-[#F59E0B]/5 site-light:bg-[#F59E0B]/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-10 right-10 w-64 h-64 bg-[#8B5CF6]/5 site-light:bg-[#8B5CF6]/10 rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             
             {/* Key Features - Left Side */}
             <div className="space-y-8">
               <div className="space-y-4">
-                <h2 className="text-3xl lg:text-4xl font-bold text-gray-900">
-                  Key Features
+                <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-4 py-2 mb-6">
+                  <div className="w-2 h-2 bg-[#F59E0B] rounded-full animate-pulse"></div>
+                  <span className="text-[#F59E0B] text-sm font-semibold uppercase tracking-wider">Features</span>
+                </div>
+                <h2 className="text-4xl lg:text-5xl font-black site-text-primary mb-6">
+                  <strong>Key Features</strong>
                 </h2>
-                <p className="text-lg text-gray-600 leading-relaxed">
+                <p className="text-lg site-text-secondary leading-relaxed">
                   Discover what makes our {courseData.title} stand out from the rest. 
                   Our comprehensive approach ensures you get the best learning experience.
                 </p>
@@ -479,63 +528,73 @@ export default function CoursePage({ params }: CoursePageProps) {
 
               <div className="space-y-6">
                 {/* Feature Items */}
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-[#4F46E5] to-[#3730A3] rounded-xl flex items-center justify-center">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                    </svg>
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">Expert-Led Training</h3>
-                    <p className="text-gray-600">Learn from certified PMP professionals with 15+ years of real-world project management experience.</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                    </svg>
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">Comprehensive Curriculum</h3>
-                    <p className="text-gray-600">Complete PMBOK Guide coverage with interactive exercises, case studies, and real project scenarios.</p>
+                <div className="site-glass backdrop-blur-xl rounded-3xl p-6 shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500 hover:scale-105 group">
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-semibold site-text-primary mb-2">Expert-Led Training</h3>
+                      <p className="site-text-secondary">Learn from certified PMP professionals with 15+ years of real-world project management experience.</p>
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">Exam Guarantee</h3>
-                    <p className="text-gray-600">98% first-attempt pass rate with our proven methodology and unlimited practice tests.</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-[#B39DDB] to-purple-600 rounded-xl flex items-center justify-center">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">Flexible Learning</h3>
-                    <p className="text-gray-600">Live virtual sessions, recorded classes, and 24/7 learning management system access.</p>
+                <div className="site-glass backdrop-blur-xl rounded-3xl p-6 shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500 hover:scale-105 group">
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-[#10B981] to-[#059669] rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-semibold site-text-primary mb-2">Comprehensive Curriculum</h3>
+                      <p className="site-text-secondary">Complete PMBOK Guide coverage with interactive exercises, case studies, and real project scenarios.</p>
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
+                <div className="site-glass backdrop-blur-xl rounded-3xl p-6 shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500 hover:scale-105 group">
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-[#F59E0B] to-[#EF4444] rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-semibold site-text-primary mb-2">Exam Guarantee</h3>
+                      <p className="site-text-secondary">98% first-attempt pass rate with our proven methodology and unlimited practice tests.</p>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">Lifetime Support</h3>
-                    <p className="text-gray-600">Post-certification career guidance, job assistance, and access to our professional network.</p>
+                </div>
+
+                <div className="site-glass backdrop-blur-xl rounded-3xl p-6 shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500 hover:scale-105 group">
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-[#8B5CF6] to-[#6D28D9] rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-semibold site-text-primary mb-2">Flexible Learning</h3>
+                      <p className="site-text-secondary">Live virtual sessions, recorded classes, and 24/7 learning management system access.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="site-glass backdrop-blur-xl rounded-3xl p-6 shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500 hover:scale-105 group">
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-[#06B6D4] to-[#0891B2] rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-semibold site-text-primary mb-2">Lifetime Support</h3>
+                      <p className="site-text-secondary">Post-certification career guidance, job assistance, and access to our professional network.</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -543,31 +602,31 @@ export default function CoursePage({ params }: CoursePageProps) {
 
             {/* Certificate Preview - Right Side */}
             <div className="relative">
-              <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-8 h-96 flex flex-col items-center justify-center border-2 border-dashed border-gray-300">
+              <div className="site-glass backdrop-blur-xl rounded-3xl p-8 h-96 flex flex-col items-center justify-center shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500">
                 {/* Certificate Placeholder */}
                 <div className="text-center space-y-4">
-                  <div className="w-20 h-20 bg-gradient-to-br from-[#4F46E5] to-[#B39DDB] rounded-full flex items-center justify-center mx-auto">
+                  <div className="w-20 h-20 bg-gradient-to-br from-[#4F46E5] to-[#8B5CF6] rounded-full flex items-center justify-center mx-auto mb-4">
                     <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
                     </svg>
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">Sample Certificate</h3>
-                    <p className="text-gray-600 mb-3">Certificate GIF Preview</p>
-                    <p className="text-sm text-gray-500">Interactive certificate animation will be displayed here</p>
+                    <h3 className="text-xl font-bold site-text-primary mb-2">Sample Certificate</h3>
+                    <p className="site-text-secondary mb-3">Certificate Preview</p>
+                    <p className="text-sm site-text-muted">Interactive certificate animation will be displayed here</p>
                   </div>
                   
                   {/* Mock Certificate Elements */}
                   <div className="w-full max-w-xs mx-auto mt-6">
-                    <div className="bg-white border-2 border-[#4F46E5] rounded-lg p-4 shadow-sm">
+                    <div className="site-glass backdrop-blur-sm border-2 border-[#4F46E5] rounded-2xl p-4 shadow-xl">
                       <div className="flex items-center justify-center mb-3">
-                        <div className="w-8 h-8 bg-[#4F46E5] rounded-full flex items-center justify-center">
+                        <div className="w-8 h-8 bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] rounded-full flex items-center justify-center">
                           <span className="text-white font-bold text-xs">PMI</span>
                         </div>
                       </div>
                       <div className="text-center">
-                        <div className="text-xs font-semibold text-gray-800 mb-1">Certificate of Completion</div>
-                        <div className="text-xs text-gray-600">PMP® Certification Training</div>
+                        <div className="text-xs font-semibold site-text-primary mb-1">Certificate of Completion</div>
+                        <div className="text-xs site-text-secondary">PMP® Certification Training</div>
                       </div>
                     </div>
                   </div>
@@ -575,98 +634,110 @@ export default function CoursePage({ params }: CoursePageProps) {
               </div>
               
               {/* Decorative Elements */}
-              <div className="absolute -top-3 -left-3 w-6 h-6 bg-[#4F46E5] rounded-full opacity-60"></div>
-              <div className="absolute -bottom-3 -right-3 w-8 h-8 bg-[#B39DDB] rounded-full opacity-60"></div>
-              <div className="absolute top-1/2 -right-6 w-4 h-4 bg-green-500 rounded-full opacity-60"></div>
+              <div className="absolute -top-3 -left-3 w-6 h-6 bg-[#4F46E5] rounded-full opacity-60 animate-pulse"></div>
+              <div className="absolute -bottom-3 -right-3 w-8 h-8 bg-[#8B5CF6] rounded-full opacity-60 animate-pulse delay-1000"></div>
+              <div className="absolute top-1/2 -right-6 w-4 h-4 bg-[#10B981] rounded-full opacity-60 animate-pulse delay-2000"></div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Schedule Section */}
-      <section id="schedule-section" className="py-16 bg-gray-50">
-        <div className="lg:container lg:mx-auto lg:max-w-7xl px-3.5 lg:px-8">
+      <section id="schedule-section" className="py-16 md:py-24 site-section-bg relative overflow-hidden">
+        <div className="absolute inset-0">
+          <div className="absolute top-20 left-20 w-64 h-64 bg-[#8B5CF6]/5 site-light:bg-[#8B5CF6]/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-20 w-80 h-80 bg-[#10B981]/5 site-light:bg-[#10B981]/10 rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           {/* Header */}
           <div className="text-center mb-12">
-            <div className="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-2">
-              EXPLORE OUR SCHEDULES
+            <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-4 py-2 mb-6">
+              <div className="w-2 h-2 bg-[#8B5CF6] rounded-full animate-pulse"></div>
+              <span className="text-[#8B5CF6] text-sm font-semibold uppercase tracking-wider">Explore Our Schedules</span>
             </div>
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">Schedules</h2>
-            <p className="text-lg text-gray-600">
-              {getFilteredSchedules().length} Results
+            <h2 className="text-4xl lg:text-5xl font-black site-text-primary mb-6">
+              <strong>Available Schedules</strong>
+            </h2>
+            <p className="text-lg site-text-secondary max-w-3xl mx-auto leading-relaxed">
+              Choose from flexible learning options designed to fit your schedule and learning preferences.
             </p>
+            <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-4 py-2 mt-4">
+              <svg className="w-4 h-4 text-[#10B981]" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+              <span className="text-sm font-medium site-text-primary">{getFilteredSchedules().length} Results Found</span>
+            </div>
           </div>
 
           {/* Filters */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+          <div className="site-glass backdrop-blur-xl rounded-3xl p-6 shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500 mb-8">
             <div className="flex flex-wrap gap-4 items-center">
               
               {/* Training Mode Filter */}
               <div className="flex gap-2">
                 <button
                   onClick={() => setSelectedMode('live-online')}
-                  className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
+                  className={`px-6 py-3 rounded-2xl font-bold text-sm transition-all duration-300 transform hover:scale-105 ${
                     selectedMode === 'live-online'
-                      ? 'bg-[#4F46E5] text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      ? 'bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white shadow-xl shadow-[#4F46E5]/25'
+                      : 'site-glass backdrop-blur-sm site-text-primary hover:bg-white/20 site-light:hover:bg-white/60'
                   }`}
                 >
-                  Live Online Classroom
+                  🖥️ Live Online Classroom
                 </button>
                 <button
                   onClick={() => setSelectedMode('self-paced')}
-                  className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
+                  className={`px-6 py-3 rounded-2xl font-bold text-sm transition-all duration-300 transform hover:scale-105 ${
                     selectedMode === 'self-paced'
-                      ? 'bg-[#4F46E5] text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-white shadow-xl shadow-[#10B981]/25'
+                      : 'site-glass backdrop-blur-sm site-text-primary hover:bg-white/20 site-light:hover:bg-white/60'
                   }`}
                 >
-                  Self-Paced Learning
+                  📚 Self-Paced Learning
                 </button>
                 <button
                   onClick={() => setSelectedMode('classroom')}
-                  className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
+                  className={`px-6 py-3 rounded-2xl font-bold text-sm transition-all duration-300 transform hover:scale-105 ${
                     selectedMode === 'classroom'
-                      ? 'bg-[#4F46E5] text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      ? 'bg-gradient-to-r from-[#F59E0B] to-[#EF4444] text-white shadow-xl shadow-[#F59E0B]/25'
+                      : 'site-glass backdrop-blur-sm site-text-primary hover:bg-white/20 site-light:hover:bg-white/60'
                   }`}
                 >
-                  Classroom Training
+                  🏢 Classroom Training
                 </button>
               </div>
 
               {/* Location Filters for Classroom */}
               {selectedMode === 'classroom' && (
-                <>
-                  <div className="flex items-center gap-2">
-                    <select
-                      value={selectedState}
-                      onChange={(e) => {
-                        setSelectedState(e.target.value);
-                        setSelectedCity('');
-                      }}
-                      className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                    >
-                      <option value="">Any State</option>
-                      {states.map(state => (
-                        <option key={state} value={state}>{state}</option>
-                      ))}
-                    </select>
-                    
-                    <select
-                      value={selectedCity}
-                      onChange={(e) => setSelectedCity(e.target.value)}
-                      className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                      disabled={!selectedState}
-                    >
-                      <option value="">Any Location</option>
-                      {selectedState && cities[selectedState as keyof typeof cities]?.map(city => (
-                        <option key={city} value={city}>{city}</option>
-                      ))}
-                    </select>
-                  </div>
-                </>
+                <div className="flex items-center gap-3 ml-4">
+                  <select
+                    value={selectedState}
+                    onChange={(e) => {
+                      setSelectedState(e.target.value);
+                      setSelectedCity('');
+                    }}
+                    className="px-4 py-3 site-glass backdrop-blur-sm rounded-2xl site-border border focus:ring-2 focus:ring-[#F59E0B] focus:border-transparent transition-all duration-300 site-text-primary text-sm font-medium"
+                  >
+                    <option value="">Any State</option>
+                    {states.map(state => (
+                      <option key={state} value={state}>{state}</option>
+                    ))}
+                  </select>
+                  
+                  <select
+                    value={selectedCity}
+                    onChange={(e) => setSelectedCity(e.target.value)}
+                    className="px-4 py-3 site-glass backdrop-blur-sm rounded-2xl site-border border focus:ring-2 focus:ring-[#F59E0B] focus:border-transparent transition-all duration-300 site-text-primary text-sm font-medium"
+                    disabled={!selectedState}
+                  >
+                    <option value="">Any Location</option>
+                    {selectedState && cities[selectedState as keyof typeof cities]?.map(city => (
+                      <option key={city} value={city}>{city}</option>
+                    ))}
+                  </select>
+                </div>
               )}
             </div>
           </div>
@@ -674,23 +745,25 @@ export default function CoursePage({ params }: CoursePageProps) {
           {/* Schedule Cards */}
           <div className="space-y-6">
             {getFilteredSchedules().length === 0 ? (
-              <div className="text-center py-12">
-                <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
+              <div className="site-glass backdrop-blur-xl rounded-3xl p-12 shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500">
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-gradient-to-br from-[#8B5CF6] to-[#6D28D9] rounded-full flex items-center justify-center mx-auto mb-6">
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-bold site-text-primary mb-3">No schedules available</h3>
+                  <p className="site-text-secondary max-w-md mx-auto leading-relaxed">
+                    {selectedMode === 'classroom' 
+                      ? 'No sessions are currently available for the selected location. Please try a different location.'
+                      : 'No schedules are currently available for this training mode.'
+                    }
+                  </p>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">No schedules available</h3>
-                <p className="text-gray-600">
-                  {selectedMode === 'classroom' 
-                    ? 'No sessions are currently available for the selected location. Please try a different location.'
-                    : 'No schedules are currently available for this training mode.'
-                  }
-                </p>
               </div>
             ) : (
               getFilteredSchedules().map((schedule: any) => (
-                <div key={schedule.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div key={schedule.id} className="site-glass backdrop-blur-xl rounded-3xl shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500 hover:scale-[1.01] overflow-hidden">
                   <div className="p-6">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
                       
@@ -699,9 +772,13 @@ export default function CoursePage({ params }: CoursePageProps) {
                         {selectedMode === 'live-online' || selectedMode === 'classroom' ? (
                           <>
                             {/* Live/Classroom Schedule */}
-                            <div className="flex items-center gap-3 mb-4">
-                              <div className="w-10 h-10 bg-[#4F46E5]/10 rounded-lg flex items-center justify-center">
-                                <svg className="w-5 h-5 text-[#4F46E5]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                            <div className="flex items-center gap-4 mb-6">
+                              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                                selectedMode === 'live-online' 
+                                  ? 'bg-gradient-to-br from-[#4F46E5] to-[#7C3AED]' 
+                                  : 'bg-gradient-to-br from-[#F59E0B] to-[#EF4444]'
+                              }`}>
+                                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                                   {selectedMode === 'live-online' ? (
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                                   ) : (
@@ -710,34 +787,34 @@ export default function CoursePage({ params }: CoursePageProps) {
                                 </svg>
                               </div>
                               <div>
-                                <h3 className="text-lg font-semibold text-gray-900">{schedule.mode}</h3>
-                                <p className="text-sm text-gray-600">{schedule.curriculum}</p>
+                                <h3 className="text-xl font-bold site-text-primary">{schedule.mode}</h3>
+                                <p className="text-sm site-text-muted">{schedule.curriculum}</p>
                               </div>
                             </div>
                             
-                            <div className="space-y-3">
+                            <div className="space-y-4">
                               <div className="flex items-center gap-2">
-                                <span className="text-2xl font-bold text-gray-900">
+                                <span className="text-2xl font-black site-text-primary">
                                   {schedule.dates.join(', ')} ({schedule.duration})
                                 </span>
                               </div>
-                              <div className="flex items-center gap-4 text-sm text-gray-600">
-                                <span className="flex items-center gap-1">
-                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                              <div className="flex items-center gap-4 text-sm">
+                                <span className="flex items-center gap-2 site-text-secondary">
+                                  <svg className="w-4 h-4 text-[#10B981]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                   </svg>
                                   {schedule.time}
                                 </span>
-                                <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                <span className={`px-3 py-1 rounded-full text-xs font-bold ${
                                   schedule.type === 'Weekend' 
-                                    ? 'bg-blue-100 text-blue-800' 
-                                    : 'bg-green-100 text-green-800'
+                                    ? 'bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white' 
+                                    : 'bg-gradient-to-r from-[#10B981] to-[#059669] text-white'
                                 }`}>
                                   {schedule.type}
                                 </span>
                                 {selectedMode === 'classroom' && (
-                                  <span className="flex items-center gap-1">
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                                  <span className="flex items-center gap-2 site-text-secondary">
+                                    <svg className="w-4 h-4 text-[#F59E0B]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                                       <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                       <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                     </svg>
@@ -746,34 +823,35 @@ export default function CoursePage({ params }: CoursePageProps) {
                                 )}
                               </div>
                               {schedule.seatsLeft && (
-                                <p className="text-sm text-orange-600 font-medium">
+                                <div className="inline-flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-[#F59E0B] to-[#EF4444] text-white rounded-full text-sm font-bold">
+                                  <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
                                   Only {schedule.seatsLeft} seats left
-                                </p>
+                                </div>
                               )}
                             </div>
                           </>
                         ) : (
                           <>
                             {/* Self-Paced Schedule */}
-                            <div className="flex items-center gap-3 mb-4">
-                              <div className="w-10 h-10 bg-[#B39DDB]/20 rounded-lg flex items-center justify-center">
-                                <svg className="w-5 h-5 text-[#B39DDB]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                            <div className="flex items-center gap-4 mb-6">
+                              <div className="w-12 h-12 bg-gradient-to-br from-[#10B981] to-[#059669] rounded-xl flex items-center justify-center">
+                                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                                 </svg>
                               </div>
                               <div>
-                                <h3 className="text-lg font-semibold text-gray-900">{schedule.mode}</h3>
-                                <p className="text-sm text-gray-600">{schedule.accessDays} Days Access</p>
+                                <h3 className="text-xl font-bold site-text-primary">{schedule.mode}</h3>
+                                <p className="text-sm site-text-muted">{schedule.accessDays} Days Access</p>
                               </div>
                             </div>
                             
-                            <div className="space-y-3">
-                              <div className="text-2xl font-bold text-gray-900">
+                            <div className="space-y-4">
+                              <div className="text-2xl font-black site-text-primary">
                                 {schedule.accessDays} Days Access
                               </div>
                               <div className="flex flex-wrap gap-2">
                                 {schedule.features.map((feature: string, idx: number) => (
-                                  <span key={idx} className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">
+                                  <span key={idx} className="px-3 py-1 site-glass backdrop-blur-sm site-text-secondary rounded-full text-sm font-medium">
                                     {feature}
                                   </span>
                                 ))}
@@ -786,24 +864,24 @@ export default function CoursePage({ params }: CoursePageProps) {
                       {/* Quantity & Pricing */}
                       <div className="lg:col-span-3">
                         {(selectedMode === 'live-online' || selectedMode === 'classroom') && (
-                          <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Quantity</label>
+                          <div className="mb-6">
+                            <label className="block text-sm font-bold site-text-primary mb-3">Quantity</label>
                             <div className="flex items-center gap-3">
                               <button
                                 onClick={() => handleQuantityChange('decrease')}
-                                className="w-8 h-8 border border-gray-300 rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors"
+                                className="w-10 h-10 site-glass backdrop-blur-sm rounded-xl flex items-center justify-center hover:bg-white/20 site-light:hover:bg-white/60 transition-all duration-300 disabled:opacity-50"
                                 disabled={quantity <= 1}
                               >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                                <svg className="w-4 h-4 site-text-primary" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" />
                                 </svg>
                               </button>
-                              <span className="w-8 text-center font-semibold">{quantity}</span>
+                              <span className="w-10 text-center font-black text-lg site-text-primary">{quantity}</span>
                               <button
                                 onClick={() => handleQuantityChange('increase')}
-                                className="w-8 h-8 border border-gray-300 rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors"
+                                className="w-10 h-10 site-glass backdrop-blur-sm rounded-xl flex items-center justify-center hover:bg-white/20 site-light:hover:bg-white/60 transition-all duration-300"
                               >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                                <svg className="w-4 h-4 site-text-primary" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                                 </svg>
                               </button>
@@ -811,16 +889,16 @@ export default function CoursePage({ params }: CoursePageProps) {
                           </div>
                         )}
                         
-                        <div className="text-center">
-                          <div className="text-sm text-gray-500 line-through mb-1">
-                            USD {schedule.standardPrice}
+                        <div className="text-center site-glass backdrop-blur-sm rounded-2xl p-4">
+                          <div className="text-sm site-text-muted line-through mb-1">
+                            USD ${schedule.standardPrice}
                           </div>
-                          <div className="text-2xl font-bold text-[#4F46E5] mb-2">
-                            USD {schedule.earlyBirdPrice}
+                          <div className="text-3xl font-black bg-gradient-to-r from-[#4F46E5] to-[#10B981] bg-clip-text text-transparent mb-2">
+                            USD ${schedule.earlyBirdPrice}
                           </div>
                           {selectedMode === 'self-paced' && (
-                            <div className="text-xs text-gray-500 mb-3">
-                              Limited Period Offer
+                            <div className="inline-flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-[#F59E0B] to-[#EF4444] text-white rounded-full text-xs font-bold mb-3">
+                              ⚡ Limited Time Offer
                             </div>
                           )}
                         </div>
@@ -833,13 +911,18 @@ export default function CoursePage({ params }: CoursePageProps) {
                             setSelectedSchedule(schedule);
                             setShowEnrollModal(true);
                           }}
-                          className="w-full px-6 py-3 bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold rounded-lg transition-colors"
+                          className="w-full group px-6 py-4 bg-gradient-to-r from-[#FF6B35] to-[#E55A2B] hover:from-[#E55A2B] hover:to-[#CC4A1D] text-white font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:shadow-[#FF6B35]/25"
                         >
-                          ENROLL NOW
+                          <span className="flex items-center justify-center gap-2">
+                            <svg className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                            ENROLL NOW
+                          </span>
                         </button>
                         {selectedMode === 'live-online' && (
-                          <div className="text-center mt-2">
-                            <button className="text-sm text-[#4F46E5] hover:underline">
+                          <div className="text-center mt-3">
+                            <button className="text-sm site-text-secondary hover:text-[#4F46E5] transition-colors font-medium">
                               More than 5 Participants? Enquire Now →
                             </button>
                           </div>
@@ -1203,7 +1286,7 @@ export default function CoursePage({ params }: CoursePageProps) {
                   <div className="flex items-center gap-2">
                     <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
                       <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2zm10-10V5a4 4 0 00-8 0v4h8z" />
                       </svg>
                     </div>
                     <span className="text-sm text-gray-600">Guaranteed Safe Checkout</span>

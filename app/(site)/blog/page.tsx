@@ -1,389 +1,474 @@
 "use client";
+
+import React, { useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useState } from "react";
 import Breadcrumb from "@/app/components/site/Breadcrumb";
 
 export default function BlogPage() {
   const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = 3;
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
+  const postsPerPage = 6;
 
   const breadcrumbItems = [
     { label: "Blog" }
   ];
 
+  const categories = ["All", "Certification", "Career Development", "Technology", "Business"];
+
   const blogPosts = [
     {
       id: 1,
-      title: "How to Succeed in Online Learning: Tips for Students",
-      excerpt: "The discusses the advantages of using LMS for upskilling employees, managing compliance training,",
+      title: "Complete Guide to PMP Certification: Everything You Need to Know",
+      excerpt: "Discover the comprehensive roadmap to becoming a certified Project Management Professional and accelerate your career in project management.",
       image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      date: "Nov 02, 2024",
-      category: "Business",
-      readTime: "10 Min Read",
-      comments: "(Comments)"
+      date: "2024-11-15",
+      category: "Certification",
+      readTime: "12 Min Read",
+      author: "Sarah Johnson",
+      featured: true
     },
     {
       id: 2,
-      title: "The Future of Education: Why Online Learning is Here to Stay",
-      excerpt: "The discusses the advantages of using LMS for upskilling employees, managing compliance training,",
+      title: "The Future of Remote Work: Essential Skills for 2024",
+      excerpt: "Explore the evolving landscape of remote work and discover the critical skills professionals need to thrive in distributed teams.",
       image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      date: "Nov 02, 2024",
-      category: "Business",
-      readTime: "10 Min Read",
-      comments: "(Comments)"
+      date: "2024-11-12",
+      category: "Career Development",
+      readTime: "8 Min Read",
+      author: "Michael Chen",
+      featured: false
     },
     {
       id: 3,
-      title: "Creating a Productive Study Space for Online Learning",
-      excerpt: "The discusses the advantages of using LMS for upskilling employees, managing compliance training,",
+      title: "Agile vs Scrum: Understanding the Differences and When to Use Each",
+      excerpt: "A comprehensive comparison of Agile and Scrum methodologies to help you choose the right approach for your projects.",
       image: "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      date: "Nov 02, 2024",
-      category: "Business",
+      date: "2024-11-10",
+      category: "Technology",
       readTime: "10 Min Read",
-      comments: "(Comments)"
+      author: "Emily Rodriguez",
+      featured: true
     },
     {
       id: 4,
-      title: "The Future of LMS: Trends Shaping E-Learning in 2024",
-      excerpt: "The discusses the advantages of using LMS for upskilling employees, managing compliance training,",
+      title: "Cloud Computing Certifications: AWS vs Azure vs Google Cloud",
+      excerpt: "Compare the top cloud certification programs and discover which path aligns best with your career goals and industry demands.",
       image: "https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      date: "March 02, 2024",
-      category: "Business",
-      readTime: "10 Min Read",
-      comments: "(Comments)"
+      date: "2024-11-08",
+      category: "Technology",
+      readTime: "15 Min Read",
+      author: "David Kumar",
+      featured: false
     },
     {
       id: 5,
-      title: "How to Choose the Right LMS for Your Organization",
-      excerpt: "The discusses the advantages of using LMS for upskilling employees, managing compliance training,",
+      title: "Building a Data-Driven Organization: Analytics Certification Guide",
+      excerpt: "Learn how to leverage data analytics certifications to drive business insights and make informed strategic decisions.",
       image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      date: "Oct 02, 2024",
+      date: "2024-11-05",
       category: "Business",
-      readTime: "10 Min Read",
-      comments: "(Comments)"
+      readTime: "11 Min Read",
+      author: "Lisa Zhang",
+      featured: false
     },
     {
       id: 6,
-      title: "Boosting Employee Engagement with Gamified LMS Features",
-      excerpt: "The discusses the advantages of using LMS for upskilling employees, managing compliance training,",
+      title: "Cybersecurity Career Path: Essential Certifications and Skills",
+      excerpt: "Navigate the cybersecurity landscape with our comprehensive guide to the most valuable certifications and in-demand skills.",
       image: "https://images.unsplash.com/photo-1542744094-3a31f272c490?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      date: "June 02, 2024",
-      category: "Business",
-      readTime: "10 Min Read",
-      comments: "(Comments)"
-    },
-    {
-      id: 7,
-      title: "How an LMS Supports Employee Development",
-      excerpt: "The discusses the advantages of using LMS for upskilling employees, managing compliance training,",
-      image: "https://images.unsplash.com/photo-1553484771-371a605b060b?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      date: "Dec 02, 2024",
-      category: "Business",
-      readTime: "10 Min Read",
-      comments: "(Comments)"
-    },
-    {
-      id: 8,
-      title: "Top 5 LMS Integrations Every Business Should Consider",
-      excerpt: "The discusses the advantages of using LMS for upskilling employees, managing compliance training,",
-      image: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      date: "Nov 02, 2024",
-      category: "Business",
-      readTime: "10 Min Read",
-      comments: "(Comments)"
-    },
-    {
-      id: 9,
-      title: "Maximizing ROI: How to Measure the Success of Your LMS",
-      excerpt: "The discusses the advantages of using LMS for upskilling employees, managing compliance training,",
-      image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-      date: "Nov 02, 2024",
-      category: "Business",
-      readTime: "10 Min Read",
-      comments: "(Comments)"
+      date: "2024-11-03",
+      category: "Certification",
+      readTime: "13 Min Read",
+      author: "Alex Thompson",
+      featured: true
     }
   ];
 
+  // Filter and search logic
+  const filteredPosts = useMemo(() => {
+    let filtered = blogPosts;
+
+    if (selectedCategory !== "All") {
+      filtered = filtered.filter(post => post.category === selectedCategory);
+    }
+
+    if (searchQuery) {
+      filtered = filtered.filter(post =>
+        post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        post.excerpt.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    return filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [selectedCategory, searchQuery]);
+
+  const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+  const startIndex = (currentPage - 1) * postsPerPage;
+  const currentPosts = filteredPosts.slice(startIndex, startIndex + postsPerPage);
+  const featuredPosts = blogPosts.filter(post => post.featured).slice(0, 3);
+
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const socialLinks = [
-    { name: "Facebook", href: "#" },
-    { name: "Instagram", href: "#" },
-    { name: "LinkedIn", href: "#" },
-    { name: "Twitter", href: "#" }
-  ];
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  };
 
   return (
-    <div className="min-h-screen">
-      {/* Breadcrumb Section */}
-      <div className="bg-white py-4">
-        <div className="lg:container lg:mx-auto lg:max-w-7xl px-3.5 lg:px-8">
-          <Breadcrumb items={breadcrumbItems} />
-        </div>
-      </div>
-
-      {/* Page Header Section */}
-      <section className="relative bg-gradient-to-br from-[#4F46E5] via-[#7C3AED] to-[#B39DDB] py-20 lg:py-32 overflow-hidden">
-        {/* Background Shape */}
-        <div 
-          className="absolute inset-0 bg-no-repeat bg-center bg-cover opacity-20"
-          style={{
-            backgroundImage: "url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1000 1000\"><defs><pattern id=\"grain\" width=\"100\" height=\"100\" patternUnits=\"userSpaceOnUse\"><circle cx=\"50\" cy=\"50\" r=\"1\" fill=\"%23ffffff\" opacity=\"0.1\"/></pattern></defs><rect width=\"100%\" height=\"100%\" fill=\"url(%23grain)\"/></svg>')"
-          }}
-        ></div>
-
-        {/* Decorative Background Shapes */}
-        <div className="absolute top-20 left-10 w-24 h-24 opacity-30">
-          <div className="w-full h-full bg-gradient-to-br from-pink-300 to-purple-400 rounded-full animate-pulse"></div>
-        </div>
-        <div className="absolute top-40 right-20 w-16 h-16 opacity-25">
-          <div className="w-full h-full bg-gradient-to-br from-yellow-300 to-orange-400 rounded-lg transform rotate-45 animate-bounce"></div>
-        </div>
-        <div className="absolute bottom-32 left-20 w-20 h-20 opacity-30">
-          <div className="w-full h-full bg-gradient-to-br from-blue-300 to-indigo-400 rounded-xl transform -rotate-12 animate-pulse"></div>
-        </div>
-        <div className="absolute bottom-20 right-32 w-12 h-12 opacity-35">
-          <div className="w-full h-full bg-gradient-to-br from-green-300 to-teal-400 rounded-full animate-bounce"></div>
+    <div className="min-h-screen site-section-bg">
+      {/* Hero Section */}
+      <section className="relative py-20 lg:py-32 overflow-hidden site-section-bg">
+        {/* Background Elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-20 left-20 w-96 h-96 bg-[#4F46E5]/5 site-light:bg-[#4F46E5]/10 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-20 right-20 w-80 h-80 bg-[#10B981]/5 site-light:bg-[#10B981]/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#F59E0B]/5 site-light:bg-[#F59E0B]/10 rounded-full blur-3xl animate-pulse delay-2000"></div>
         </div>
 
-        {/* Social Media Links - Left Side */}
-        <div className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white/10 backdrop-blur-sm rounded-r-2xl py-8 px-4 hidden lg:block">
-          <div className="flex flex-col items-center space-y-3">
-            {socialLinks.map((social, index) => (
-              <React.Fragment key={social.name}>
-                <Link
-                  href={social.href}
-                  className="text-white hover:text-yellow-300 text-xs font-medium transition-colors duration-300 transform hover:scale-110"
-                >
-                  {social.name}
-                </Link>
-                {index < socialLinks.length - 1 && (
-                  <span className="text-white/60 text-xs">//</span>
-                )}
-              </React.Fragment>
-            ))}
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Breadcrumb */}
+          <div className="mb-8">
+            <Breadcrumb items={breadcrumbItems} />
           </div>
-        </div>
 
-        <div className="relative lg:container lg:mx-auto lg:max-w-7xl px-3.5 lg:px-8">
-          <div className="text-center relative">
-            {/* Student Image with Floating Animation - Positioned on Right */}
-            <div className="absolute top-0 right-0 lg:right-20 hidden lg:block">
-              <div className="relative">
-                {/* Main Student Image with Floating Animation */}
-                {/* <div className="relative z-10 animate-float">
-                  <Image
-                    src="/images/blog/blog-hero.png"
-                    alt="Student with books"
-                    width={400}
-                    height={500}
-                    className="w-80 h-96 object-contain filter drop-shadow-2xl"
-                    unoptimized
-                  />
-                </div> */}
-
-                {/* Floating Decorative Shapes around Student */}
-                <div className="absolute -top-4 -left-8 w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg transform rotate-12 animate-bounce opacity-80"></div>
-                <div className="absolute top-16 -right-6 w-6 h-6 bg-gradient-to-br from-pink-400 to-purple-500 rounded-full animate-pulse opacity-80"></div>
-                <div className="absolute -bottom-8 -left-12 w-12 h-12 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl transform -rotate-6 animate-bounce opacity-80" style={{ animationDelay: '0.5s' }}></div>
-                <div className="absolute bottom-20 -right-8 w-10 h-10 bg-gradient-to-br from-green-400 to-teal-500 rounded-lg transform rotate-45 animate-pulse opacity-80" style={{ animationDelay: '1s' }}></div>
-                
-                {/* Additional floating elements */}
-                <div className="absolute top-32 -left-6 w-4 h-4 bg-white/40 rounded-full animate-ping"></div>
-                <div className="absolute bottom-40 right-0 w-5 h-5 bg-white/50 rounded-full animate-ping" style={{ animationDelay: '0.3s' }}></div>
-                
-                {/* Book/Study Icons floating around */}
-                <div className="absolute top-8 left-16 w-8 h-8 bg-gradient-to-br from-purple-400 to-pink-500 rounded-lg flex items-center justify-center animate-bounce text-white text-xs font-bold" style={{ animationDelay: '0.7s' }}>
-                  📚
-                </div>
-                <div className="absolute bottom-16 left-8 w-8 h-8 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-full flex items-center justify-center animate-pulse text-white text-xs" style={{ animationDelay: '1.2s' }}>
-                  💡
-                </div>
-              </div>
+          {/* Main Content */}
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-3 site-glass backdrop-blur-sm rounded-full px-8 py-4 mb-8 hover:bg-white/20 site-light:hover:bg-white/60 transition-all duration-300">
+              <div className="w-3 h-3 bg-[#10B981] rounded-full animate-pulse"></div>
+              <span className="site-text-accent font-bold text-sm uppercase tracking-wider">Knowledge Hub</span>
+              <div className="w-3 h-3 bg-[#4F46E5] rounded-full animate-pulse delay-500"></div>
             </div>
 
-            {/* Main Content - Centered */}
-            <div className="relative z-20 pt-12 lg:pt-24">
-              {/* Main Title */}
-              <h1 className="text-4xl lg:text-6xl xl:text-7xl font-bold text-white mb-8 leading-tight">
-                Our Blogs
-              </h1>
+            <h1 className="text-5xl lg:text-7xl font-black mb-8 leading-tight">
+              <span className="site-text-primary">Insights & </span>
+              <span className="bg-gradient-to-r from-[#4F46E5] via-[#10B981] to-[#F59E0B] bg-clip-text text-transparent">
+                Expertise
+              </span>
+              <span className="block site-text-primary">Blog</span>
+            </h1>
+
+            <p className="text-xl site-text-secondary max-w-4xl mx-auto leading-relaxed mb-12">
+              Discover insights, tips, and trends in professional development, certification training, 
+              and career advancement from industry experts and thought leaders.
+            </p>
+
+            {/* Blog Stats */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 max-w-4xl mx-auto">
+              <div className="text-center">
+                <div className="site-glass backdrop-blur-sm rounded-2xl p-6 hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-300 hover:scale-105 group">
+                  <div className="text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">📝</div>
+                  <div className="text-2xl font-black bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] bg-clip-text text-transparent mb-2">{blogPosts.length}+</div>
+                  <div className="text-sm site-text-muted font-medium">Articles</div>
+                </div>
+              </div>
               
-              <p className="text-white/90 text-lg lg:text-xl max-w-2xl mx-auto leading-relaxed">
-                Discover insights, tips, and trends in professional development, certification training, and career advancement.
-              </p>
-            </div>
-
-            {/* Mobile Student Image */}
-            <div className="lg:hidden mt-12 flex justify-center">
-              <div className="relative">
-                <div className="animate-float">
-                  <Image
-                    src="/images/blog/blog-hero.png"
-                    alt="Student with books"
-                    width={300}
-                    height={350}
-                    className="w-64 h-80 object-contain filter drop-shadow-2xl"
-                    unoptimized
-                  />
+              <div className="text-center">
+                <div className="site-glass backdrop-blur-sm rounded-2xl p-6 hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-300 hover:scale-105 group">
+                  <div className="text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">🎯</div>
+                  <div className="text-2xl font-black bg-gradient-to-r from-[#10B981] to-[#059669] bg-clip-text text-transparent mb-2">5</div>
+                  <div className="text-sm site-text-muted font-medium">Categories</div>
                 </div>
-                {/* Mobile decorative elements */}
-                <div className="absolute -top-4 -left-4 w-6 h-6 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg animate-bounce opacity-80"></div>
-                <div className="absolute -bottom-4 -right-4 w-6 h-6 bg-gradient-to-br from-pink-400 to-purple-500 rounded-full animate-pulse opacity-80"></div>
+              </div>
+
+              <div className="text-center">
+                <div className="site-glass backdrop-blur-sm rounded-2xl p-6 hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-300 hover:scale-105 group">
+                  <div className="text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">👥</div>
+                  <div className="text-2xl font-black bg-gradient-to-r from-[#F59E0B] to-[#EF4444] bg-clip-text text-transparent mb-2">50K+</div>
+                  <div className="text-sm site-text-muted font-medium">Readers</div>
+                </div>
+              </div>
+
+              <div className="text-center">
+                <div className="site-glass backdrop-blur-sm rounded-2xl p-6 hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-300 hover:scale-105 group">
+                  <div className="text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">⭐</div>
+                  <div className="text-2xl font-black bg-gradient-to-r from-[#8B5CF6] to-[#6D28D9] bg-clip-text text-transparent mb-2">4.9</div>
+                  <div className="text-sm site-text-muted font-medium">Rating</div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Additional Floating Elements */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-white/40 rounded-full animate-ping" style={{ animationDelay: '2s' }}></div>
-          <div className="absolute top-3/4 right-1/3 w-3 h-3 bg-white/30 rounded-full animate-ping" style={{ animationDelay: '3s' }}></div>
-          <div className="absolute bottom-1/4 left-2/3 w-2 h-2 bg-white/50 rounded-full animate-ping" style={{ animationDelay: '1.5s' }}></div>
         </div>
       </section>
 
-      {/* Blog Cards Section */}
-      <section className="py-16 lg:py-24 bg-white">
-        <div className="lg:container lg:mx-auto lg:max-w-7xl px-3.5 lg:px-8">
+      {/* Featured Posts Section */}
+      <section className="py-16 md:py-24 site-section-bg relative overflow-hidden">
+        <div className="absolute inset-0">
+          <div className="absolute top-20 right-20 w-64 h-64 bg-[#4F46E5]/5 site-light:bg-[#4F46E5]/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 left-20 w-80 h-80 bg-[#10B981]/5 site-light:bg-[#10B981]/10 rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-4 py-2 mb-6">
+              <div className="w-2 h-2 bg-[#F59E0B] rounded-full animate-pulse"></div>
+              <span className="text-[#F59E0B] text-sm font-semibold uppercase tracking-wider">Featured Content</span>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-black site-text-primary mb-6">
+              <strong>Editor's Picks</strong>
+            </h2>
+            <p className="site-text-secondary text-lg max-w-3xl mx-auto">
+              Hand-selected articles that deliver the most value to your professional development journey.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
+            {featuredPosts.map((post) => (
+              <Link key={post.id} href={`/blog/${post.id}`} className="group">
+                <div className="site-glass backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500 hover:scale-105">
+                  <div className="relative overflow-hidden">
+                    <Image
+                      src={post.image}
+                      alt={post.title}
+                      width={400}
+                      height={250}
+                      className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
+                      unoptimized
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="absolute top-4 right-4 bg-gradient-to-r from-[#F59E0B] to-[#EF4444] text-white px-3 py-1 rounded-full text-xs font-bold">
+                      FEATURED
+                    </div>
+                  </div>
+                  
+                  <div className="p-6">
+                    <div className="flex items-center gap-4 mb-4 text-sm">
+                      <span className="bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] bg-clip-text text-transparent font-bold">
+                        {post.category}
+                      </span>
+                      <span className="site-text-muted">{post.readTime}</span>
+                      <span className="site-text-muted">{formatDate(post.date)}</span>
+                    </div>
+                    
+                    <h3 className="text-xl font-black site-text-primary mb-3 group-hover:text-[#4F46E5] transition-colors duration-300 line-clamp-2">
+                      {post.title}
+                    </h3>
+                    
+                    <p className="site-text-secondary leading-relaxed line-clamp-3 mb-4">
+                      {post.excerpt}
+                    </p>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm site-text-muted">By {post.author}</span>
+                      <div className="flex items-center gap-2 text-[#4F46E5] group-hover:gap-3 transition-all duration-300">
+                        <span className="text-sm font-medium">Read More</span>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Search & Filter Section */}
+      <section className="py-16 md:py-24 site-section-bg relative overflow-hidden">
+        <div className="absolute inset-0">
+          <div className="absolute top-10 left-10 w-48 h-48 bg-[#10B981]/5 site-light:bg-[#10B981]/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-10 right-10 w-64 h-64 bg-[#F59E0B]/5 site-light:bg-[#F59E0B]/10 rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-4 py-2 mb-6">
+              <div className="w-2 h-2 bg-[#4F46E5] rounded-full animate-pulse"></div>
+              <span className="text-[#4F46E5] text-sm font-semibold uppercase tracking-wider">All Articles</span>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-black site-text-primary mb-6">
+              <strong>Explore Our Content</strong>
+            </h2>
+          </div>
+
+          {/* Search and Filter Controls */}
+          <div className="site-glass backdrop-blur-xl rounded-3xl p-8 shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500 mb-12">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Search */}
+              <div className="lg:col-span-2">
+                <label className="block text-sm font-bold site-text-primary mb-2">Search Articles</label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full px-4 py-3 pl-12 site-glass backdrop-blur-sm rounded-2xl site-border border focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300 site-text-primary"
+                    placeholder="Search by title or content..."
+                  />
+                  <svg className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 site-text-muted" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+              </div>
+
+              {/* Category Filter */}
+              <div>
+                <label className="block text-sm font-bold site-text-primary mb-2">Category</label>
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-2xl site-border border focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300 site-text-primary"
+                >
+                  {categories.map((category) => (
+                    <option key={category} value={category}>{category}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Results Summary */}
+            <div className="mt-6 pt-6 border-t site-border flex items-center justify-between">
+              <p className="site-text-secondary">
+                Showing {startIndex + 1}-{Math.min(startIndex + postsPerPage, filteredPosts.length)} of {filteredPosts.length} articles
+              </p>
+              {(searchQuery || selectedCategory !== "All") && (
+                <button
+                  onClick={() => {
+                    setSearchQuery("");
+                    setSelectedCategory("All");
+                    setCurrentPage(1);
+                  }}
+                  className="text-[#4F46E5] hover:underline font-medium"
+                >
+                  Clear Filters
+                </button>
+              )}
+            </div>
+          </div>
+
           {/* Blog Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-            {blogPosts.map((post, index) => (
-              <div 
-                key={post.id} 
-                className="group bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden"
-              >
-                {/* Blog Image */}
-                <div className="relative overflow-hidden">
-                  <Image
-                    src={post.image}
-                    alt={post.title}
-                    width={400}
-                    height={250}
-                    className="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-300"
-                    unoptimized
-                  />
-                  {/* Date Badge */}
-                  <div className="absolute top-4 left-4 bg-[#4F46E5] text-white px-3 py-2 rounded-lg flex items-center gap-2">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <span className="text-xs font-medium">{post.date}</span>
-                  </div>
-                </div>
-
-                {/* Blog Content */}
-                <div className="p-6">
-                  {/* Meta Information */}
-                  <div className="flex items-center gap-4 mb-4 text-sm text-gray-600">
-                    <div className="flex items-center gap-1">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                      </svg>
-                      <span className="text-[#4F46E5] font-medium">{post.category}</span>
+            {currentPosts.map((post) => (
+              <Link key={post.id} href={`/blog/${post.id}`} className="group">
+                <article className="site-glass backdrop-blur-xl rounded-3xl overflow-hidden shadow-xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500 hover:scale-105 h-full">
+                  <div className="relative overflow-hidden">
+                    <Image
+                      src={post.image}
+                      alt={post.title}
+                      width={400}
+                      height={250}
+                      className="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-500"
+                      unoptimized
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="absolute top-4 left-4 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white px-3 py-2 rounded-full text-xs font-bold">
+                      {post.category}
                     </div>
-                    <div className="flex items-center gap-1">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
+                  </div>
+
+                  <div className="p-6 flex flex-col h-full">
+                    <div className="flex items-center gap-4 mb-4 text-sm site-text-muted">
+                      <span>{formatDate(post.date)}</span>
+                      <span>•</span>
                       <span>{post.readTime}</span>
+                      <span>•</span>
+                      <span>By {post.author}</span>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                      </svg>
-                      <span>{post.comments}</span>
+
+                    <h3 className="text-xl font-black site-text-primary mb-3 group-hover:text-[#4F46E5] transition-colors duration-300 line-clamp-2 flex-grow">
+                      {post.title}
+                    </h3>
+
+                    <p className="site-text-secondary leading-relaxed line-clamp-3 mb-4">
+                      {post.excerpt}
+                    </p>
+
+                    <div className="flex items-center justify-between mt-auto">
+                      <span className="text-sm site-text-muted">Read Article</span>
+                      <div className="flex items-center gap-2 text-[#4F46E5] group-hover:gap-3 transition-all duration-300">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
+                      </div>
                     </div>
                   </div>
-
-                  {/* Blog Title */}
-                  <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-[#4F46E5] transition-colors duration-300 line-clamp-2">
-                    <Link href={`/blog/${post.id}`}>
-                      {post.title}
-                    </Link>
-                  </h3>
-
-                  {/* Blog Excerpt */}
-                  <p className="text-gray-600 leading-relaxed line-clamp-3">
-                    {post.excerpt}
-                  </p>
-                </div>
-              </div>
+                </article>
+              </Link>
             ))}
           </div>
 
-          {/* More Blogs Button and Pagination */}
-          <div className="flex flex-col items-center space-y-8">
-            {/* More Blogs Button */}
-            <Link
-              href="/blog"
-              className="group inline-flex items-center gap-3 bg-gradient-to-r from-[#4F46E5] to-[#3730A3] hover:from-[#3730A3] hover:to-[#312E81] text-white font-bold py-4 px-8 rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
-            >
-              <span>More Blogs</span>
-              <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-              </svg>
-            </Link>
-
-            {/* Pagination */}
-            <nav className="flex items-center space-x-2">
-              {/* Previous Button */}
-              <button
-                onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-                disabled={currentPage === 1}
-                className="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 text-gray-600 hover:bg-[#4F46E5] hover:text-white hover:border-[#4F46E5] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-
-              {/* Page Numbers */}
-              {[...Array(totalPages)].map((_, index) => {
-                const page = index + 1;
-                return (
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex justify-center">
+              <nav className="site-glass backdrop-blur-xl rounded-3xl p-4 shadow-xl">
+                <div className="flex items-center space-x-2">
                   <button
-                    key={page}
-                    onClick={() => handlePageChange(page)}
-                    className={`w-10 h-10 flex items-center justify-center rounded-lg font-medium transition-all duration-300 ${
-                      currentPage === page
-                        ? 'bg-[#4F46E5] text-white border border-[#4F46E5]'
-                        : 'border border-gray-300 text-gray-600 hover:bg-[#4F46E5] hover:text-white hover:border-[#4F46E5]'
-                    }`}
+                    onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+                    disabled={currentPage === 1}
+                    className="w-12 h-12 flex items-center justify-center rounded-2xl site-border border site-text-primary hover:bg-[#4F46E5] hover:text-white transition-all duration-300 disabled:opacity-50"
                   >
-                    {page.toString().padStart(2, '0')}
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                    </svg>
                   </button>
-                );
-              })}
 
-              {/* Next Button */}
-              <button
-                onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
-                disabled={currentPage === totalPages}
-                className="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 text-gray-600 hover:bg-[#4F46E5] hover:text-white hover:border-[#4F46E5] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  {[...Array(totalPages)].map((_, index) => {
+                    const page = index + 1;
+                    return (
+                      <button
+                        key={page}
+                        onClick={() => handlePageChange(page)}
+                        className={`w-12 h-12 flex items-center justify-center rounded-2xl font-bold transition-all duration-300 ${
+                          currentPage === page
+                            ? 'bg-[#4F46E5] text-white border border-[#4F46E5]'
+                            : 'site-border border site-text-primary hover:bg-[#4F46E5] hover:text-white'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    );
+                  })}
+
+                  <button
+                    onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+                    disabled={currentPage === totalPages}
+                    className="w-12 h-12 flex items-center justify-center rounded-2xl site-border border site-text-primary hover:bg-[#4F46E5] hover:text-white transition-all duration-300 disabled:opacity-50"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </div>
+              </nav>
+            </div>
+          )}
+
+          {/* No Results */}
+          {filteredPosts.length === 0 && (
+            <div className="text-center py-16">
+              <div className="w-24 h-24 bg-gradient-to-br from-[#4F46E5]/10 to-[#7C3AED]/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg className="w-12 h-12 site-text-muted" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 20.055a7.962 7.962 0 01-6-2.764M3 3l18 18" />
                 </svg>
+              </div>
+              <h3 className="text-2xl font-bold site-text-primary mb-4">No Articles Found</h3>
+              <p className="site-text-secondary mb-6">
+                We couldn't find any articles matching your search criteria. Try adjusting your filters.
+              </p>
+              <button
+                onClick={() => {
+                  setSearchQuery("");
+                  setSelectedCategory("All");
+                  setCurrentPage(1);
+                }}
+                className="bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white px-8 py-3 rounded-2xl font-bold hover:scale-105 transition-all duration-300"
+              >
+                Clear All Filters
               </button>
-            </nav>
-          </div>
+            </div>
+          )}
         </div>
       </section>
-
-      <style jsx>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-20px) rotate(1deg); }
-        }
-        
-        .animate-float {
-          animation: float 6s ease-in-out infinite;
-        }
-      `}</style>
     </div>
   );
 } 
