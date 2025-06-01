@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import Navbar from "@/app/components/site/Navbar";
 import Footer from "@/app/components/site/Footer";
+import { SiteThemeProvider } from "./context/SiteThemeContext";
 import "../globals.css";
+import "./styles/site-themes.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -18,10 +20,12 @@ export default function SiteLayout({
 }>) {
 
   return (
-    <div className={`${inter.className} min-h-screen bg-white`}>
-      <Navbar />
-        {children}
-      <Footer />
-    </div>
+    <SiteThemeProvider>
+      <div className={`${inter.className} min-h-screen site-bg-primary`} data-site-theme-container>
+        <Navbar />
+          {children}
+        <Footer />
+      </div>
+    </SiteThemeProvider>
   );
 } 

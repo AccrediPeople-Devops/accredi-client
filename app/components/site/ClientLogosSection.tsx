@@ -74,40 +74,82 @@ export default function ClientLogosSection() {
   const logosTripled = [...companyLogos, ...companyLogos, ...companyLogos];
 
   return (
-    <section className="py-16 md:py-24 bg-gradient-to-br from-slate-50 to-gray-100">
-      <div className="px-5 md:px-16 w-full 2xl:max-w-7xl mx-auto">
-        <div className="company-logos text-center">
-          {/* Header Text */}
-          <p className="text-2xl md:text-3xl font-bold text-gray-800 mb-12 md:mb-16">
-            We've trained 300,000+ companies & over 2,000,000 delegates
+    <section className="py-16 md:py-24 site-section-bg relative overflow-hidden">
+      {/* Background Elements */}
+      <div className="absolute inset-0">
+        <div className="absolute top-20 right-20 w-64 h-64 bg-[#4F46E5]/5 site-light:bg-[#4F46E5]/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 left-20 w-80 h-80 bg-[#10B981]/5 site-light:bg-[#10B981]/10 rounded-full blur-3xl"></div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        {/* Header */}
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-4 py-2 mb-6">
+            <div className="w-2 h-2 bg-[#10B981] rounded-full animate-pulse"></div>
+            <span className="text-[#10B981] text-sm font-semibold uppercase tracking-wider">Trusted Partners</span>
+          </div>
+          <h2 className="text-4xl md:text-5xl font-black site-text-primary mb-6">
+            <strong>Trusted by Industry Leaders</strong>
+          </h2>
+          <p className="site-text-secondary text-lg max-w-2xl mx-auto">
+            Join thousands of professionals from leading companies who have advanced their careers with our certification training.
           </p>
-          
-          {/* Logo Carousel */}
-          <div className="logo-carousel relative">
+        </div>
+
+        {/* Logo Carousel */}
+        <div className="logo-carousel relative">
+          {/* Premium glassmorphism container */}
+          <div className="site-glass backdrop-blur-xl rounded-3xl p-8 site-border border shadow-2xl relative overflow-hidden">
+            {/* Background pattern */}
+            <div className="absolute inset-0 opacity-5">
+              <div className="absolute top-0 left-1/4 w-16 h-16 bg-[#4F46E5] rounded-full blur-xl"></div>
+              <div className="absolute bottom-0 right-1/4 w-20 h-20 bg-[#10B981] rounded-full blur-xl"></div>
+            </div>
+
             {/* Container with gradient masks for translucent ends */}
             <div className="relative overflow-hidden">
               {/* Left gradient fade */}
-              <div className="absolute left-0 top-0 w-20 md:w-32 h-full bg-gradient-to-r from-slate-50 to-transparent z-10 pointer-events-none"></div>
+              <div className="absolute left-0 top-0 w-20 md:w-32 h-full site-gradient-left z-10 pointer-events-none"></div>
               
               {/* Right gradient fade */}
-              <div className="absolute right-0 top-0 w-20 md:w-32 h-full bg-gradient-to-l from-gray-100 to-transparent z-10 pointer-events-none"></div>
+              <div className="absolute right-0 top-0 w-20 md:w-32 h-full site-gradient-right z-10 pointer-events-none"></div>
               
               {/* Scrolling logos container */}
               <div className="flex items-center gap-8 md:gap-12 animate-infinite-scroll" style={{animation: 'infinite-scroll 40s linear infinite'}}>
                 {logosTripled.map((logo, i) => (
-                  <div key={`${logo.alt}-${i}`} className="flex-shrink-0 w-24 h-12 md:w-32 md:h-16 relative grayscale hover:grayscale-0 transition-all duration-300 opacity-70 hover:opacity-100">
-                    <Image 
-                      src={logo.src} 
-                      alt={logo.alt} 
-                      fill 
-                      className="object-contain"
-                      loading="lazy"
-                      unoptimized
-                    />
+                  <div key={`${logo.alt}-${i}`} className="flex-shrink-0 w-24 h-12 md:w-32 md:h-16 relative hover:scale-110 transition-all duration-300 group">
+                    {/* Logo background */}
+                    <div className="absolute inset-0 site-glass backdrop-blur-sm rounded-xl site-border border group-hover:bg-white/20 site-light:group-hover:bg-white/60 group-hover:border-white/30 site-light:group-hover:border-slate-300 transition-all duration-300"></div>
+                    <div className="relative w-full h-full p-2">
+                      <Image 
+                        src={logo.src} 
+                        alt={logo.alt} 
+                        fill 
+                        className="object-contain filter brightness-0 invert opacity-70 group-hover:opacity-100 transition-all duration-300 site-light:brightness-100 site-light:invert-0"
+                        loading="lazy"
+                        unoptimized
+                      />
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Stats Row */}
+        <div className="grid grid-cols-3 gap-8 mt-12 max-w-2xl mx-auto">
+          <div className="text-center">
+            <div className="text-3xl md:text-4xl font-black bg-gradient-to-r from-[#10B981] to-[#059669] bg-clip-text text-transparent mb-2">300K+</div>
+            <div className="text-sm site-text-muted uppercase tracking-wider">Companies Trained</div>
+          </div>
+          <div className="text-center">
+            <div className="text-3xl md:text-4xl font-black bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] bg-clip-text text-transparent mb-2">2M+</div>
+            <div className="text-sm site-text-muted uppercase tracking-wider">Delegates</div>
+          </div>
+          <div className="text-center">
+            <div className="text-3xl md:text-4xl font-black bg-gradient-to-r from-[#F59E0B] to-[#EF4444] bg-clip-text text-transparent mb-2">98%</div>
+            <div className="text-sm site-text-muted uppercase tracking-wider">Satisfaction Rate</div>
           </div>
         </div>
       </div>

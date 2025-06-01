@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { HiOutlineRefresh, HiOutlineDesktopComputer, HiOutlineCloud, HiOutlineCog, HiOutlineChartBar, HiOutlineCode, HiOutlineLockClosed, HiOutlineMenu } from "react-icons/hi";
 import { BiData, BiBarChartAlt2 } from "react-icons/bi";
+import SiteThemeToggle from "./SiteThemeToggle";
 
 const DOMAIN_ICONS: Record<string, React.ReactElement> = {
   "Project Management": <HiOutlineDesktopComputer className="w-4 h-4 mr-2" />,
@@ -170,10 +171,81 @@ const Navbar = () => {
   const allCoursesBtnRef = useRef<HTMLButtonElement>(null);
   const navRef = useRef<HTMLDivElement>(null);
 
-  // Open menu on All Courses button or menu hover
-  const handleMenuOpen = () => setIsMenuOpen(true);
-  // Close menu on other navbar item hover
-  const handleMenuClose = () => setIsMenuOpen(false);
+  // Timeout refs for hover delays
+  const menuCloseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const menuOpenTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Open menu on All Courses button or menu hover with slight delay
+  const handleMenuOpen = () => {
+    if (menuCloseTimeoutRef.current) {
+      clearTimeout(menuCloseTimeoutRef.current);
+      menuCloseTimeoutRef.current = null;
+    }
+    if (!isMenuOpen) {
+      menuOpenTimeoutRef.current = setTimeout(() => {
+        setIsMenuOpen(true);
+      }, 100);
+    }
+  };
+
+  // Close menu with delay to allow smooth transition
+  const handleMenuClose = () => {
+    if (menuOpenTimeoutRef.current) {
+      clearTimeout(menuOpenTimeoutRef.current);
+      menuOpenTimeoutRef.current = null;
+    }
+    menuCloseTimeoutRef.current = setTimeout(() => {
+      setIsMenuOpen(false);
+    }, 150);
+  };
+
+  // Immediate close for other nav items
+  const handleImmediateMenuClose = () => {
+    if (menuOpenTimeoutRef.current) {
+      clearTimeout(menuOpenTimeoutRef.current);
+      menuOpenTimeoutRef.current = null;
+    }
+    if (menuCloseTimeoutRef.current) {
+      clearTimeout(menuCloseTimeoutRef.current);
+      menuCloseTimeoutRef.current = null;
+    }
+    setIsMenuOpen(false);
+  };
+
+  // Toggle menu for click functionality
+  const handleMenuToggle = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  // Cleanup timeouts on unmount
+  React.useEffect(() => {
+    return () => {
+      if (menuCloseTimeoutRef.current) {
+        clearTimeout(menuCloseTimeoutRef.current);
+      }
+      if (menuOpenTimeoutRef.current) {
+        clearTimeout(menuOpenTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Handle click outside to close mega menu
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (isMenuOpen && 
+          menuRef.current && 
+          !menuRef.current.contains(event.target as Node) &&
+          allCoursesBtnRef.current &&
+          !allCoursesBtnRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isMenuOpen]);
 
   // Mobile menu animation handlers
   const openMobileMenu = () => {
@@ -216,7 +288,7 @@ const Navbar = () => {
   return (
     <React.Fragment>
       {/* Navbar always visible */}
-      <div ref={navRef} className="py-4 sm:py-6 xl:px-20 sm:px-28 px-0 flex relative justify-center items-center h-[72px] !py-0 bg-white z-[100]">
+      <div ref={navRef} className="py-4 sm:py-6 xl:px-20 sm:px-28 px-0 flex relative justify-center items-center h-[72px] !py-0 site-navbar z-[100]">
         <div className="px-5 md:px-0 w-full 2xl:max-w-7xl mx-auto">
           <nav className="flex h-11 justify-between">
             {/* Logo and All Courses */}
@@ -230,7 +302,7 @@ const Navbar = () => {
                   height={44}
                   priority
                   unoptimized
-                  className="object-contain w-full h-full"
+                  className="object-contain w-full h-full site-logo"
                 />
                 </Link>
               </div>
@@ -238,17 +310,19 @@ const Navbar = () => {
               <div className="ml-8 relative hidden md:block">
                 <button
                   ref={allCoursesBtnRef}
-                  className="all-courses-button flex items-center gap-2 px-3 py-1.5 border border-gray-200 rounded bg-white text-gray-800 font-medium text-sm hover:shadow transition"
+                  className="all-courses-button flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white font-medium text-sm hover:bg-white/20 transition-all duration-300 hover:scale-105 site-light:bg-white/80 site-light:border-slate-300 site-light:text-slate-800 site-light:hover:bg-white site-light:hover:text-slate-900"
                   type="button"
                   tabIndex={0}
                   aria-haspopup="true"
                   aria-expanded={isMenuOpen}
                   onMouseEnter={handleMenuOpen}
+                  onMouseLeave={handleMenuClose}
+                  onClick={handleMenuToggle}
                 >
                   <HiOutlineMenu className="w-5 h-5 mr-1" />
                   All Courses
                   <svg
-                    className="w-4 h-4 ml-1"
+                    className={`w-4 h-4 ml-1 transition-transform duration-300 ${isMenuOpen ? 'rotate-180' : ''}`}
                     fill="none"
                     stroke="currentColor"
                     strokeWidth={2}
@@ -263,20 +337,22 @@ const Navbar = () => {
             <div className="hidden md:flex items-center gap-2 text-sm">
               {menuItems.map((menu, index) => (
                 <div key={index} className="group relative"
-                  onMouseEnter={handleMenuClose}
+                  onMouseEnter={handleImmediateMenuClose}
                 >
-                  <div className="relative pr-2.5 pl-4 py-2 hover:bg-gray-50 rounded-lg flex items-center gap-0.5 text-gray-800 font-normal cursor-pointer duration-300">
+                  <div className="relative pr-4 pl-4 py-2 hover:bg-white/10 rounded-xl flex items-center gap-0.5 text-white font-normal cursor-pointer duration-300 transition-all hover:scale-105 site-light:text-slate-700 site-light:hover:text-slate-900 site-light:hover:bg-slate-100">
                     <span>{menu.title}</span>
-                    <i className="icon-chevron-right rotate-90 text-base leading-4 text-gray-500"></i>
+                    <i className="icon-chevron-right rotate-90 text-base leading-4 text-gray-300 site-light:text-slate-500"></i>
                   </div>
-                  <div className="absolute z-50 flex-col hidden border border-gray-200 bg-white py-1 min-w-[220px] rounded-tr-xl rounded-b-xl shadow-lg group-hover:block duration-300">
+                  {/* Hover bridge - invisible area to prevent dropdown closing */}
+                  <div className="absolute top-full left-0 right-0 h-2 z-40 hidden group-hover:block"></div>
+                  <div className="absolute z-50 flex-col hidden bg-white/10 backdrop-blur-xl border border-white/20 py-2 min-w-[220px] rounded-2xl shadow-2xl group-hover:flex duration-300 transition-all opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 mt-2 site-light:bg-white/90 site-light:border-slate-200">
                     {menu.items.map((item, idx) => (
                       <Link
                         key={idx}
                         href={item.href}
-                        className="pr-2.5 pl-4 border-b border-gray-200 last:border-b-0 hover:bg-gray-50 duration-300 block"
+                        className="pr-4 pl-4 border-b border-white/10 last:border-b-0 hover:bg-white/10 duration-300 block site-light:border-slate-200 site-light:hover:bg-slate-50"
                       >
-                        <div className="py-2 text-sm cursor-pointer whitespace-nowrap text-gray-800">
+                        <div className="py-3 text-sm cursor-pointer whitespace-nowrap text-white hover:text-[#4F46E5] transition-colors site-light:text-slate-700 site-light:hover:text-[#4F46E5]">
                           {item.label}
                         </div>
                       </Link>
@@ -287,8 +363,8 @@ const Navbar = () => {
               {/* Reviews Link */}
               <Link
                 href="/reviews"
-                className="relative pr-2.5 pl-4 py-2 hover:bg-gray-50 rounded-lg flex items-center gap-0.5 text-gray-800 font-normal cursor-pointer duration-300"
-                onMouseEnter={handleMenuClose}
+                className="relative pr-4 pl-4 py-2 hover:bg-white/10 rounded-xl flex items-center gap-0.5 text-white font-normal cursor-pointer duration-300 transition-all hover:scale-105 site-light:text-slate-700 site-light:hover:text-slate-900 site-light:hover:bg-slate-100"
+                onMouseEnter={handleImmediateMenuClose}
               >
                 Reviews
               </Link>
@@ -296,8 +372,8 @@ const Navbar = () => {
               {/* Sign In Button */}
               <Link
                 href="/login"
-                className="relative pr-2.5 pl-4 py-2 hover:bg-gray-50 rounded-lg flex items-center gap-0.5 text-gray-800 font-normal cursor-pointer duration-300"
-                onMouseEnter={handleMenuClose}
+                className="relative pr-4 pl-4 py-2 hover:bg-white/10 rounded-xl flex items-center gap-0.5 text-white font-normal cursor-pointer duration-300 transition-all hover:scale-105 site-light:text-slate-700 site-light:hover:text-slate-900 site-light:hover:bg-slate-100"
+                onMouseEnter={handleImmediateMenuClose}
               >
                 Sign In
               </Link>
@@ -305,11 +381,16 @@ const Navbar = () => {
               {/* Sign Up Button */}
               <Link
                 href="/signup"
-                className="relative px-4 py-2 bg-[#4F46E5] text-white rounded-lg hover:bg-[#4338CA] transition-colors text-sm font-medium"
-                onMouseEnter={handleMenuClose}
+                className="relative px-6 py-2 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white rounded-xl hover:shadow-xl hover:shadow-[#4F46E5]/25 transition-all duration-300 text-sm font-medium hover:scale-105"
+                onMouseEnter={handleImmediateMenuClose}
               >
                 Sign Up
               </Link>
+
+              {/* Site Theme Toggle - Far Right */}
+              <div className="ml-4">
+                <SiteThemeToggle />
+              </div>
             </div>
 
             {/* Mobile Navigation */}
@@ -317,21 +398,24 @@ const Navbar = () => {
               {/* Hamburger Menu Button */}
               <button
                 onClick={openMobileMenu}
-                className="w-10 h-10 flex justify-center items-center"
+                className="w-10 h-10 flex justify-center items-center text-white hover:bg-white/10 rounded-lg transition-colors site-light:text-slate-700 site-light:hover:text-slate-900 site-light:hover:bg-slate-100"
               >
-                <HiOutlineMenu className="w-5 h-5 text-gray-800" />
+                <HiOutlineMenu className="w-5 h-5" />
               </button>
               
               {/* All Courses Button */}
               <button
                 onClick={() => setIsMobileCoursesOpen(true)}
-                className="flex bg-white whitespace-nowrap rounded-lg py-3 pr-2 pl-3 border border-gray-300 items-center gap-2 shadow-sm"
+                className="flex bg-white/10 backdrop-blur-sm whitespace-nowrap rounded-xl py-3 pr-3 pl-4 border border-white/20 items-center gap-2 hover:bg-white/20 transition-all duration-300 site-light:bg-white/60 site-light:border-slate-200 site-light:hover:bg-white/80"
               >
-                <span className="text-sm text-gray-800 font-semibold">All Courses</span>
-                <svg className="w-4 h-4 rotate-90" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <span className="text-sm text-white font-semibold site-light:text-slate-700">All Courses</span>
+                <svg className="w-4 h-4 rotate-90 text-white site-light:text-slate-700" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                 </svg>
               </button>
+
+              {/* Theme Toggle for Mobile - Far Right */}
+              <SiteThemeToggle />
             </div>
           </nav>
         </div>
@@ -340,25 +424,26 @@ const Navbar = () => {
       {isMenuOpen && (
         <React.Fragment>
           {/* Overlay (not covering navbar) */}
-          <div className="hidden md:block fixed inset-0 top-[72px] z-40 bg-black/30 backdrop-blur-sm" />
+          <div className="hidden md:block fixed inset-0 top-[72px] z-40 bg-black/50 backdrop-blur-sm site-light:bg-black/20" />
           {/* Mega Menu */}
           <div
-            className="hidden md:flex fixed left-1/2 top-[72px] z-50 -translate-x-1/2 w-[1200px] h-[calc(100vh-72px)] shadow-2xl overflow-hidden"
+            className="hidden md:flex fixed left-1/2 top-[72px] z-50 -translate-x-1/2 w-[1200px] h-[calc(100vh-72px)] shadow-2xl overflow-hidden bg-gradient-to-br from-[#0F0F23]/95 via-[#1A1A3E]/95 to-[#2D1B69]/95 site-light:bg-gradient-to-br site-light:from-white/98 site-light:via-gray-50/98 site-light:to-slate-100/98 backdrop-blur-xl border border-white/20 site-light:border-slate-200"
             ref={menuRef}
             style={{ borderRadius: "0 0 20px 20px" }}
             onMouseEnter={handleMenuOpen}
+            onMouseLeave={handleMenuClose}
           >
             {/* Sidebar */}
-            <div className="w-72 bg-gray-50 h-full py-6 px-0 flex flex-col border-r border-gray-200 overflow-y-auto text-[15px]">
-              <div className="font-semibold text-gray-700 mb-3 pl-8 text-[15px]">Domains</div>
+            <div className="w-72 bg-white/5 site-light:bg-slate-100/80 backdrop-blur-sm h-full py-6 px-0 flex flex-col border-r border-white/20 site-light:border-slate-200 overflow-y-auto text-[15px]">
+              <div className="font-semibold text-white site-light:text-slate-900 mb-4 pl-8 text-[15px]">Course Domains</div>
               <ul className="flex-1">
                 {ACCREDI_DOMAINS.map((domain) => (
                   <li
                     key={domain}
-                    className={`flex items-center px-8 py-2 cursor-pointer text-[15px] transition
+                    className={`flex items-center px-8 py-3 cursor-pointer text-[15px] transition-all duration-300 hover:scale-105
                       ${activeDomain === domain
-                        ? "bg-white text-[#4F46E5] font-semibold"
-                        : "text-gray-700 hover:bg-gray-100"
+                        ? "bg-gradient-to-r from-[#4F46E5]/20 to-[#7C3AED]/20 site-light:from-[#4F46E5]/10 site-light:to-[#7C3AED]/10 text-[#4F46E5] font-semibold border-r-2 border-[#4F46E5]"
+                        : "text-gray-300 site-light:text-slate-600 hover:bg-white/10 site-light:hover:bg-slate-100 hover:text-white site-light:hover:text-slate-900"
                       }`}
                     onClick={() => setActiveDomain(domain)}
                   >
@@ -374,27 +459,27 @@ const Navbar = () => {
               </ul>
               <Link
                 href="/courses"
-                className="block mt-4 text-[14px] font-bold text-gray-900 hover:underline pl-8"
+                className="block mt-4 text-[14px] font-bold text-[#4F46E5] hover:text-white site-light:hover:text-[#4F46E5] transition-colors pl-8 hover:underline"
               >
                 Browse All Courses <span aria-hidden>→</span>
               </Link>
             </div>
             {/* Main Content */}
-            <div className="flex-1 bg-white h-full p-8 overflow-y-auto text-[15px] flex flex-col justify-start" style={{ borderRadius: "0 0 20px 0" }}>
-              <div className="font-bold text-lg text-gray-800 mb-1">{activeDomain}</div>
-              <div className="text-xs text-gray-500 mb-4">
+            <div className="flex-1 bg-white/5 site-light:bg-white/50 backdrop-blur-sm h-full p-8 overflow-y-auto text-[15px] flex flex-col justify-start border-l border-white/10 site-light:border-slate-200" style={{ borderRadius: "0 0 20px 0" }}>
+              <div className="font-bold text-2xl text-white site-light:text-slate-900 mb-2">{activeDomain}</div>
+              <div className="text-sm text-gray-300 site-light:text-slate-600 mb-6">
                 {DOMAIN_COURSES[activeDomain]?.description || `Master ${activeDomain.toLowerCase()} methodologies for efficient and timely project delivery.`}
-                <Link href={`/courses?domain=${activeDomain.toLowerCase().replace(/\s+/g, '-')}`} className="ml-2 text-[#4F46E5] text-xs font-medium hover:underline">View All {activeDomain} Courses</Link>
+                <Link href={`/courses?domain=${activeDomain.toLowerCase().replace(/\s+/g, '-')}`} className="ml-2 text-[#4F46E5] text-sm font-medium hover:underline">View All {activeDomain} Courses</Link>
               </div>
               
               {/* Course List */}
               <div className="space-y-4">
-                <div className="font-semibold text-gray-800 mb-3 text-[14px]">Available Courses</div>
+                <div className="font-semibold text-white site-light:text-slate-900 mb-4 text-[16px]">Available Courses</div>
                 {DOMAIN_COURSES[activeDomain]?.courses?.map((course: any, idx: number) => (
                   <Link
                     key={idx}
                     href={`/courses/${course.slug}`}
-                    className="block p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow group"
+                    className="block p-4 bg-white/5 site-light:bg-white/70 backdrop-blur-sm border border-white/20 site-light:border-slate-200 rounded-2xl hover:bg-white/10 site-light:hover:bg-white/90 hover:shadow-xl transition-all duration-300 group hover:scale-105"
                   >
                     <div className="flex items-start gap-3">
                       <div className="text-2xl">{course.icon}</div>
@@ -402,55 +487,55 @@ const Navbar = () => {
                         <div className="flex items-center gap-2 mb-2">
                           {course.provider && (
                             <>
-                              <span className="text-xs font-medium text-gray-700">{course.provider}</span>
-                              <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
+                              <span className="text-xs font-medium text-gray-300 site-light:text-slate-500">{course.provider}</span>
+                              <span className="w-1 h-1 bg-gray-400 site-light:bg-slate-400 rounded-full"></span>
                             </>
                           )}
-                          <span className="text-xs text-gray-500">{course.hours}</span>
+                          <span className="text-xs text-gray-400 site-light:text-slate-500">{course.hours}</span>
                           {course.badge && (
-                            <span className={`px-2 py-0.5 text-xs text-white rounded ${course.badgeColor}`}>
+                            <span className={`px-2 py-0.5 text-xs text-white rounded-full ${course.badgeColor}`}>
                               {course.badge}
                             </span>
                           )}
                         </div>
-                        <h4 className="text-sm font-medium text-gray-900 group-hover:text-[#4F46E5] transition-colors leading-tight">
+                        <h4 className="text-sm font-medium text-white site-light:text-slate-800 group-hover:text-[#4F46E5] transition-colors leading-tight">
                           {course.title}
                         </h4>
                       </div>
-                      <svg className="w-4 h-4 text-gray-400 group-hover:text-[#4F46E5] transition-colors" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 text-gray-400 site-light:text-slate-500 group-hover:text-[#4F46E5] transition-colors" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                       </svg>
                     </div>
                   </Link>
                 )) || (
-                  <div className="text-center py-8 text-gray-500">
+                  <div className="text-center py-8 text-gray-400 site-light:text-slate-500">
                     Course details coming soon for {activeDomain}
                   </div>
                 )}
               </div>
             </div>
             {/* Right Sidebar */}
-            <div className="w-72 bg-white h-full py-6 px-6 border-l border-gray-200 flex flex-col overflow-y-auto text-[14px]">
-              <div className="font-semibold text-gray-700 mb-3">Popular Resources</div>
+            <div className="w-72 bg-white/5 site-light:bg-slate-100/60 backdrop-blur-sm h-full py-6 px-6 border-l border-white/20 site-light:border-slate-200 flex flex-col overflow-y-auto text-[14px]">
+              <div className="font-semibold text-white site-light:text-slate-900 mb-4">Popular Resources</div>
               <ul>
-                <li className="mb-2 text-[#4F46E5] cursor-pointer hover:underline">PMP Study Guide <span aria-hidden>→</span></li>
-                <li className="mb-2 text-[#4F46E5] cursor-pointer hover:underline">Project Management Tips <span aria-hidden>→</span></li>
-                <li className="mb-2 text-[#4F46E5] cursor-pointer hover:underline">Certification Comparison <span aria-hidden>→</span></li>
-                <li className="mb-2 text-[#4F46E5] cursor-pointer hover:underline">Free Practice Tests <span aria-hidden>→</span></li>
-                <li className="mb-2 text-[#4F46E5] cursor-pointer hover:underline">Career Guidance <span aria-hidden>→</span></li>
+                <li className="mb-3 text-[#4F46E5] cursor-pointer hover:text-white site-light:hover:text-[#4F46E5] transition-colors">PMP Study Guide <span aria-hidden>→</span></li>
+                <li className="mb-3 text-[#4F46E5] cursor-pointer hover:text-white site-light:hover:text-[#4F46E5] transition-colors">Project Management Tips <span aria-hidden>→</span></li>
+                <li className="mb-3 text-[#4F46E5] cursor-pointer hover:text-white site-light:hover:text-[#4F46E5] transition-colors">Certification Comparison <span aria-hidden>→</span></li>
+                <li className="mb-3 text-[#4F46E5] cursor-pointer hover:text-white site-light:hover:text-[#4F46E5] transition-colors">Free Practice Tests <span aria-hidden>→</span></li>
+                <li className="mb-3 text-[#4F46E5] cursor-pointer hover:text-white site-light:hover:text-[#4F46E5] transition-colors">Career Guidance <span aria-hidden>→</span></li>
               </ul>
               
-              <hr className="my-4 border-gray-200" />
+              <hr className="my-4 border-white/20 site-light:border-slate-200" />
               
-              <div className="font-semibold text-gray-700 mb-3">Need Help?</div>
-              <div className="space-y-2">
-                <Link href="/contact" className="block text-sm text-gray-600 hover:text-[#4F46E5] transition-colors">
+              <div className="font-semibold text-white site-light:text-slate-900 mb-4">Need Help?</div>
+              <div className="space-y-3">
+                <Link href="/contact" className="block text-sm text-gray-300 site-light:text-slate-600 hover:text-[#4F46E5] transition-colors">
                   Contact Our Advisors
                 </Link>
-                <Link href="/blog" className="block text-sm text-gray-600 hover:text-[#4F46E5] transition-colors">
+                <Link href="/blog" className="block text-sm text-gray-300 site-light:text-slate-600 hover:text-[#4F46E5] transition-colors">
                   Read Our Blog
                 </Link>
-                <Link href="/about" className="block text-sm text-gray-600 hover:text-[#4F46E5] transition-colors">
+                <Link href="/about" className="block text-sm text-gray-300 site-light:text-slate-600 hover:text-[#4F46E5] transition-colors">
                   About Accredi
                 </Link>
               </div>
@@ -468,12 +553,12 @@ const Navbar = () => {
             }`}
             onClick={closeMobileMenu} 
           />
-          <div className={`fixed left-0 top-0 h-full w-[300px] bg-white rounded-tr-[20px] transform transition-transform duration-300 ease-in-out ${
+          <div className={`fixed left-0 top-0 h-full w-[300px] site-mobile-menu backdrop-blur-xl rounded-tr-[20px] transform transition-transform duration-300 ease-in-out ${
             isMobileMenuAnimating ? 'translate-x-0' : '-translate-x-full'
           }`}>
             <div className="flex flex-col h-full">
               {/* Header */}
-              <div className="flex items-center justify-between p-4 border-b">
+              <div className="flex items-center justify-between p-4 border-b border-white/20 site-light:border-slate-200">
                 <div className="h-8 w-[110px] relative">
                   <Image
                     src="/Logo/Only_Transperent/full_trimmed_transparent_base.png"
@@ -482,10 +567,10 @@ const Navbar = () => {
                     height={32}
                     priority
                     unoptimized
-                    className="object-contain w-full h-full"
+                    className="object-contain w-full h-full site-logo"
                   />
                 </div>
-                <button onClick={closeMobileMenu} className="p-2">
+                <button onClick={closeMobileMenu} className="p-2 site-text-primary hover:bg-white/10 site-light:hover:bg-slate-100 rounded-lg transition-colors">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                   </svg>
@@ -498,9 +583,9 @@ const Navbar = () => {
                   {/* Main Menu Items */}
                   {menuItems.map((menu, index) => (
                     <div key={index}>
-                      <div className="flex items-center justify-between py-3 text-gray-800 border-b border-gray-100">
+                      <div className="flex items-center justify-between py-3 site-text-primary border-b border-white/20 site-light:border-slate-200">
                         <span className="text-sm font-medium">{menu.title}</span>
-                        <svg className="w-4 h-4 rotate-90" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                        <svg className="w-4 h-4 rotate-90 site-text-secondary" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                         </svg>
                       </div>
@@ -510,7 +595,7 @@ const Navbar = () => {
                           <Link
                             key={idx}
                             href={item.href}
-                            className="block py-2 text-sm text-gray-600 hover:text-gray-800"
+                            className="block py-2 text-sm site-text-secondary hover:text-[#4F46E5] transition-colors"
                             onClick={closeMobileMenu}
                           >
                             {item.label}
@@ -521,10 +606,10 @@ const Navbar = () => {
                   ))}
                   
                   {/* Reviews Link */}
-                  <div className="border-b border-gray-100">
+                  <div className="border-b border-white/20 site-light:border-slate-200">
                     <Link
                       href="/reviews"
-                      className="flex items-center justify-between py-3 text-gray-800"
+                      className="flex items-center justify-between py-3 site-text-primary hover:text-[#4F46E5] transition-colors"
                       onClick={closeMobileMenu}
                     >
                       <span className="text-sm font-medium">Reviews</span>
@@ -532,10 +617,10 @@ const Navbar = () => {
                   </div>
                   
                   {/* About Us Link */}
-                  <div className="border-b border-gray-100">
+                  <div className="border-b border-white/20 site-light:border-slate-200">
                     <Link
                       href="/about"
-                      className="flex items-center justify-between py-3 text-gray-800"
+                      className="flex items-center justify-between py-3 site-text-primary hover:text-[#4F46E5] transition-colors"
                       onClick={closeMobileMenu}
                     >
                       <span className="text-sm font-medium">About Us</span>
@@ -543,10 +628,10 @@ const Navbar = () => {
                   </div>
                   
                   {/* Sign In Link */}
-                  <div className="border-b border-gray-100">
+                  <div className="border-b border-white/20 site-light:border-slate-200">
                     <Link
                       href="/login"
-                      className="flex items-center justify-between py-3 text-gray-800"
+                      className="flex items-center justify-between py-3 site-text-primary hover:text-[#4F46E5] transition-colors"
                       onClick={closeMobileMenu}
                     >
                       <span className="text-sm font-medium">Sign In</span>
@@ -557,7 +642,7 @@ const Navbar = () => {
                   <div>
                     <Link
                       href="/signup"
-                      className="flex items-center justify-between py-3 text-gray-800"
+                      className="flex items-center justify-center py-3 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white rounded-xl font-medium transition-all duration-300 hover:scale-105"
                       onClick={closeMobileMenu}
                     >
                       <span className="text-sm font-medium">Sign Up</span>
@@ -567,10 +652,10 @@ const Navbar = () => {
               </div>
               
               {/* Bottom Section */}
-              <div className="p-4 border-t">
+              <div className="p-4 border-t border-white/20 site-light:border-slate-200">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600">Didn't find what you need?</span>
-                  <button className="text-[#4F46E5] font-medium">Call Us</button>
+                  <span className="site-text-secondary">Need help choosing?</span>
+                  <button className="text-[#4F46E5] font-medium hover:text-white site-light:hover:text-[#4F46E5] transition-colors">Call Us</button>
                 </div>
               </div>
             </div>
@@ -582,19 +667,19 @@ const Navbar = () => {
       {isMobileCoursesOpen && (
         <div className="fixed inset-0 z-[999] md:hidden">
           <div className="fixed inset-0 bg-black bg-opacity-80" onClick={() => setIsMobileCoursesOpen(false)} />
-          <div className="fixed right-0 top-0 h-full w-full bg-white transform transition-transform duration-500">
+          <div className="fixed right-0 top-0 h-full w-full site-mobile-menu backdrop-blur-xl transform transition-transform duration-500">
             <div className="flex flex-col h-full">
               {/* Header */}
-              <div className="flex items-center justify-between p-4 border-b">
-                <h2 className="text-lg font-bold text-gray-900">
-                  {selectedMobileDomain || "Domains"}
+              <div className="flex items-center justify-between p-4 border-b border-white/20 site-light:border-slate-200">
+                <h2 className="text-lg font-bold site-text-primary">
+                  {selectedMobileDomain || "Course Domains"}
                 </h2>
                 <button 
                   onClick={() => {
                     setIsMobileCoursesOpen(false);
                     setSelectedMobileDomain(null);
                   }} 
-                  className="p-2"
+                  className="p-2 site-text-primary hover:bg-white/10 site-light:hover:bg-slate-100 rounded-lg transition-colors"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -610,13 +695,13 @@ const Navbar = () => {
                     <button
                       key={domain}
                       onClick={() => setSelectedMobileDomain(domain)}
-                      className="w-full flex items-center justify-between px-4 py-4 border-b border-gray-100 hover:bg-gray-50"
+                      className="w-full flex items-center justify-between px-4 py-4 border-b border-white/20 site-light:border-slate-200 hover:bg-white/10 site-light:hover:bg-slate-100"
                     >
                       <div className="flex items-center gap-3">
-                        {DOMAIN_ICONS[domain] ?? <HiOutlineDesktopComputer className="w-5 h-5 text-gray-600" />}
-                        <span className="text-sm font-medium text-gray-800">{domain}</span>
+                        {DOMAIN_ICONS[domain] ?? <HiOutlineDesktopComputer className="w-5 h-5 site-text-secondary" />}
+                        <span className="text-sm font-medium site-text-primary">{domain}</span>
                       </div>
-                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 site-text-muted" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                       </svg>
                     </button>
@@ -627,7 +712,7 @@ const Navbar = () => {
                     {/* Back Button */}
                     <button
                       onClick={() => setSelectedMobileDomain(null)}
-                      className="flex items-center gap-2 mb-4 px-3 py-2 border border-gray-200 rounded-full text-sm text-gray-600"
+                      className="flex items-center gap-2 mb-4 px-3 py-2 site-border border rounded-full text-sm site-text-secondary hover:bg-white/10 site-light:hover:bg-slate-100 transition-colors"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -637,8 +722,8 @@ const Navbar = () => {
 
                     {/* Domain Header */}
                     <div className="mb-6">
-                      <h2 className="text-xl font-bold text-gray-900 mb-2">{selectedMobileDomain}</h2>
-                      <p className="text-sm text-gray-600 mb-3">
+                      <h2 className="text-xl font-bold site-text-primary mb-2">{selectedMobileDomain}</h2>
+                      <p className="text-sm site-text-secondary mb-3">
                         {DOMAIN_COURSES[selectedMobileDomain]?.description || `Master ${selectedMobileDomain.toLowerCase()} methodologies for efficient and timely project delivery.`}
                       </p>
                       <a href="#" className="text-sm text-[#4F46E5] font-medium">
@@ -652,7 +737,7 @@ const Navbar = () => {
                         {/* Courses */}
                         {DOMAIN_COURSES[selectedMobileDomain].courses?.length > 0 && (
                           <div>
-                            <h3 className="text-lg font-bold text-gray-900 mb-4">Available Courses</h3>
+                            <h3 className="text-lg font-bold site-text-primary mb-4">Available Courses</h3>
                             <div className="space-y-4">
                               {DOMAIN_COURSES[selectedMobileDomain].courses.map((course: any, idx: number) => (
                                 <Link
@@ -662,27 +747,27 @@ const Navbar = () => {
                                     setIsMobileCoursesOpen(false);
                                     setSelectedMobileDomain(null);
                                   }}
-                                  className="flex gap-3 p-3 border border-gray-200 rounded-lg hover:shadow-md transition-shadow"
+                                  className="flex gap-3 p-3 site-border border rounded-lg hover:shadow-md transition-shadow site-glass hover:bg-white/15 site-light:hover:bg-white/70"
                                 >
                                   <div className="text-2xl">{course.icon}</div>
                                   <div className="flex-1">
                                     <div className="flex items-center gap-2 mb-1 flex-wrap">
                                       {course.provider && (
                                         <>
-                                          <span className="text-xs text-gray-500">{course.provider}</span>
-                                          <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
+                                          <span className="text-xs site-text-muted">{course.provider}</span>
+                                          <span className="w-1 h-1 bg-gray-400 site-light:bg-slate-400 rounded-full"></span>
                                         </>
                                       )}
-                                      <span className="text-xs text-gray-500">{course.hours}</span>
+                                      <span className="text-xs site-text-muted">{course.hours}</span>
                                       {course.badge && (
                                         <span className={`px-2 py-0.5 text-xs text-white rounded ${course.badgeColor}`}>
                                           {course.badge}
                                         </span>
                                       )}
                                     </div>
-                                    <p className="text-sm font-medium text-gray-900 leading-tight">{course.title}</p>
+                                    <p className="text-sm font-medium site-text-primary leading-tight">{course.title}</p>
                                   </div>
-                                  <svg className="w-5 h-5 text-gray-400 flex-shrink-0 self-center" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                                  <svg className="w-5 h-5 site-text-muted flex-shrink-0 self-center" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                                   </svg>
                                 </Link>
@@ -694,7 +779,7 @@ const Navbar = () => {
                     ) : (
                       // Fallback for domains without detailed course data
                       <div className="text-center py-8">
-                        <p className="text-gray-500">Course details coming soon for {selectedMobileDomain}</p>
+                        <p className="site-text-muted">Course details coming soon for {selectedMobileDomain}</p>
                       </div>
                     )}
                   </div>
@@ -702,9 +787,9 @@ const Navbar = () => {
               </div>
               
               {/* Bottom Section */}
-              <div className="p-4 border-t">
+              <div className="p-4 border-t border-white/20 site-light:border-slate-200">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600">Need help choosing?</span>
+                  <span className="site-text-secondary">Need help choosing?</span>
                   <Link 
                     href="/contact" 
                     className="text-[#4F46E5] font-medium"
