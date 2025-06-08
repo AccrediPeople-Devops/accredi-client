@@ -14,7 +14,7 @@ class CourseService {
    */
   async getAllCourses() {
     try {
-      const response = await axiosInstance.get("/courses/v1");
+      const response = await axiosInstance.get("/courses");
       return response.data;
     } catch (error) {
       throw error;
@@ -30,24 +30,15 @@ class CourseService {
     try {
       console.log("CourseService: Fetching course with ID:", id);
       
-      // Skip the direct endpoint call that was causing 404 errors
-      // and go straight to fetching all courses and finding the matching one
-      console.log("CourseService: Using fallback method - fetch all courses");
+      // Fetch all courses from the /courses endpoint
       const allResponse = await this.getAllCourses();
       
-      let courses = [];
-      if (allResponse && allResponse.courses && Array.isArray(allResponse.courses)) {
-        courses = allResponse.courses;
-      } else if (Array.isArray(allResponse)) {
-        courses = allResponse;
-      } else if (allResponse && allResponse.data && Array.isArray(allResponse.data)) {
-        courses = allResponse.data;
-      }
-      
-      const foundCourse = courses.find((course: any) => course._id === id);
-      if (foundCourse) {
-        console.log("CourseService: Found course in all courses:", foundCourse);
-        return { status: true, course: foundCourse };
+      if (allResponse && allResponse.status && allResponse.courses && Array.isArray(allResponse.courses)) {
+        const foundCourse = allResponse.courses.find((course: any) => course._id === id);
+        if (foundCourse) {
+          console.log("CourseService: Found course:", foundCourse);
+          return { status: true, course: foundCourse };
+        }
       }
       
       // Return a not found error if we couldn't find the course
@@ -73,39 +64,18 @@ class CourseService {
    */
   async getCoursesByCategory(categoryId: string) {
     try {
-      try {
-        // First try the direct endpoint
-        const response = await axiosInstance.get(`/courses/v1/category/${categoryId}`);
-        return response.data;
-      } catch (directError: any) {
-        console.log("Direct category endpoint failed:", directError.message);
-        
-        // Fallback: get all courses and filter by category
-        console.log("Using fallback method - fetch all courses and filter by category");
-        const allResponse = await this.getAllCourses();
-        
-        let allCourses = [];
-        if (allResponse && allResponse.courses && Array.isArray(allResponse.courses)) {
-          allCourses = allResponse.courses;
-        } else if (Array.isArray(allResponse)) {
-          allCourses = allResponse;
-        } else if (allResponse && allResponse.data && Array.isArray(allResponse.data)) {
-          allCourses = allResponse.data;
-        }
-        
-        // Log the first course to see its structure
-        if (allCourses.length > 0) {
-          console.log("First course structure:", JSON.stringify(allCourses[0], null, 2));
-        }
-        
+      // Get all courses and filter by category
+      const allResponse = await this.getAllCourses();
+      
+      if (allResponse && allResponse.status && allResponse.courses && Array.isArray(allResponse.courses)) {
         // Filter courses by categoryId
-        const filteredCourses = allCourses.filter((course: any) => {
+        const filteredCourses = allResponse.courses.filter((course: any) => {
           // Check different possible field names for the category ID
           return (
             course.categoryId === categoryId || 
             course.category === categoryId ||
-            (course.category && course.category._id === categoryId) ||
-            (course.categoryDetails && course.categoryDetails._id === categoryId)
+            (course.categoryId && course.categoryId._id === categoryId) ||
+            (course.category && course.category._id === categoryId)
           );
         });
         
@@ -115,6 +85,8 @@ class CourseService {
           courses: filteredCourses 
         };
       }
+      
+      return { status: false, courses: [] };
     } catch (error) {
       console.error("Error getting courses by category:", error);
       return { status: false, courses: [] };

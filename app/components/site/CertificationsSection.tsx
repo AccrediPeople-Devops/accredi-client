@@ -1,55 +1,60 @@
 "use client";
 import Image from "next/image";
-import React from "react";
-
-const certifications = [
-  {
-    alt: "PMI",
-    src: "https://d2o2utebsixu4k.cloudfront.net/authorized-training-partner-pmi-1-ab553e6169e042f988a8cc3437f1bf42.svg",
-  },
-  {
-    alt: "Scaled Agile Inc.",
-    src: "https://d2o2utebsixu4k.cloudfront.net/Platinum%20SPCT-01-cf9ad4584c4b4d6d80b5c276552eb420.svg",
-  },
-  {
-    alt: "DevOps Institute",
-    src: "https://d2o2utebsixu4k.cloudfront.net/Badges-03-5e5c5b39fc9345b7abcb578473a22ac4.svg",
-  },
-  {
-    alt: "EC-Council",
-    src: "https://d2o2utebsixu4k.cloudfront.net/Badges-04-ca4c756dadec4a0891d31fa2761b231f.svg",
-  },
-  {
-    alt: "ICAgile",
-    src: "https://d2o2utebsixu4k.cloudfront.net/Badges-06-de54f5c0eba7499f933a20bd21e362f9.svg",
-  },
-  {
-    alt: "IIBA",
-    src: "https://d2o2utebsixu4k.cloudfront.net/Badges-07-a433444a95ce4ee89725dd70d58822f5.svg",
-  },
-  {
-    alt: "IASSC",
-    src: "https://d2o2utebsixu4k.cloudfront.net/Badges-05-9742a8cf7ccf480385fb5205b4d27e6c.svg",
-  },
-  {
-    alt: "Scrum.Org",
-    src: "https://d2o2utebsixu4k.cloudfront.net/Badges-01-3c7afa39926d4146bdaa3ffccbe29726.svg",
-  },
-  {
-    alt: "AWS",
-    src: "https://d2o2utebsixu4k.cloudfront.net/Badges-02-6c95913e7b804651babdfd8822b3c757.svg",
-  },
-  {
-    alt: "Microsoft",
-    src: "https://d2o2utebsixu4k.cloudfront.net/Badges-08-5cc405936a8b4c75b220cac6e9e910af.svg",
-  },
-  {
-    alt: "Scrum Alliance",
-    src: "https://d2o2utebsixu4k.cloudfront.net/REA-New%20Logo-b5b7e812ead6484baec67fa9d4784a4d.svg",
-  },
-];
+import React, { useState, useEffect } from "react";
+import courseCategoryService from "@/app/components/service/courseCategory.service";
+import config from "@/app/components/config/config";
+import { CourseCategory } from "@/app/types/courseCategory";
 
 export default function CertificationsSection() {
+  const [categories, setCategories] = useState<CourseCategory[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      setIsLoading(true);
+      setError("");
+      
+      try {
+        const response = await courseCategoryService.getAllCourseCategories();
+        if (response?.courseCategories) {
+          // Filter active and non-deleted categories
+          const activeCategories = response.courseCategories.filter(
+            (category: CourseCategory) => category.isActive && !category.isDeleted
+          );
+          setCategories(activeCategories);
+        }
+      } catch (err) {
+        console.error("Error fetching course categories:", err);
+        setError("Failed to load categories");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  const getCategoryImageUrl = (category: CourseCategory) => {
+    if (category.image?.[0]) {
+      // First check if we have a complete URL
+      if (category.image[0].url) {
+        return category.image[0].url;
+      }
+      // Then check if we have a path that needs the imageUrl prefixed
+      if (category.image[0].path) {
+        return `${config.imageUrl}${category.image[0].path}`;
+      }
+    }
+    // Fallback to a simple SVG placeholder
+    return `data:image/svg+xml,${encodeURIComponent(`
+      <svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">
+        <rect width="100" height="100" fill="#f3f4f6"/>
+        <text x="50" y="50" font-family="Arial" font-size="12" fill="#6b7280" text-anchor="middle" dy="0.3em">Category</text>
+      </svg>
+    `)}`;
+  };
+
   return (
     <div className="relative">
       {/* Animated Background Elements */}
@@ -70,55 +75,87 @@ export default function CertificationsSection() {
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-6 py-3 mb-6 hover:bg-white/20 site-light:hover:bg-white/60 transition-all duration-300">
             <div className="w-2 h-2 bg-[#10B981] rounded-full animate-pulse"></div>
-            <span className="site-text-primary text-sm font-bold uppercase tracking-wider">Certification Partners</span>
+            <span className="site-text-primary text-sm font-bold uppercase tracking-wider">Certification Categories Offered</span>
           </div>
           <h2 className="text-3xl lg:text-4xl font-black site-text-primary mb-4 leading-tight">
-            Industry-Leading
+            Expert-Led Courses.  
             <span className="block bg-gradient-to-r from-[#4F46E5] via-[#B39DDB] to-[#10B981] bg-clip-text text-transparent">
-              Certifications
+            Industry-Relevant Certifications.
             </span>
+            Real Career Impact.
           </h2>
           <p className="site-text-secondary text-lg max-w-2xl mx-auto leading-relaxed">
-            Authorized training partner for world's most valued certifications that employers actually value
+          Instructor-led live and On-Demand courses
           </p>
         </div>
 
         {/* Certifications Grid */}
         <div className="relative overflow-hidden rounded-2xl site-glass backdrop-blur-sm p-6">
+          {isLoading ? (
+            // Loading State
+            <div className="flex items-center justify-center py-12">
+              <div className="flex items-center gap-4">
+                <div className="w-8 h-8 border-4 border-[#4F46E5]/30 border-t-[#4F46E5] rounded-full animate-spin"></div>
+                <span className="site-text-primary text-lg font-medium">Loading categories...</span>
+              </div>
+            </div>
+          ) : error ? (
+            // Error State
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center">
+                <div className="text-red-400 text-lg font-medium mb-2">Failed to load categories</div>
+                <p className="site-text-muted text-sm">Please try refreshing the page</p>
+              </div>
+            </div>
+          ) : categories.length === 0 ? (
+            // Empty State
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center">
+                <div className="site-text-primary text-lg font-medium mb-2">No categories available</div>
+                <p className="site-text-muted text-sm">Categories will appear here once they are added</p>
+              </div>
+            </div>
+          ) : (
+            // Categories Display
+            <>
           {/* Scrolling Container */}
           <div className="flex items-center gap-8 animate-scroll-x-smooth">
-            {[...certifications, ...certifications].map((cert, i) => (
-              <div key={cert.alt + i} className="flex-shrink-0 group/cert">
-                <div className="flex flex-col items-center gap-4 p-6 rounded-2xl bg-white/20 site-light:bg-white/60 backdrop-blur-sm border border-white/30 site-light:border-slate-200 hover:bg-white/30 site-light:hover:bg-white/80 hover:border-white/50 site-light:hover:border-slate-300 transition-all duration-300 min-w-[140px] hover:scale-105 hover:shadow-xl hover:shadow-white/20">
-                  {/* Logo Container */}
-                  <div className="w-20 h-20 relative p-3 bg-white rounded-2xl shadow-lg group-hover/cert:scale-110 group-hover/cert:shadow-2xl transition-all duration-300">
+                {[...categories, ...categories].map((category, i) => (
+                  <div key={category._id + i} className="flex-shrink-0 group/cert">
+                    <div className="flex flex-col items-center gap-4 p-6 rounded-2xl bg-white/20 site-light:bg-white/60 backdrop-blur-sm border border-white/30 site-light:border-slate-200 hover:bg-white/30 site-light:hover:bg-white/80 hover:border-white/50 site-light:hover:border-slate-300 transition-all duration-300 min-w-[140px] hover:scale-105 hover:shadow-xl hover:shadow-white/20">
+                      {/* Category Image Container */}
+                      <div className="w-20 h-20 relative p-3 bg-white rounded-2xl shadow-lg group-hover/cert:scale-110 group-hover/cert:shadow-2xl transition-all duration-300">
                     <Image 
-                      src={cert.src} 
-                      alt={cert.alt} 
+                          src={getCategoryImageUrl(category)} 
+                          alt={category.name} 
                       fill 
                       className="object-contain p-1" 
                       unoptimized 
                     />
                   </div>
-                  {/* Label */}
-                  <div className="text-sm site-text-primary text-center font-semibold truncate max-w-[120px] group-hover/cert:text-[#4F46E5] transition-colors duration-300">
-                    {cert.alt}
+                      {/* Category Name */}
+                      <div className="text-sm site-text-primary text-center font-semibold truncate max-w-[120px] group-hover/cert:text-[#4F46E5] transition-colors duration-300">
+                        {category.name}
                   </div>
                 </div>
               </div>
             ))}
           </div>
 
-          {/* Enhanced Gradient Overlays */}
-          <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-white/20 site-light:from-white/60 to-transparent pointer-events-none"></div>
-          <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-white/20 site-light:from-white/60 to-transparent pointer-events-none"></div>
+              {/* Enhanced Gradient Overlays */}
+              <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-white/20 site-light:from-white/60 to-transparent pointer-events-none"></div>
+              <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-white/20 site-light:from-white/60 to-transparent pointer-events-none"></div>
+            </>
+          )}
         </div>
 
         {/* Enhanced Stats Row */}
         <div className="grid grid-cols-3 gap-6 mt-8 pt-8 site-border border-t">
           <div className="text-center group/stat">
-            <div className="text-3xl font-black bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] bg-clip-text text-transparent mb-2 group-hover/stat:scale-110 transition-transform duration-300">25+</div>
-            <div className="text-sm site-text-muted font-medium">Certifications</div>
+            <div className="text-3xl font-black bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] bg-clip-text text-transparent mb-2 group-hover/stat:scale-110 transition-transform duration-300">
+              {categories.length}+
+            </div>
+            <div className="text-sm site-text-muted font-medium">Categories</div>
           </div>
           <div className="text-center group/stat">
             <div className="text-3xl font-black bg-gradient-to-r from-[#10B981] to-[#059669] bg-clip-text text-transparent mb-2 group-hover/stat:scale-110 transition-transform duration-300">98%</div>

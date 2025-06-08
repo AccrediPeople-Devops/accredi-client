@@ -8,10 +8,10 @@ const trustedLogos = [
     alt: "HP Enterprise",
     src: "https://d2o2utebsixu4k.cloudfront.net/Transform workflow logos_HP-2860f6848ad5400ba9b52db0077bb097.svg",
   },
-  {
-    alt: "Tiger",
-    src: "https://d2o2utebsixu4k.cloudfront.net/Transform workflow logos_Tiger-4ff6b27ed592481881edf61e4d019df1.svg",
-  },
+  // {
+  //   alt: "Tiger",
+  //   src: "https://d2o2utebsixu4k.cloudfront.net/Transform workflow logos_Tiger-4ff6b27ed592481881edf61e4d019df1.svg",
+  // },
   {
     alt: "Welspun",
     src: "https://d2o2utebsixu4k.cloudfront.net/Transform workflow logos_Welspun-4e17b025b5a8445395b02df62d9fd1f3.svg",
@@ -20,10 +20,10 @@ const trustedLogos = [
     alt: "Terrapay",
     src: "https://d2o2utebsixu4k.cloudfront.net/Transform workflow logos_terrapay-12651a4aa23148108427a29818c0dc52.svg",
   },
-  {
-    alt: "Reliance Retail",
-    src: "https://d2o2utebsixu4k.cloudfront.net/Transform workflow logos_Reliance-8d98162977754c8b9583c132028cd967.svg",
-  },
+  // {
+  //   alt: "Reliance Retail",
+  //   src: "https://d2o2utebsixu4k.cloudfront.net/Transform workflow logos_Reliance-8d98162977754c8b9583c132028cd967.svg",
+  // },
   {
     alt: "Infosys BPM",
     src: "https://d2o2utebsixu4k.cloudfront.net/Transform workflow logos_Infosys-69007f6080d94039b856ddd607aca191.svg",
@@ -85,23 +85,23 @@ export default function HeroSection() {
               {/* Badge */}
               <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-6 py-3">
                 <div className="w-2 h-2 bg-[#10B981] rounded-full animate-pulse"></div>
-                <span className="text-sm font-medium">Transforming Careers Since 2010</span>
+                <span className="text-sm font-medium">Transforming Careers Since 2019</span>
               </div>
 
               {/* Main Heading */}
               <div className="space-y-4">
                 <h1 className="text-5xl lg:text-7xl font-black leading-tight">
-                  Master
+                  Empowering 
                   <span className="block bg-gradient-to-r from-[#4F46E5] via-[#B39DDB] to-[#10B981] bg-clip-text text-transparent">
-                    Future-Ready
+                  professionals to master
                   </span>
-                  Skills
+                  future-ready skills
                 </h1>
                 
                 {/* Animated Skills */}
-                <div className="flex items-center gap-4 text-2xl lg:text-3xl font-bold">
-                  <span className="site-text-secondary">in</span>
-                  <div className="relative h-12 overflow-hidden">
+                <div className="flex items-center gap-4 text-xl lg:text-2xl font-bold">
+                  <span className="site-text-secondary">one certification at a time in</span>
+                  <div className="relative overflow-hidden">
                     <div 
                       className={`transition-all duration-300 ${
                         isVisible ? 'transform translate-y-0 opacity-100' : 'transform -translate-y-full opacity-0'
@@ -117,22 +117,25 @@ export default function HeroSection() {
 
               {/* Description */}
               <p className="text-xl site-text-secondary leading-relaxed max-w-lg">
-                Join the elite circle of certified professionals. Transform your career with industry-leading certifications that employers actually value.
+              
+              </p>
+              <p className="text-xl site-text-secondary leading-relaxed max-w-lg">
+              We’re committed to delivering world-class, instructor-led training programs that help professionals upskill, grow in their careers, and stay ahead in today’s competitive landscape
               </p>
 
               {/* Interactive CTA Buttons */}
               <div className="flex flex-col sm:flex-row gap-4">
-                <button className="group relative overflow-hidden bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-[#4F46E5]/25">
+                <a href="/courses" className="group relative overflow-hidden bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-[#4F46E5]/25">
                   <span className="relative z-10">Explore Certifications</span>
                   <div className="absolute inset-0 bg-gradient-to-r from-[#7C3AED] to-[#4F46E5] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                </button>
+                </a>
                 
-                <button className="group flex items-center gap-3 site-glass backdrop-blur-sm site-text-primary px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 hover:scale-105">
+                <a href="/contact" className="group flex items-center gap-3 site-glass backdrop-blur-sm site-text-primary px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 hover:scale-105">
                   <svg className="w-6 h-6 group-hover:animate-pulse" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   Schedule a Call
-                </button>
+                </a>
               </div>
 
               {/* Premium Stats */}
@@ -145,7 +148,7 @@ export default function HeroSection() {
                 </div>
                 <div className="text-center">
                   <div className="text-3xl font-black bg-gradient-to-r from-[#F59E0B] to-[#D97706] bg-clip-text text-transparent">
-                    15K+
+                    5K+
                   </div>
                   <div className="text-sm site-text-muted font-medium">Certified</div>
                 </div>

@@ -5,10 +5,70 @@ export interface FileUpload {
   _id?: string;
 }
 
+export interface Schedule {
+  _id: string;
+  courseId: string;
+  country: string;
+  scheduleType: 'classroom' | 'self-paced' | 'live-online';
+  startDate?: string;
+  endDate?: string;
+  days: string[];
+  type: string;
+  instructorName: string;
+  accessType: string;
+  state: string;
+  city: string;
+  standardPrice: number;
+  offerPrice: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Curriculum {
+  title: string;
+  description: string;
+  _id: string;
+}
+
+export interface Component {
+  image: {
+    path: string;
+    key: string;
+  };
+  description: string;
+  _id: string;
+}
+
+export interface FAQ {
+  question: string;
+  answer: string;
+  _id: string;
+}
+
+export interface FAQData {
+  _id: string;
+  courseId: string;
+  faqs: FAQ[];
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
 export interface Course {
   _id: string;
   title: string;
-  categoryId: string;
+  categoryId: string | {
+    _id: string;
+    name: string;
+    description: string;
+    courseCount: number;
+    image: FileUpload[];
+    isActive: boolean;
+    isDeleted: boolean;
+    createdAt: string;
+    updatedAt: string;
+    __v: number;
+  };
   shortDescription?: string;
   description?: string;
   upload: {
@@ -17,12 +77,16 @@ export interface Course {
     courseBadge?: FileUpload[];
   };
   keyFeatures?: string[];
-  isActive: boolean;
+  isActive?: boolean;
   isDeleted?: boolean;
   broucher?: FileUpload[];
   createdAt: string;
   updatedAt?: string;
   __v?: number;
+  schedules?: Schedule[];
+  curriculum?: Curriculum[];
+  components?: Component[];
+  faqId?: FAQData;
 }
 
 export interface CourseFormData {

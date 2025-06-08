@@ -83,7 +83,7 @@ export default function BecomeInstructorPage() {
   return (
     <div className="min-h-screen site-section-bg">
       {/* Hero Section */}
-      <section className="relative py-20 lg:py-32 overflow-hidden site-section-bg">
+      <section className="relative py-12 lg:py-22 overflow-hidden site-section-bg">
         {/* Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-20 left-20 w-96 h-96 bg-[#4F46E5]/5 site-light:bg-[#4F46E5]/10 rounded-full blur-3xl animate-pulse"></div>
@@ -281,7 +281,7 @@ export default function BecomeInstructorPage() {
 
                 <div>
                   <label htmlFor="cv" className="block text-sm font-bold site-text-primary mb-2">
-                    CV (PDF Only) *
+                    Resume (PDF Only) *
                   </label>
                   <div className="relative">
                     <input

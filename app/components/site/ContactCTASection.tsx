@@ -25,53 +25,63 @@ export default function ContactCTASection() {
     {
       country: "USA",
       flag: "🇺🇸",
-      numbers: ["+1-469-442-0620", "+1-832-684-0080"]
+      numbers: ["+1-469-442-0620", "+1-832-684-0080"],
+      showNumbers: true
     },
     {
       country: "India",
       flag: "🇮🇳",
-      numbers: ["1800-121-9232"]
+      numbers: ["1800-121-9232"],
+      showNumbers: true
     },
-    {
-      country: "UK",
-      flag: "🇬🇧",
-      numbers: ["+44-2080890434"]
-    },
-    {
-      country: "Singapore",
-      flag: "🇸🇬",
-      numbers: ["+65-317-46174"]
-    },
-    {
-      country: "Malaysia",
-      flag: "🇲🇾",
-      numbers: ["+60154877094"]
-    },
-    {
-      country: "Canada",
-      flag: "🇨🇦",
-      numbers: ["+1-613-707-0763"]
-    },
-    {
-      country: "New Zealand",
-      flag: "🇳🇿",
-      numbers: ["+64-36694791"]
-    },
-    {
-      country: "Ireland",
-      flag: "🇮🇪",
-      numbers: ["+353-12708328"]
-    },
-    {
-      country: "Australia",
-      flag: "🇦🇺",
-      numbers: ["+61-290995641"]
-    },
-    {
-      country: "UAE Toll Free",
-      flag: "🇦🇪",
-      numbers: ["8000180860"]
-    }
+    // {
+    //   country: "UK",
+    //   flag: "🇬🇧",
+    //   numbers: [],
+    //   showNumbers: false
+    // },
+    // {
+    //   country: "Singapore",
+    //   flag: "🇸🇬",
+    //   numbers: [],
+    //   showNumbers: false
+    // },
+    // {
+    //   country: "Malaysia",
+    //   flag: "🇲🇾",
+    //   numbers: [],
+    //   showNumbers: false
+    // },
+    // {
+    //   country: "Canada",
+    //   flag: "🇨🇦",
+    //   numbers: [],
+    //   showNumbers: false
+    // },
+    // {
+    //   country: "New Zealand",
+    //   flag: "🇳🇿",
+    //   numbers: [],
+    //   showNumbers: false
+    // },
+    // {
+    //   country: "Ireland",
+    //   flag: "🇮🇪",
+    //   numbers: [],
+    //   showNumbers: false
+    // },
+    // {
+    //   country: "Australia",
+    //   flag: "🇦🇺",
+    //   numbers: [],
+    //   showNumbers: false
+    // },
+    // {
+    //   country: "UAE",
+    //   flag: "🇦🇪",
+    //   numbers: [],
+    //   showNumbers: false
+    // }
   ];
 
   return (
@@ -96,11 +106,18 @@ export default function ContactCTASection() {
             
             {/* Main Heading */}
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-8 leading-tight">
-              Don't Wait—Your Next 
-              <span className="block bg-gradient-to-r from-[#4F46E5] via-[#B39DDB] to-[#10B981] bg-clip-text text-transparent">
-                Career Move Starts Here
-              </span>
+              Contact us
             </h2>
+
+            {/* We're Here to Help Section */}
+            <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-6 mb-8 border border-white/20 shadow-2xl">
+              <h3 className="text-white font-bold text-xl mb-4 flex items-center gap-2">
+                💡 We're Here to Help
+              </h3>
+              <p className="text-gray-300 text-base leading-relaxed">
+                Have questions or need guidance? Our expert support team is committed to assisting you every step of the way — from course selection to certification success. Whether you're exploring your options or ready to enroll, we're just a message away to help you achieve your learning goals with confidence.
+              </p>
+            </div>
             
             {/* Description */}
             <div className="mb-12">
@@ -112,8 +129,8 @@ export default function ContactCTASection() {
               
               {/* Serving location with enhanced design */}
               <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/20">
-                <span className="text-3xl">🇺🇸</span>
-                <span className="text-base font-medium text-white">Serving professionals across the US & Canada</span>
+                <span className="text-3xl">🌍</span>
+                <span className="text-base font-medium text-white">Serving professionals across the globe</span>
               </div>
             </div>
             
@@ -206,13 +223,13 @@ export default function ContactCTASection() {
                 Global Contact Numbers
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {globalContacts.slice(0, 6).map((contact, index) => (
+                {globalContacts.map((contact, index) => (
                   <div key={index} className="bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10 hover:bg-white/10 transition-all duration-300">
                     <div className="flex items-center gap-3 mb-2">
                       <span className="text-2xl">{contact.flag}</span>
                       <span className="font-semibold text-white text-sm">{contact.country}</span>
                     </div>
-                    {contact.numbers.map((number, numIndex) => (
+                    {contact.showNumbers && contact.numbers.map((number, numIndex) => (
                       <div key={numIndex}>
                         <a 
                           href={`tel:${number}`}
@@ -222,33 +239,14 @@ export default function ContactCTASection() {
                         </a>
                       </div>
                     ))}
+                    {!contact.showNumbers && (
+                      <div className="text-gray-400 text-xs">
+                        Available for support
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
-              
-              {/* Additional countries in a second row if needed */}
-              {globalContacts.length > 6 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 pt-6 border-t border-white/20">
-                  {globalContacts.slice(6).map((contact, index) => (
-                    <div key={index + 6} className="bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10 hover:bg-white/10 transition-all duration-300">
-                      <div className="flex items-center gap-3 mb-2">
-                        <span className="text-2xl">{contact.flag}</span>
-                        <span className="font-semibold text-white text-sm">{contact.country}</span>
-                      </div>
-                      {contact.numbers.map((number, numIndex) => (
-                        <div key={numIndex}>
-                          <a 
-                            href={`tel:${number}`}
-                            className="text-gray-300 hover:text-[#4F46E5] transition-colors duration-300 text-sm block font-medium"
-                          >
-                            {number}
-                          </a>
-                        </div>
-                      ))}
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
         </div>

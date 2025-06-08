@@ -185,7 +185,7 @@ const industries = [
 ];
 
 const stats = [
-  { number: "15,000+", label: "Certified Professionals", icon: "🎓", description: "Successfully trained and certified" },
+  { number: "5,000+", label: "Certified Professionals", icon: "🎓", description: "Successfully trained and certified" },
   { number: "98%", label: "Pass Rate", icon: "✅", description: "First-attempt certification success" },
   { number: "4.9/5", label: "Average Rating", icon: "⭐", description: "Based on student feedback" },
   { number: "200%", label: "Average Salary Increase", icon: "📈", description: "Post-certification career growth" }
@@ -266,75 +266,6 @@ export default function ReviewsPage() {
                 </div>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Filters Section */}
-      <section className="py-12 site-section-bg relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="site-glass backdrop-blur-xl rounded-3xl p-8 site-border border shadow-2xl">
-            <h2 className="text-2xl font-bold site-text-primary mb-6 text-center">Find Reviews by Category</h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {/* Search */}
-              <div>
-                <label className="block text-sm font-semibold site-text-primary mb-2">Search Reviews</label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Search by name, company, or content..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-2xl site-border border focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300 site-text-primary pl-10"
-                  />
-                  <svg className="absolute left-3 top-3.5 h-5 w-5 site-text-muted" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                </div>
-              </div>
-
-              {/* Certification Filter */}
-              <div>
-                <label className="block text-sm font-semibold site-text-primary mb-2">Certification</label>
-                <select
-                  value={selectedCertification}
-                  onChange={(e) => setSelectedCertification(e.target.value)}
-                  className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-2xl site-border border focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300 site-text-primary"
-                >
-                  {certificationTypes.map((cert) => (
-                    <option key={cert} value={cert} className="bg-[#1a1a3e] text-white site-light:bg-white site-light:text-slate-900">
-                      {cert}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Industry Filter */}
-              <div>
-                <label className="block text-sm font-semibold site-text-primary mb-2">Industry</label>
-                <select
-                  value={selectedIndustry}
-                  onChange={(e) => setSelectedIndustry(e.target.value)}
-                  className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-2xl site-border border focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300 site-text-primary"
-                >
-                  {industries.map((industry) => (
-                    <option key={industry} value={industry} className="bg-[#1a1a3e] text-white site-light:bg-white site-light:text-slate-900">
-                      {industry}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* Results Summary */}
-            <div className="mt-6 text-center">
-              <p className="site-text-secondary">
-                Showing <span className="font-semibold text-[#4F46E5]">{filteredTestimonials.length}</span> reviews
-                {selectedCertification !== "All Certifications" && ` for ${selectedCertification}`}
-                {selectedIndustry !== "All Industries" && ` in ${selectedIndustry}`}
-              </p>
-            </div>
           </div>
         </div>
       </section>

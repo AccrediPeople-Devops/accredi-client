@@ -95,60 +95,60 @@ export default function ClientLogosSection() {
             Join thousands of professionals from leading companies who have advanced their careers with our certification training.
           </p>
         </div>
-
-        {/* Logo Carousel */}
-        <div className="logo-carousel relative">
-          {/* Premium glassmorphism container */}
+          
+          {/* Logo Carousel */}
+          <div className="logo-carousel relative">
+            {/* Premium glassmorphism container */}
           <div className="site-glass backdrop-blur-xl rounded-3xl p-8 site-border border shadow-2xl relative overflow-hidden">
-            {/* Background pattern */}
-            <div className="absolute inset-0 opacity-5">
-              <div className="absolute top-0 left-1/4 w-16 h-16 bg-[#4F46E5] rounded-full blur-xl"></div>
-              <div className="absolute bottom-0 right-1/4 w-20 h-20 bg-[#10B981] rounded-full blur-xl"></div>
-            </div>
+              {/* Background pattern */}
+              <div className="absolute inset-0 opacity-5">
+                <div className="absolute top-0 left-1/4 w-16 h-16 bg-[#4F46E5] rounded-full blur-xl"></div>
+                <div className="absolute bottom-0 right-1/4 w-20 h-20 bg-[#10B981] rounded-full blur-xl"></div>
+              </div>
 
-            {/* Container with gradient masks for translucent ends */}
-            <div className="relative overflow-hidden">
-              {/* Left gradient fade */}
+              {/* Container with gradient masks for translucent ends */}
+              <div className="relative overflow-hidden">
+                {/* Left gradient fade */}
               <div className="absolute left-0 top-0 w-20 md:w-32 h-full site-gradient-left z-10 pointer-events-none"></div>
-              
-              {/* Right gradient fade */}
+                
+                {/* Right gradient fade */}
               <div className="absolute right-0 top-0 w-20 md:w-32 h-full site-gradient-right z-10 pointer-events-none"></div>
-              
-              {/* Scrolling logos container */}
-              <div className="flex items-center gap-8 md:gap-12 animate-infinite-scroll" style={{animation: 'infinite-scroll 40s linear infinite'}}>
-                {logosTripled.map((logo, i) => (
-                  <div key={`${logo.alt}-${i}`} className="flex-shrink-0 w-24 h-12 md:w-32 md:h-16 relative hover:scale-110 transition-all duration-300 group">
-                    {/* Logo background */}
+                
+                {/* Scrolling logos container */}
+                <div className="flex items-center gap-8 md:gap-12 animate-infinite-scroll" style={{animation: 'infinite-scroll 40s linear infinite'}}>
+                  {logosTripled.map((logo, i) => (
+                    <div key={`${logo.alt}-${i}`} className="flex-shrink-0 w-24 h-12 md:w-32 md:h-16 relative hover:scale-110 transition-all duration-300 group">
+                      {/* Logo background */}
                     <div className="absolute inset-0 site-glass backdrop-blur-sm rounded-xl site-border border group-hover:bg-white/20 site-light:group-hover:bg-white/60 group-hover:border-white/30 site-light:group-hover:border-slate-300 transition-all duration-300"></div>
-                    <div className="relative w-full h-full p-2">
-                      <Image 
-                        src={logo.src} 
-                        alt={logo.alt} 
-                        fill 
+                      <div className="relative w-full h-full p-2">
+                        <Image 
+                          src={logo.src} 
+                          alt={logo.alt} 
+                          fill 
                         className="object-contain filter brightness-0 invert opacity-70 group-hover:opacity-100 transition-all duration-300 site-light:brightness-100 site-light:invert-0"
-                        loading="lazy"
-                        unoptimized
-                      />
+                          loading="lazy"
+                          unoptimized
+                        />
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Stats Row */}
-        <div className="grid grid-cols-3 gap-8 mt-12 max-w-2xl mx-auto">
-          <div className="text-center">
-            <div className="text-3xl md:text-4xl font-black bg-gradient-to-r from-[#10B981] to-[#059669] bg-clip-text text-transparent mb-2">300K+</div>
+          {/* Stats Row */}
+          <div className="grid grid-cols-3 gap-8 mt-12 max-w-2xl mx-auto">
+            <div className="text-center">
+              <div className="text-3xl md:text-4xl font-black bg-gradient-to-r from-[#10B981] to-[#059669] bg-clip-text text-transparent mb-2">300K+</div>
             <div className="text-sm site-text-muted uppercase tracking-wider">Companies Trained</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl md:text-4xl font-black bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] bg-clip-text text-transparent mb-2">2M+</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl md:text-4xl font-black bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] bg-clip-text text-transparent mb-2">2M+</div>
             <div className="text-sm site-text-muted uppercase tracking-wider">Delegates</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl md:text-4xl font-black bg-gradient-to-r from-[#F59E0B] to-[#EF4444] bg-clip-text text-transparent mb-2">98%</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl md:text-4xl font-black bg-gradient-to-r from-[#F59E0B] to-[#EF4444] bg-clip-text text-transparent mb-2">98%</div>
             <div className="text-sm site-text-muted uppercase tracking-wider">Satisfaction Rate</div>
           </div>
         </div>

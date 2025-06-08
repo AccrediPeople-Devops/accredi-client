@@ -6,7 +6,6 @@ import { HiChevronDown } from "react-icons/hi";
 
 export default function Footer() {
   const [countryDropdownOpen, setCountryDropdownOpen] = useState(false);
-  const [disclaimerExpanded, setDisclaimerExpanded] = useState(false);
 
   const quickLinks = [
     { name: "Home", href: "/" },
@@ -40,9 +39,16 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="bg-black text-white">
+    <footer className="bg-gradient-to-br from-[#0F0F23] via-[#1A1A3E] to-[#2D1B69] text-white relative overflow-hidden">
+      {/* Background Elements */}
+      <div className="absolute inset-0">
+        <div className="absolute top-20 right-20 w-64 h-64 bg-[#4F46E5]/5 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 left-20 w-80 h-80 bg-[#10B981]/5 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/3 w-48 h-48 bg-[#B39DDB]/5 rounded-full blur-3xl"></div>
+      </div>
+
       {/* Main Footer Content */}
-      <div className="px-5 md:px-16 w-full 2xl:max-w-7xl mx-auto py-16">
+      <div className="relative z-10 px-5 md:px-16 w-full 2xl:max-w-7xl mx-auto py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8">
           {/* Quick Links */}
           <div className="lg:col-span-1">
@@ -54,7 +60,7 @@ export default function Footer() {
                 <li key={link.name}>
                   <Link 
                     href={link.href}
-                    className="text-gray-300 hover:text-white transition-colors duration-300 text-sm"
+                    className="text-gray-300 hover:text-[#4F46E5] transition-colors duration-300 text-sm"
                   >
                     {link.name}
                   </Link>
@@ -73,7 +79,7 @@ export default function Footer() {
                 <li key={policy.name}>
                   <Link 
                     href={policy.href}
-                    className="text-gray-300 hover:text-white transition-colors duration-300 text-sm"
+                    className="text-gray-300 hover:text-[#4F46E5] transition-colors duration-300 text-sm"
                   >
                     {policy.name}
                   </Link>
@@ -92,7 +98,7 @@ export default function Footer() {
                 <li key={discount.name}>
                   <Link 
                     href={discount.href}
-                    className="text-gray-300 hover:text-white transition-colors duration-300 text-sm"
+                    className="text-gray-300 hover:text-[#4F46E5] transition-colors duration-300 text-sm"
                   >
                     {discount.name}
                   </Link>
@@ -111,7 +117,7 @@ export default function Footer() {
                 <li key={item.name}>
                   <Link 
                     href={item.href}
-                    className="text-gray-300 hover:text-white transition-colors duration-300 text-sm"
+                    className="text-gray-300 hover:text-[#4F46E5] transition-colors duration-300 text-sm"
                   >
                     {item.name}
                   </Link>
@@ -130,7 +136,7 @@ export default function Footer() {
                 <li key={item.name}>
                   <Link 
                     href={item.href}
-                    className="text-gray-300 hover:text-white transition-colors duration-300 text-sm"
+                    className="text-gray-300 hover:text-[#4F46E5] transition-colors duration-300 text-sm"
                   >
                     {item.name}
                   </Link>
@@ -147,7 +153,7 @@ export default function Footer() {
             <div className="relative">
               <button
                 onClick={() => setCountryDropdownOpen(!countryDropdownOpen)}
-                className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-lg border border-gray-600 transition-colors duration-300 w-full"
+                className="flex items-center gap-2 bg-white/10 backdrop-blur-sm hover:bg-white/20 px-4 py-2 rounded-lg border border-white/20 transition-colors duration-300 w-full"
               >
                 <span className="text-xl">🇺🇸</span>
                 <span className="text-sm text-gray-300 flex-1 text-left">United States</span>
@@ -155,17 +161,17 @@ export default function Footer() {
               </button>
               
               {countryDropdownOpen && (
-                <div className="absolute bottom-full mb-2 left-0 right-0 bg-gray-800 border border-gray-600 rounded-lg shadow-lg z-10">
+                <div className="absolute bottom-full mb-2 left-0 right-0 bg-white/10 backdrop-blur-xl border border-white/20 rounded-lg shadow-lg z-10">
                   <div className="p-2">
-                    <button className="flex items-center gap-2 w-full px-3 py-2 hover:bg-gray-700 rounded text-sm">
+                    <button className="flex items-center gap-2 w-full px-3 py-2 hover:bg-white/20 rounded text-sm">
                       <span className="text-xl">🇺🇸</span>
                       <span className="text-gray-300">United States</span>
                     </button>
-                    <button className="flex items-center gap-2 w-full px-3 py-2 hover:bg-gray-700 rounded text-sm">
+                    <button className="flex items-center gap-2 w-full px-3 py-2 hover:bg-white/20 rounded text-sm">
                       <span className="text-xl">🇨🇦</span>
                       <span className="text-gray-300">Canada</span>
                     </button>
-                    <button className="flex items-center gap-2 w-full px-3 py-2 hover:bg-gray-700 rounded text-sm">
+                    <button className="flex items-center gap-2 w-full px-3 py-2 hover:bg-white/20 rounded text-sm">
                       <span className="text-xl">🇬🇧</span>
                       <span className="text-gray-300">United Kingdom</span>
                     </button>
@@ -178,52 +184,30 @@ export default function Footer() {
       </div>
 
       {/* Bottom Section */}
-      <div className="border-t border-gray-800">
+      <div className="border-t border-white/20 relative z-10">
         <div className="px-5 md:px-16 w-full 2xl:max-w-7xl mx-auto py-8">
           {/* Copyright */}
           <div className="text-center mb-6">
-            <p className="text-[#B39DDB] font-medium text-sm">
+            <p className="text-white font-medium text-sm">
               © 2025 AccrediPeople Certifications. All Rights Reserved.
             </p>
           </div>
 
           {/* Disclaimer */}
           <div className="text-center space-y-4">
-            <p className="text-gray-400 text-xs leading-relaxed">
-              <strong>Disclaimer</strong>
+            <p className="text-[#B39DDB] font-semibold text-sm mb-6">
+              Disclaimer
             </p>
-            <div className="max-w-6xl mx-auto">
-              {!disclaimerExpanded ? (
-                <div className="space-y-4">
-                  <p className="text-gray-400 text-xs leading-relaxed">
-                    <strong>Disclaimer:</strong> The content on the website and/or Platform is for informational and educational purposes only. The user of this website and/or Platform (User) should not construe any such information as legal, investment, tax, financial or any other advice. Nothing contained herein constitutes any representation, solicitation, recommendation, promotion or advertisement on behalf of upGrad and / or its Affiliates (including but not limited to its subsidiaries, associates, employees, directors, key managerial personnel, consultants, trainers, advisors).
+            <div className="max-w-6xl mx-auto space-y-4">
+              <p className="text-gray-300 text-xs leading-relaxed">
+                PMP®, PMI®, PMBOK®, PMI-ACP®, CAPM®, PgMP®, PfMP®, PBA®, RMP®, SP®, and OPM3® are registered marks of the Project Management Institute, Inc.
                   </p>
-                  <button
-                    onClick={() => setDisclaimerExpanded(true)}
-                    className="text-[#4F46E5] text-xs font-semibold hover:text-[#4338CA] transition-colors"
-                  >
-                    READ MORE
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <p className="text-gray-400 text-xs leading-relaxed">
-                    <strong>Disclaimer:</strong> The content on the website and/or Platform is for informational and educational purposes only. The user of this website and/or Platform (User) should not construe any such information as legal, investment, tax, financial or any other advice. Nothing contained herein constitutes any representation, solicitation, recommendation, promotion or advertisement on behalf of upGrad and / or its Affiliates (including but not limited to its subsidiaries, associates, employees, directors, key managerial personnel, consultants, trainers, advisors).
-                  </p>
-                  <p className="text-gray-400 text-xs leading-relaxed">
-                    The User is solely responsible for evaluating the merits and risks associated with use of the information included as part of the content. The User agrees and covenants not to hold upGrad and its Affiliates responsible for any and all losses or damages arising from such decision made by them basis the information provided in the course and / or available on the website and/or platform. upGrad reserves the right to cancel or reschedule events in case of insufficient registrations, or if presenters cannot attend due to unforeseen circumstances. You are therefore advised to consult a upGrad agent prior to making any travel arrangements for a workshop. For more details, please refer to the Cancellation & Refund Policy.
-                  </p>
-                  <p className="text-gray-400 text-xs leading-relaxed">
-                    CSM®, CSPO®, CSD®, CSP®, A-CSPO®, A-CSM® are registered trademarks of Scrum Alliance®. upGrad Education Private Limited is a Registered Education Ally (REA) of Scrum Alliance®. PMP is a registered mark of the Project Management Institute, Inc. CAPM is a registered mark of the Project Management Institute, Inc. PMI-ACP is a registered mark of the Project Management Institute, Inc. PMI-RMP is a registered mark of the Project Management Institute, Inc. PMI-PBA is a registered mark of the Project Management Institute, Inc. PgMP is a registered mark of the Project Management Institute, Inc. PfMP is a registered mark of the Project Management Institute, Inc. upGrad Education Private Limited is a Premier Authorized Training Partner (ATP) of Project Management Institute, Inc. The PMI Premier Authorized Training Partner logo is a registered mark of the Project Management Institute, Inc. PMBOK is a registered mark of the Project Management Institute, Inc. ITIL®, PRINCE2®, PRINCE2 Agile®, AgileSHIFT® are registered trademarks of AXELOS Limited, used under permission of AXELOS Limited. The Swirl logo™ is a trademark of AXELOS Limited, used under the permission of AXELOS Limited. All rights reserved. COBIT® is a registered trademark of the Information Systems Audit and Control Association® (ISACA®). (ISC)2® is a registered trademark of International Information Systems Security Certification Consortium, Inc. CompTIA Authorized Training Partner, CMMI® is registered in the U.S. Patent and Trademark Office by Carnegie Mellon University. FRM®, GARP™, and Global Association of Risk Professionals™, are trademarks owned by the Global Association of Risk Professionals, Inc. Global Association of Risk Professionals, Inc. (GARP™) does not endorse, promote, review, or warrant the accuracy of the products or services offered by upGrad Education Private Limited for FRM® related information, nor does it endorse any pass rates claimed by the provider. Further, GARP is not responsible for any fees or costs paid by the user. IIBA®, the IIBA® logo, BABOK®, and Business Analysis Body of Knowledge® are registered trademarks owned by the International Institute of Business Analysis. upGrad Education Private Limited is an Endorsed Education Provider of IIBA®. Scaled Agile Framework® and SAFe® are registered trademarks of Scaled Agile, Inc.® upGrad Education Private Limited is a Platinum SPCT Partner of Scaled Agile, Inc®. upGrad Education Private Limited is an Authorized Training Partner of CertNexus. upGrad Education Private Limited is a Microsoft Partner. upGrad Education Private Limited is an AWS Training Partner (ATP). upGrad Education Private Limited is an ICAgile Member Training Organization. upGrad Education Private Limited is a Professional Training Network member of scrum.org. upGrad Education Private Limited is an Accredited Examination Centre of IASSC. upGrad Education Private Limited is a Registered Education Partner (REP) of the DevOps Institute (DOI). upGrad Education Private Limited is an ATO of PeopleCert. upGrad Education Private Limited is an Authorized Training Partner (ATP) and Accredited Training Center (ATC) of the EC-Council. upGrad Education Private Limited is a Bronze Licensed Training Organization of Kanban University.
-                  </p>
-                  <button
-                    onClick={() => setDisclaimerExpanded(false)}
-                    className="text-[#4F46E5] text-xs font-semibold hover:text-[#4338CA] transition-colors"
-                  >
-                    READ LESS
-                  </button>
-                </div>
-              )}
+              <p className="text-gray-300 text-xs leading-relaxed">
+                CSM®, CSPO®, CSD®, CSP®, A-CSPO®, A-CSM® are registered trademarks of Scrum Alliance®.
+              </p>
+              <p className="text-gray-300 text-xs leading-relaxed">
+                Scaled Agile Framework® and SAFe® are registered trademarks of Scaled Agile, Inc.
+              </p>
             </div>
           </div>
         </div>

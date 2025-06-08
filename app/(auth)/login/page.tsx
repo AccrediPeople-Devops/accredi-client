@@ -71,7 +71,7 @@ export default function LoginPage() {
         <div className="max-w-md w-full flex flex-col items-center">
           <div className="relative w-96 h-40 mb-12">
             <Image
-              src="/Logo/Only Transperent/full_trimmed_transparent_white.png"
+              src="/Logo/Only_Transperent/full_trimmed_transparent_white.png"
               alt="Accredipeople Logo"
               fill
               style={{ objectFit: "contain" }}
@@ -80,9 +80,9 @@ export default function LoginPage() {
             />
           </div>
           <div className="text-white text-center">
-            <h2 className="text-2xl font-semibold mb-6">Certification Excellence</h2>
+            <h2 className="text-2xl font-semibold mb-6">Empowering Professionals, One Certification at a Time.</h2>
             <p className="text-lg opacity-80">
-              "Elevating professionals through industry-recognized certifications and verified credentials."
+              "We’re committed to delivering world-class, instructor-led training programs that help professionals upskill, grow in their careers, and stay ahead in today’s competitive landscape."
             </p>
           </div>
         </div>

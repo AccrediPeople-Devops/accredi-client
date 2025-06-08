@@ -146,7 +146,7 @@ export default function BlogPage() {
               <div className="w-3 h-3 bg-[#10B981] rounded-full animate-pulse"></div>
               <span className="site-text-accent font-bold text-sm uppercase tracking-wider">Knowledge Hub</span>
               <div className="w-3 h-3 bg-[#4F46E5] rounded-full animate-pulse delay-500"></div>
-            </div>
+        </div>
 
             <h1 className="text-5xl lg:text-7xl font-black mb-8 leading-tight">
               <span className="site-text-primary">Insights & </span>
@@ -184,8 +184,8 @@ export default function BlogPage() {
                   <div className="text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">👥</div>
                   <div className="text-2xl font-black bg-gradient-to-r from-[#F59E0B] to-[#EF4444] bg-clip-text text-transparent mb-2">50K+</div>
                   <div className="text-sm site-text-muted font-medium">Readers</div>
-                </div>
-              </div>
+            </div>
+            </div>
 
               <div className="text-center">
                 <div className="site-glass backdrop-blur-sm rounded-2xl p-6 hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-300 hover:scale-105 group">
@@ -351,20 +351,20 @@ export default function BlogPage() {
             {currentPosts.map((post) => (
               <Link key={post.id} href={`/blog/${post.id}`} className="group">
                 <article className="site-glass backdrop-blur-xl rounded-3xl overflow-hidden shadow-xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500 hover:scale-105 h-full">
-                  <div className="relative overflow-hidden">
-                    <Image
-                      src={post.image}
-                      alt={post.title}
-                      width={400}
-                      height={250}
+                <div className="relative overflow-hidden">
+                  <Image
+                    src={post.image}
+                    alt={post.title}
+                    width={400}
+                    height={250}
                       className="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-500"
-                      unoptimized
-                    />
+                    unoptimized
+                  />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <div className="absolute top-4 left-4 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white px-3 py-2 rounded-full text-xs font-bold">
                       {post.category}
-                    </div>
                   </div>
+                </div>
 
                   <div className="p-6 flex flex-col h-full">
                     <div className="flex items-center gap-4 mb-4 text-sm site-text-muted">
@@ -373,15 +373,15 @@ export default function BlogPage() {
                       <span>{post.readTime}</span>
                       <span>•</span>
                       <span>By {post.author}</span>
-                    </div>
+                  </div>
 
                     <h3 className="text-xl font-black site-text-primary mb-3 group-hover:text-[#4F46E5] transition-colors duration-300 line-clamp-2 flex-grow">
                       {post.title}
-                    </h3>
+                  </h3>
 
                     <p className="site-text-secondary leading-relaxed line-clamp-3 mb-4">
-                      {post.excerpt}
-                    </p>
+                    {post.excerpt}
+                  </p>
 
                     <div className="flex items-center justify-between mt-auto">
                       <span className="text-sm site-text-muted">Read Article</span>
@@ -390,52 +390,52 @@ export default function BlogPage() {
                           <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                         </svg>
                       </div>
-                    </div>
-                  </div>
+                </div>
+              </div>
                 </article>
               </Link>
             ))}
           </div>
 
-          {/* Pagination */}
+            {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex justify-center">
               <nav className="site-glass backdrop-blur-xl rounded-3xl p-4 shadow-xl">
                 <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-                    disabled={currentPage === 1}
+              <button
+                onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
                     className="w-12 h-12 flex items-center justify-center rounded-2xl site-border border site-text-primary hover:bg-[#4F46E5] hover:text-white transition-all duration-300 disabled:opacity-50"
-                  >
+              >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                    </svg>
-                  </button>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
 
-                  {[...Array(totalPages)].map((_, index) => {
-                    const page = index + 1;
-                    return (
-                      <button
-                        key={page}
-                        onClick={() => handlePageChange(page)}
+              {[...Array(totalPages)].map((_, index) => {
+                const page = index + 1;
+                return (
+                  <button
+                    key={page}
+                    onClick={() => handlePageChange(page)}
                         className={`w-12 h-12 flex items-center justify-center rounded-2xl font-bold transition-all duration-300 ${
-                          currentPage === page
-                            ? 'bg-[#4F46E5] text-white border border-[#4F46E5]'
+                      currentPage === page
+                        ? 'bg-[#4F46E5] text-white border border-[#4F46E5]'
                             : 'site-border border site-text-primary hover:bg-[#4F46E5] hover:text-white'
-                        }`}
-                      >
-                        {page}
-                      </button>
-                    );
-                  })}
-
-                  <button
-                    onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
-                    disabled={currentPage === totalPages}
-                    className="w-12 h-12 flex items-center justify-center rounded-2xl site-border border site-text-primary hover:bg-[#4F46E5] hover:text-white transition-all duration-300 disabled:opacity-50"
+                    }`}
                   >
+                        {page}
+                  </button>
+                );
+              })}
+
+              <button
+                onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+                disabled={currentPage === totalPages}
+                    className="w-12 h-12 flex items-center justify-center rounded-2xl site-border border site-text-primary hover:bg-[#4F46E5] hover:text-white transition-all duration-300 disabled:opacity-50"
+              >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                     </svg>
                   </button>
                 </div>
@@ -465,7 +465,7 @@ export default function BlogPage() {
               >
                 Clear All Filters
               </button>
-            </div>
+          </div>
           )}
         </div>
       </section>

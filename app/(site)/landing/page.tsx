@@ -15,16 +15,14 @@ export default function LandingPage() {
       <div className="block md:hidden w-full py-8 px-5">
         <CertificationsSection />
       </div>
-      <OurApproachSection />
+      <div id="our-approach">
+        <OurApproachSection />
+      </div>
       <ModesOfTrainingSection />
       <ProfessionalTrainingSection />
       <div id="testimonials">
         <TestimonialsSection />
       </div>
-      <div id="certifications">
-        <CertificationsSection />
-      </div>
-      <ClientLogosSection />
       <ContactCTASection />
     </>
   );

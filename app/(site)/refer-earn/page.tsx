@@ -55,33 +55,6 @@ export default function ReferEarnPage() {
     { label: "Refer & Earn" }
   ];
 
-  const rewards = [
-    {
-      icon: "💰",
-      title: "Cash Rewards",
-      description: "Earn $100 for every successful referral",
-      gradient: "from-[#F59E0B] to-[#EF4444]"
-    },
-    {
-      icon: "🎓",
-      title: "Free Courses",
-      description: "Get access to premium certification courses",
-      gradient: "from-[#4F46E5] to-[#7C3AED]"
-    },
-    {
-      icon: "🏆",
-      title: "VIP Status",
-      description: "Unlock exclusive benefits and priority support",
-      gradient: "from-[#10B981] to-[#059669]"
-    },
-    {
-      icon: "🎯",
-      title: "Bonus Credits",
-      description: "Accumulate credits for future purchases",
-      gradient: "from-[#8B5CF6] to-[#6D28D9]"
-    }
-  ];
-
   const steps = [
     {
       step: "01",
@@ -95,15 +68,15 @@ export default function ReferEarnPage() {
     },
     {
       step: "03",
-      title: "Earn Rewards",
-      description: "Both you and your friend receive amazing benefits"
+      title: "Earn Free Course",
+      description: "Receive a free course within 30 working days of their enrollment"
     }
   ];
 
   return (
     <div className="min-h-screen site-section-bg">
       {/* Hero Section */}
-      <section className="relative py-20 lg:py-32 overflow-hidden site-section-bg">
+      <section className="relative overflow-hidden site-section-bg">
         {/* Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-20 left-20 w-96 h-96 bg-[#7C3AED]/5 site-light:bg-[#7C3AED]/10 rounded-full blur-3xl animate-pulse"></div>
@@ -126,90 +99,30 @@ export default function ReferEarnPage() {
             </div>
 
             <h1 className="text-5xl lg:text-7xl font-black mb-8 leading-tight">
-              <span className="site-text-primary">Share Knowledge, </span>
+              <span className="site-text-primary">Refer & Earn a </span>
               <span className="bg-gradient-to-r from-[#7C3AED] via-[#F59E0B] to-[#10B981] bg-clip-text text-transparent">
-                Earn Rewards
+                Free Course!
               </span>
             </h1>
 
-            <p className="text-xl site-text-secondary max-w-4xl mx-auto leading-relaxed mb-12">
-              Help your friends and colleagues advance their careers while earning exciting rewards! 
-              Join our referral program and build a community of certified professionals.
-            </p>
-
-            {/* Program Stats */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 max-w-4xl mx-auto">
-              <div className="text-center">
-                <div className="site-glass backdrop-blur-sm rounded-2xl p-6 hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-300 hover:scale-105 group">
-                  <div className="text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">💰</div>
-                  <div className="text-2xl font-black bg-gradient-to-r from-[#F59E0B] to-[#EF4444] bg-clip-text text-transparent mb-2">$100</div>
-                  <div className="text-sm site-text-muted font-medium">Per Referral</div>
-                </div>
-              </div>
-              
-              <div className="text-center">
-                <div className="site-glass backdrop-blur-sm rounded-2xl p-6 hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-300 hover:scale-105 group">
-                  <div className="text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">🎯</div>
-                  <div className="text-2xl font-black bg-gradient-to-r from-[#7C3AED] to-[#6D28D9] bg-clip-text text-transparent mb-2">5K+</div>
-                  <div className="text-sm site-text-muted font-medium">Active Referrers</div>
-                </div>
-              </div>
-
-              <div className="text-center">
-                <div className="site-glass backdrop-blur-sm rounded-2xl p-6 hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-300 hover:scale-105 group">
-                  <div className="text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">🏆</div>
-                  <div className="text-2xl font-black bg-gradient-to-r from-[#10B981] to-[#059669] bg-clip-text text-transparent mb-2">95%</div>
-                  <div className="text-sm site-text-muted font-medium">Success Rate</div>
-                </div>
-              </div>
-
-              <div className="text-center">
-                <div className="site-glass backdrop-blur-sm rounded-2xl p-6 hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-300 hover:scale-105 group">
-                  <div className="text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">⚡</div>
-                  <div className="text-2xl font-black bg-gradient-to-r from-[#8B5CF6] to-[#6D28D9] bg-clip-text text-transparent mb-2">24h</div>
-                  <div className="text-sm site-text-muted font-medium">Payout Time</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Rewards Section */}
-      <section className="py-16 md:py-24 site-section-bg relative overflow-hidden">
-        <div className="absolute inset-0">
-          <div className="absolute top-20 right-20 w-64 h-64 bg-[#7C3AED]/5 site-light:bg-[#7C3AED]/10 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-20 left-20 w-80 h-80 bg-[#F59E0B]/5 site-light:bg-[#F59E0B]/10 rounded-full blur-3xl"></div>
-        </div>
-
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-4 py-2 mb-6">
-              <div className="w-2 h-2 bg-[#7C3AED] rounded-full animate-pulse"></div>
-              <span className="text-[#7C3AED] text-sm font-semibold uppercase tracking-wider">Rewards</span>
-            </div>
-            <h2 className="text-4xl md:text-5xl font-black site-text-primary mb-6">
-              <strong>Amazing Rewards Await</strong>
+            <h2 className="text-2xl md:text-3xl font-bold site-text-primary mb-8">
+              Invite Your Friends. Reward Yourself.
             </h2>
-            <p className="site-text-secondary text-lg max-w-3xl mx-auto">
-              Choose from multiple reward options and watch your benefits grow with every successful referral.
-            </p>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {rewards.map((reward, index) => (
-              <div key={index} className="site-glass backdrop-blur-xl rounded-3xl p-6 shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500 hover:scale-105 group">
-                <div className="text-center">
-                  <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">{reward.icon}</div>
-                  <h3 className={`text-xl font-black mb-3 bg-gradient-to-r ${reward.gradient} bg-clip-text text-transparent`}>
-                    {reward.title}
-                  </h3>
-                  <p className="site-text-secondary text-sm leading-relaxed">
-                    {reward.description}
-                  </p>
-                </div>
-              </div>
-            ))}
+            <div className="max-w-4xl mx-auto space-y-6 text-xl site-text-secondary leading-relaxed mb-12">
+              <p>
+                Love learning with us? Spread the word! When you refer a friend who enrolls in one of our courses, 
+                you'll receive a free course as a thank-you — delivered within 30 working days of their successful enrollment.
+              </p>
+              
+              <p>
+                It's our way of saying thanks for growing our learning community.
+              </p>
+              
+              <p className="text-2xl font-bold bg-gradient-to-r from-[#7C3AED] to-[#F59E0B] bg-clip-text text-transparent">
+                Start referring and unlock your rewards today!
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -231,7 +144,7 @@ export default function ReferEarnPage() {
               <strong>How It Works</strong>
             </h2>
             <p className="site-text-secondary text-lg max-w-3xl mx-auto">
-              Getting started is simple! Follow these three easy steps to start earning rewards.
+              Getting started is simple! Follow these three easy steps to start earning your free courses.
             </p>
           </div>
 
@@ -272,21 +185,21 @@ export default function ReferEarnPage() {
               <h2 className="text-4xl md:text-5xl font-black site-text-primary mb-6 leading-tight">
                 Ready to Start <br />
                 <span className="bg-gradient-to-r from-[#7C3AED] to-[#F59E0B] bg-clip-text text-transparent">
-                  Earning Rewards?
+                  Referring Friends?
                 </span>
               </h2>
 
               <div className="site-text-secondary text-lg leading-relaxed space-y-4 mb-8">
                 <p>
-                  Join thousands of professionals who are already earning rewards by sharing the power of certification training.
+                  Join our referral program and help your friends and colleagues advance their careers while earning free courses for yourself.
                 </p>
                 
                 <p>
-                  When you refer someone to Accredi and they successfully enroll, both you and your referral benefit. You receive exclusive rewards while your referral gets access to world-class training.
+                  When you refer someone to AccrediPeople Certifications and they successfully enroll, you'll receive a free course within 30 working days. Both you and your referral benefit from world-class training.
                 </p>
                 
                 <p>
-                  Contact us today to learn more about our current referral incentives and get your unique referral link.
+                  Contact us today to get your unique referral link and start earning free courses.
                 </p>
               </div>
 
@@ -295,19 +208,19 @@ export default function ReferEarnPage() {
                   <svg className="w-5 h-5 text-[#10B981]" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
+                  <span className="text-sm font-medium site-text-primary">Free Courses</span>
+                </div>
+                <div className="flex items-center gap-3 site-glass backdrop-blur-sm rounded-full px-4 py-2">
+                  <svg className="w-5 h-5 text-[#10B981]" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                  <span className="text-sm font-medium site-text-primary">30 Day Delivery</span>
+                </div>
+                <div className="flex items-center gap-3 site-glass backdrop-blur-sm rounded-full px-4 py-2">
+                  <svg className="w-5 h-5 text-[#10B981]" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
                   <span className="text-sm font-medium site-text-primary">No Limits</span>
-                </div>
-                <div className="flex items-center gap-3 site-glass backdrop-blur-sm rounded-full px-4 py-2">
-                  <svg className="w-5 h-5 text-[#10B981]" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                  <span className="text-sm font-medium site-text-primary">Fast Payouts</span>
-                </div>
-                <div className="flex items-center gap-3 site-glass backdrop-blur-sm rounded-full px-4 py-2">
-                  <svg className="w-5 h-5 text-[#10B981]" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                  <span className="text-sm font-medium site-text-primary">24/7 Support</span>
                 </div>
               </div>
             </div>

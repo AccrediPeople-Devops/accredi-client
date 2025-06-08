@@ -18,45 +18,31 @@ export default function AboutPage() {
   const coreValues = [
     {
       title: "Excellence",
-      description: "We maintain the highest standards in everything we do, from course content to instructor expertise and learner support.",
+      description: "Delivering top-notch training programs.",
       icon: "⭐",
       gradient: "from-[#F59E0B] to-[#D97706]",
       stats: "98% Satisfaction"
     },
     {
       title: "Innovation", 
-      description: "We continuously evolve our teaching methods and technology to provide cutting-edge learning experiences.",
+      description: "Continuously evolving to meet industry demands.",
       icon: "💡",
       gradient: "from-[#4F46E5] to-[#7C3AED]",
-      stats: "24/7 Learning"
+      stats: "Latest Methods"
     },
     {
       title: "Integrity",
-      description: "We operate with complete transparency and honesty in all our interactions and business practices.",
+      description: "Upholding transparency and ethical standards.",
       icon: "🤝",
       gradient: "from-[#10B981] to-[#059669]",
       stats: "100% Transparency"
     },
     {
-      title: "Growth",
-      description: "We are committed to the continuous development of our learners, instructors, and organization.",
+      title: "Impact",
+      description: "Creating measurable improvements for learners.",
       icon: "📈",
       gradient: "from-[#8B5CF6] to-[#6D28D9]",
-      stats: "200% ROI"
-    },
-    {
-      title: "Global Impact",
-      description: "We strive to make a positive difference in professionals' lives across the globe.",
-      icon: "🌍",
-      gradient: "from-[#06B6D4] to-[#0891B2]",
-      stats: "100+ Countries"
-    },
-    {
-      title: "Empowerment",
-      description: "We believe in empowering individuals with the knowledge and skills needed for career success.",
-      icon: "💪",
-      gradient: "from-[#EF4444] to-[#DC2626]",
-      stats: "15K+ Certified"
+      stats: "Real Results"
     }
   ];
 
@@ -64,17 +50,17 @@ export default function AboutPage() {
     { label: "About Us" }
   ];
 
-  const achievements = [
-    { number: "100K+", label: "Students Trained", icon: "🎓" },
-    { number: "100+", label: "Countries Served", icon: "🌍" },
-    { number: "98%", label: "Success Rate", icon: "✅" },
-    { number: "10+", label: "Years Experience", icon: "📅" }
-  ];
+  // const achievements = [
+  //   { number: "100K+", label: "Students Trained", icon: "🎓" },
+  //   { number: "100+", label: "Countries Served", icon: "🌍" },
+  //   { number: "98%", label: "Success Rate", icon: "✅" },
+  //   { number: "10+", label: "Years Experience", icon: "📅" }
+  // ];
 
   return (
     <div className="min-h-screen site-section-bg">
       {/* Hero Section */}
-      <section className="relative py-20 lg:py-32 overflow-hidden site-section-bg">
+      <section className="relative  overflow-hidden site-section-bg">
         {/* Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-20 left-20 w-96 h-96 bg-[#4F46E5]/5 site-light:bg-[#4F46E5]/10 rounded-full blur-3xl animate-pulse"></div>
@@ -89,75 +75,63 @@ export default function AboutPage() {
           </div>
 
           {/* Main Content */}
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-3 site-glass backdrop-blur-sm rounded-full px-8 py-4 mb-8 hover:bg-white/20 site-light:hover:bg-white/60 transition-all duration-300">
-              <div className="w-3 h-3 bg-[#10B981] rounded-full animate-pulse"></div>
-              <span className="site-text-accent font-bold text-sm uppercase tracking-wider">About Accredi</span>
-              <div className="w-3 h-3 bg-[#4F46E5] rounded-full animate-pulse delay-500"></div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Left Content */}
+            <div>
+              <div className="inline-flex items-center gap-3 site-glass backdrop-blur-sm rounded-full px-8 py-4 mb-8 hover:bg-white/20 site-light:hover:bg-white/60 transition-all duration-300">
+                <div className="w-3 h-3 bg-[#10B981] rounded-full animate-pulse"></div>
+                <span className="site-text-accent font-bold text-sm uppercase tracking-wider">About Us</span>
+                <div className="w-3 h-3 bg-[#4F46E5] rounded-full animate-pulse delay-500"></div>
+              </div>
+
+              <h1 className="text-5xl lg:text-6xl font-black mb-6 leading-tight">
+                <span className="site-text-primary">About Us</span>
+              </h1>
+
+              <h2 className="text-2xl lg:text-3xl font-bold mb-8 bg-gradient-to-r from-[#4F46E5] via-[#B39DDB] to-[#10B981] bg-clip-text text-transparent">
+                "Empowering Growth Through Expert Training"
+              </h2>
+
+              <p className="text-lg site-text-secondary max-w-2xl leading-relaxed mb-8">
+                At AccrediPeople Certifications, we are committed to delivering high-quality training programs that empower individuals and organizations. With a learner-centric approach, we ensure that every training session drives real-world impact.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-4">
+                <button className="bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-[#4F46E5]/25">
+                  Our Programs
+                </button>
+                <button className="site-text-primary px-8 py-4 rounded-2xl font-bold text-lg site-border border site-glass backdrop-blur-sm transition-all duration-300 hover:bg-white/20 site-light:hover:bg-white/60 hover:scale-105">
+                  Contact Us
+                </button>
+              </div>
             </div>
 
-            <h1 className="text-5xl lg:text-7xl font-black mb-8 leading-tight">
-              <span className="site-text-primary">Transforming </span>
-              <span className="bg-gradient-to-r from-[#4F46E5] via-[#B39DDB] to-[#10B981] bg-clip-text text-transparent">
-                Professional
-              </span>
-              <span className="block site-text-primary">Growth Since 2010</span>
-            </h1>
-
-            <p className="text-xl site-text-secondary max-w-4xl mx-auto leading-relaxed mb-12">
-              Accredi has established a strong global presence, reaching students and professionals across 100+ 
-              countries. Our training programs provide dynamic experiences that empower learners with the most 
-              comprehensive knowledge and industry-recognized certifications.
-            </p>
-
-            {/* Stats Row */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 max-w-4xl mx-auto">
-              {achievements.map((achievement, index) => (
-                <div key={index} className="text-center">
-                  <div className="site-glass backdrop-blur-sm rounded-2xl p-6 hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-300 hover:scale-105 group">
-                    <div className="text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">{achievement.icon}</div>
-                    <div className="text-3xl font-black bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] bg-clip-text text-transparent mb-2">{achievement.number}</div>
-                    <div className="text-sm site-text-muted font-medium">{achievement.label}</div>
-                  </div>
+            {/* Right Image */}
+            <div className="flex justify-center lg:justify-end">
+              <div className="relative">
+                <div className="w-80 h-80 site-glass backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl hover:scale-105 transition-all duration-500">
+                  <Image
+                    src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                    alt="Learning and Growth"
+                    width={320}
+                    height={320}
+                    className="w-full h-full object-cover"
+                    unoptimized
+                  />
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Dynamic Image Gallery */}
-      <section className="py-16 md:py-24 relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-4 py-2 mb-6">
-              <div className="w-2 h-2 bg-[#F59E0B] rounded-full animate-pulse"></div>
-              <span className="text-[#F59E0B] text-sm font-semibold uppercase tracking-wider">Our Journey</span>
-            </div>
-            <h2 className="text-4xl md:text-5xl font-black site-text-primary mb-6">
-              <strong>Excellence in Action</strong>
-            </h2>
-          </div>
-
-          {/* Enhanced Image Grid */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-            {aboutImages.map((imageSrc, index) => (
-              <div key={index} className="group">
-                <div className={`site-glass backdrop-blur-sm rounded-3xl p-4 shadow-xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-300 hover:scale-105 ${index % 2 === 1 ? 'lg:translate-y-8' : ''}`}>
-                  <div className="relative overflow-hidden rounded-2xl">
-                    <Image
-                      src={imageSrc}
-                      alt={`About Accredi ${index + 1}`}
-                      width={300}
-                      height={400}
-                      className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
-                      unoptimized
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  </div>
+                
+                {/* Floating Stats */}
+                <div className="absolute -top-4 -right-4 w-20 h-20 bg-gradient-to-br from-[#4F46E5]/90 to-[#7C3AED]/90 backdrop-blur-sm rounded-2xl border border-white/20 flex flex-col items-center justify-center animate-pulse">
+                  <span className="text-lg font-bold text-white">100K+</span>
+                  <span className="text-xs text-white/80">Learners</span>
+                </div>
+                
+                <div className="absolute -bottom-4 -left-4 w-20 h-20 bg-gradient-to-br from-[#10B981]/90 to-[#059669]/90 backdrop-blur-sm rounded-2xl border border-white/20 flex flex-col items-center justify-center animate-pulse delay-500">
+                  <span className="text-lg font-bold text-white">98%</span>
+                  <span className="text-xs text-white/80">Success</span>
                 </div>
               </div>
-            ))}
+            </div>
           </div>
         </div>
       </section>
@@ -198,9 +172,7 @@ export default function AboutPage() {
                 <h3 className="text-3xl font-black bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] bg-clip-text text-transparent">Our Vision</h3>
               </div>
               <p className="site-text-secondary text-lg leading-relaxed">
-                To be the global leader in professional certification training, empowering millions of 
-                professionals worldwide to achieve their career aspirations through innovative, accessible, 
-                and transformative learning experiences that drive industry excellence.
+                To be a leading provider of transformative training solutions that foster professional and personal growth.
               </p>
             </div>
 
@@ -215,16 +187,14 @@ export default function AboutPage() {
                 <h3 className="text-3xl font-black bg-gradient-to-r from-[#10B981] to-[#059669] bg-clip-text text-transparent">Our Mission</h3>
               </div>
               <p className="site-text-secondary text-lg leading-relaxed">
-                To deliver world-class professional certification training that combines expert instruction, 
-                cutting-edge methodologies, and personalized support to help individuals achieve their goals 
-                and create lasting positive impact in their industries.
+                To equip individuals and businesses with the skills and knowledge they need to excel in a dynamic world.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Interactive Core Values */}
+      {/* Core Values & Objectives */}
       <section className="py-16 md:py-24 site-section-bg relative overflow-hidden">
         <div className="absolute inset-0">
           <div className="absolute top-20 right-20 w-64 h-64 bg-[#B39DDB]/5 site-light:bg-[#B39DDB]/10 rounded-full blur-3xl"></div>
@@ -238,7 +208,7 @@ export default function AboutPage() {
               <span className="text-[#10B981] text-sm font-semibold uppercase tracking-wider">What Drives Us</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-black site-text-primary mb-6">
-              <strong>Core Values & Principles</strong>
+              <strong>Core Values & Objectives</strong>
             </h2>
             <p className="site-text-secondary text-lg max-w-3xl mx-auto">
               Our core values shape our culture, guide our decisions, and define how we interact with 
@@ -246,7 +216,7 @@ export default function AboutPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
             {coreValues.map((value, index) => (
               <div 
                 key={index} 
@@ -283,7 +253,7 @@ export default function AboutPage() {
                   </span>
                 </h3>
                 <p className="text-xl site-text-secondary leading-relaxed mb-8">
-                  At Accredi, we believe in transforming careers through exceptional training experiences. 
+                  At AccrediPeople Certifications, we believe in transforming careers through exceptional training experiences. 
                   Our commitment extends beyond delivering courses—we foster long-term professional growth.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
@@ -320,10 +290,6 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Our Approach Section */}
-      <div id="our-approach">
-        <OurApproachSection />
-      </div>
 
       <style jsx>{`
         @keyframes marquee {
