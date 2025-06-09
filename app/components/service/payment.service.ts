@@ -1,4 +1,5 @@
-import { config } from '../config/config';
+import { config } from "../config/config";
+import axiosInstance from "../config/axiosInstance";
 
 export interface PaymentData {
   type: string;
@@ -16,40 +17,38 @@ export interface PaymentResponse {
 }
 
 class PaymentService {
-  async processPayment(paymentData: PaymentData): Promise<PaymentResponse> {
+  async getStripeCheckoutSession(paymentData: any): Promise<any> {
     try {
-      const response = await fetch(`${config.apiUrl}/payment`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(paymentData),
-      });
+      const response = await axiosInstance.post(
+        "/payment/v1/create-checkout-session",
+        paymentData
+      );
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.message || `Payment failed with status ${response.status}`);
+      if (!response.status) {
+        throw new Error(
+          response.data.message ||
+            `Payment failed with status ${response.status}`
+        );
       }
 
-      return {
-        status: true,
-        message: result.message || 'Payment processed successfully',
-        paymentId: result.paymentId,
-        paymentUrl: result.paymentUrl,
-      };
+      return response.data;
     } catch (error: any) {
-      console.error('Payment processing error:', error);
+      console.error("Payment processing error:", error);
       return {
         status: false,
-        message: error.message || 'Payment processing failed',
+        message: error.message || "Payment processing failed",
       };
     }
   }
 
-  async createStripePayment(amount: number, currency: string, email: string, description: string): Promise<PaymentResponse> {
+  async createStripePayment(
+    amount: number,
+    currency: string,
+    email: string,
+    description: string
+  ): Promise<PaymentResponse> {
     const paymentData: PaymentData = {
-      type: 'stripe',
+      type: "stripe",
       amount,
       currency: currency.toLowerCase(),
       email,
@@ -60,37 +59,40 @@ class PaymentService {
   }
 
   // Utility method to format amount for display
-  formatAmount(amount: number, currency: string = 'USD'): string {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
+  formatAmount(amount: number, currency: string = "USD"): string {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
       currency: currency.toUpperCase(),
     }).format(amount);
   }
 
   // Utility method to validate payment data
-  validatePaymentData(paymentData: Partial<PaymentData>): { isValid: boolean; errors: string[] } {
+  validatePaymentData(paymentData: Partial<PaymentData>): {
+    isValid: boolean;
+    errors: string[];
+  } {
     const errors: string[] = [];
 
     if (!paymentData.email) {
-      errors.push('Email is required');
+      errors.push("Email is required");
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(paymentData.email)) {
-      errors.push('Valid email is required');
+      errors.push("Valid email is required");
     }
 
     if (!paymentData.amount || paymentData.amount <= 0) {
-      errors.push('Valid amount is required');
+      errors.push("Valid amount is required");
     }
 
     if (!paymentData.currency) {
-      errors.push('Currency is required');
+      errors.push("Currency is required");
     }
 
     if (!paymentData.description) {
-      errors.push('Description is required');
+      errors.push("Description is required");
     }
 
     if (!paymentData.type) {
-      errors.push('Payment type is required');
+      errors.push("Payment type is required");
     }
 
     return {
@@ -101,4 +103,4 @@ class PaymentService {
 }
 
 export const paymentService = new PaymentService();
-export default paymentService; 
+export default paymentService;
