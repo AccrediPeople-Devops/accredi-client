@@ -345,7 +345,7 @@ export default function CoursePage({ params }: CoursePageProps) {
           duration: schedule.startDate && schedule.endDate ? 
             `${Math.ceil((new Date(schedule.endDate).getTime() - new Date(schedule.startDate).getTime()) / (1000 * 3600 * 24))} Days` : 
             'TBD',
-          time: '9:00 AM - 5:00 PM',
+        time: '9:00 AM - 5:00 PM',
           seatsLeft: Math.floor(Math.random() * 10) + 1 // Mock seats for now
         });
       } else if (schedule.scheduleType === 'self-paced') {
@@ -418,8 +418,8 @@ export default function CoursePage({ params }: CoursePageProps) {
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Breadcrumb */}
           <div className="mb-8">
-            <Breadcrumb items={breadcrumbItems} />
-          </div>
+          <Breadcrumb items={breadcrumbItems} />
+      </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
             
@@ -431,7 +431,7 @@ export default function CoursePage({ params }: CoursePageProps) {
                 <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-4 py-2">
                   <div className="w-2 h-2 bg-[#4F46E5] rounded-full animate-pulse"></div>
                   <span className="text-[#4F46E5] text-sm font-semibold uppercase tracking-wider">
-                    {courseData.category}
+                  {courseData.category}
                   </span>
                 </div>
 
@@ -533,7 +533,7 @@ export default function CoursePage({ params }: CoursePageProps) {
           <div className="absolute inset-0">
             <div className="absolute top-20 right-20 w-64 h-64 bg-[#4F46E5]/5 site-light:bg-[#4F46E5]/10 rounded-full blur-3xl"></div>
             <div className="absolute bottom-20 left-20 w-80 h-80 bg-[#10B981]/5 site-light:bg-[#10B981]/10 rounded-full blur-3xl"></div>
-          </div>
+              </div>
 
           <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="space-y-16">
@@ -550,8 +550,8 @@ export default function CoursePage({ params }: CoursePageProps) {
                           className="prose prose-lg site-text-secondary leading-relaxed max-w-none prose-headings:site-text-primary prose-strong:site-text-primary prose-p:site-text-secondary"
                           dangerouslySetInnerHTML={{ __html: component.description }}
                         />
-                      </div>
                     </div>
+                </div>
 
                     {/* Image - Order changes based on index */}
                     <div className={`relative ${isEven ? 'lg:order-2' : 'lg:order-1'}`}>
@@ -572,21 +572,21 @@ export default function CoursePage({ params }: CoursePageProps) {
                           <div className="absolute top-4 right-4">
                             <div className="w-10 h-10 bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] rounded-xl flex items-center justify-center">
                               <span className="text-white font-bold">{index + 1}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {/* Decorative Elements */}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Decorative Elements */}
                       <div className={`absolute -top-4 ${isEven ? '-right-4' : '-left-4'} w-8 h-8 bg-[#4F46E5] rounded-full opacity-60 animate-pulse`}></div>
                       <div className={`absolute -bottom-4 ${isEven ? '-left-4' : '-right-4'} w-6 h-6 bg-[#10B981] rounded-full opacity-60 animate-pulse delay-1000`}></div>
-                    </div>
+            </div>
                   </div>
                 );
               })}
-            </div>
           </div>
-        </section>
+        </div>
+      </section>
       )}
 
       {/* Key Features & Certificate Section */}
@@ -624,22 +624,22 @@ export default function CoursePage({ params }: CoursePageProps) {
                         <div className="flex-shrink-0 w-5 h-5 mt-0.5">
                           <svg className="w-5 h-5 text-[#10B981]" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                          </svg>
-                        </div>
+                    </svg>
+                  </div>
                         <span className="site-text-secondary leading-relaxed">{feature}</span>
                       </li>
                     ))}
                   </ul>
-                </div>
+                  </div>
               ) : (
                 // Fallback if no keyFeatures
                 <div className="site-glass backdrop-blur-xl rounded-3xl p-6 shadow-2xl">
                   <div className="text-center">
                     <p className="site-text-secondary">No key features available for this course.</p>
-                  </div>
                 </div>
+                  </div>
               )}
-            </div>
+                </div>
 
             {/* Sample Certificate Image - Right Side */}
             <div className="relative">
@@ -662,9 +662,9 @@ export default function CoursePage({ params }: CoursePageProps) {
                       <div className="site-glass backdrop-blur-sm rounded-2xl p-4">
                         <h3 className="text-lg font-bold text-white mb-1">Sample Certificate</h3>
                         <p className="text-sm text-white/80">{courseData.title}</p>
-                      </div>
-                    </div>
                   </div>
+                  </div>
+                </div>
                 </div>
               ) : (
                 <div className="site-glass backdrop-blur-xl rounded-3xl p-8 h-96 flex flex-col items-center justify-center shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500">
@@ -673,14 +673,14 @@ export default function CoursePage({ params }: CoursePageProps) {
                     <div className="w-20 h-20 bg-gradient-to-br from-[#4F46E5] to-[#8B5CF6] rounded-full flex items-center justify-center mx-auto mb-4">
                       <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                      </svg>
-                    </div>
+                    </svg>
+                  </div>
                     <div>
                       <h3 className="text-xl font-bold site-text-primary mb-2">Sample Certificate</h3>
                       <p className="site-text-secondary mb-3">Certificate Preview</p>
                       <p className="text-sm site-text-muted">Certificate image not available</p>
-                    </div>
                   </div>
+                </div>
                 </div>
               )}
               
@@ -688,9 +688,9 @@ export default function CoursePage({ params }: CoursePageProps) {
               <div className="absolute -top-3 -left-3 w-6 h-6 bg-[#4F46E5] rounded-full opacity-60 animate-pulse"></div>
               <div className="absolute -bottom-3 -right-3 w-8 h-8 bg-[#8B5CF6] rounded-full opacity-60 animate-pulse delay-1000"></div>
               <div className="absolute top-1/2 -right-6 w-4 h-4 bg-[#10B981] rounded-full opacity-60 animate-pulse delay-2000"></div>
-            </div>
-          </div>
-        </div>
+                  </div>
+                  </div>
+                </div>
       </section>
 
       {/* Curriculum Section */}
@@ -699,38 +699,38 @@ export default function CoursePage({ params }: CoursePageProps) {
           <div className="absolute inset-0">
             <div className="absolute top-20 left-20 w-64 h-64 bg-[#06B6D4]/5 site-light:bg-[#06B6D4]/10 rounded-full blur-3xl"></div>
             <div className="absolute bottom-20 right-20 w-80 h-80 bg-[#8B5CF6]/5 site-light:bg-[#8B5CF6]/10 rounded-full blur-3xl"></div>
-          </div>
+            </div>
 
           <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-4 py-2 mb-6">
                 <div className="w-2 h-2 bg-[#06B6D4] rounded-full animate-pulse"></div>
                 <span className="text-[#06B6D4] text-sm font-semibold uppercase tracking-wider">Course Curriculum</span>
-              </div>
+                  </div>
               <h2 className="text-4xl lg:text-5xl font-black site-text-primary mb-6">
                 <strong>What You'll Learn</strong>
               </h2>
               <p className="text-lg site-text-secondary max-w-3xl mx-auto leading-relaxed">
                 Comprehensive curriculum designed to give you practical skills and knowledge you can apply immediately.
               </p>
-            </div>
-
+                  </div>
+                  
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {course.curriculum.map((item, index) => (
                 <div key={item._id} className="site-glass backdrop-blur-xl rounded-3xl p-6 shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500 hover:scale-105 group">
                   <div className="flex items-start gap-4">
                     <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-[#06B6D4] to-[#0891B2] rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                       <span className="text-white font-bold text-lg">{index + 1}</span>
-                    </div>
+                        </div>
                     <div className="flex-1">
                       <h3 className="text-xl font-semibold site-text-primary mb-3">{item.title}</h3>
                       <p className="site-text-secondary leading-relaxed">{item.description}</p>
+                      </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
               ))}
-            </div>
-
+              </div>
+              
             {/* Call to Action */}
             <div className="text-center mt-12">
               <button
@@ -742,9 +742,9 @@ export default function CoursePage({ params }: CoursePageProps) {
                 </svg>
                 View Available Schedules
               </button>
-            </div>
           </div>
-        </section>
+        </div>
+      </section>
       )}
 
       {/* Schedule Section */}
@@ -817,32 +817,32 @@ export default function CoursePage({ params }: CoursePageProps) {
               {/* Location Filters for Classroom */}
               {selectedMode === 'classroom' && (
                 <div className="flex items-center gap-3 ml-4">
-                  <select
-                    value={selectedState}
-                    onChange={(e) => {
-                      setSelectedState(e.target.value);
-                      setSelectedCity('');
-                    }}
+                    <select
+                      value={selectedState}
+                      onChange={(e) => {
+                        setSelectedState(e.target.value);
+                        setSelectedCity('');
+                      }}
                     className="px-4 py-3 site-glass backdrop-blur-sm rounded-2xl site-border border focus:ring-2 focus:ring-[#F59E0B] focus:border-transparent transition-all duration-300 site-text-primary text-sm font-medium"
-                  >
-                    <option value="">Any State</option>
-                    {states.map(state => (
-                      <option key={state} value={state}>{state}</option>
-                    ))}
-                  </select>
-                  
-                  <select
-                    value={selectedCity}
-                    onChange={(e) => setSelectedCity(e.target.value)}
+                    >
+                      <option value="">Any State</option>
+                      {states.map(state => (
+                        <option key={state} value={state}>{state}</option>
+                      ))}
+                    </select>
+                    
+                    <select
+                      value={selectedCity}
+                      onChange={(e) => setSelectedCity(e.target.value)}
                     className="px-4 py-3 site-glass backdrop-blur-sm rounded-2xl site-border border focus:ring-2 focus:ring-[#F59E0B] focus:border-transparent transition-all duration-300 site-text-primary text-sm font-medium"
-                    disabled={!selectedState}
-                  >
-                    <option value="">Any Location</option>
-                    {selectedState && cities[selectedState as keyof typeof cities]?.map(city => (
-                      <option key={city} value={city}>{city}</option>
-                    ))}
-                  </select>
-                </div>
+                      disabled={!selectedState}
+                    >
+                      <option value="">Any Location</option>
+                      {selectedState && cities[selectedState as keyof typeof cities]?.map(city => (
+                        <option key={city} value={city}>{city}</option>
+                      ))}
+                    </select>
+                  </div>
               )}
             </div>
           </div>
@@ -854,16 +854,16 @@ export default function CoursePage({ params }: CoursePageProps) {
                 <div className="text-center">
                   <div className="w-16 h-16 bg-gradient-to-br from-[#8B5CF6] to-[#6D28D9] rounded-full flex items-center justify-center mx-auto mb-6">
                     <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                  </div>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
                   <h3 className="text-xl font-bold site-text-primary mb-3">No schedules available</h3>
                   <p className="site-text-secondary max-w-md mx-auto leading-relaxed">
-                    {selectedMode === 'classroom' 
-                      ? 'No sessions are currently available for the selected location. Please try a different location.'
-                      : 'No schedules are currently available for this training mode.'
-                    }
-                  </p>
+                  {selectedMode === 'classroom' 
+                    ? 'No sessions are currently available for the selected location. Please try a different location.'
+                    : 'No schedules are currently available for this training mode.'
+                  }
+                </p>
                 </div>
               </div>
             ) : (
@@ -1022,7 +1022,7 @@ export default function CoursePage({ params }: CoursePageProps) {
                             <svg className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                             </svg>
-                            ENROLL NOW
+                          ENROLL NOW
                           </span>
                         </button>
                         {selectedMode === 'live-online' && (
@@ -1379,8 +1379,8 @@ export default function CoursePage({ params }: CoursePageProps) {
                             </svg>
                           </div>
                           <span className="text-green-400 font-medium">
-                            Coupon "{appliedCoupon.code}" applied successfully!
-                          </span>
+                          Coupon "{appliedCoupon.code}" applied successfully!
+                        </span>
                         </div>
                         <button
                           onClick={() => setAppliedCoupon(null)}

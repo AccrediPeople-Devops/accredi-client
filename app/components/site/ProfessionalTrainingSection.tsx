@@ -67,7 +67,7 @@ export default function ProfessionalTrainingSection() {
               {/* Badge */}
               <div className="inline-flex items-center gap-3 site-glass backdrop-blur-sm rounded-full px-6 py-3 mb-6">
                 <span className="text-2xl">🌟</span>
-                <span className="text-[#4F46E5] text-sm font-semibold uppercase tracking-wider">What Sets Us Apart - Professional Excellence</span>
+                <span className="text-indigo-400 site-light:text-indigo-600 text-sm font-semibold uppercase tracking-wider">What Sets Us Apart - Professional Excellence</span>
               </div>
 
               <h2 className="text-4xl md:text-5xl font-black mb-6 leading-tight">

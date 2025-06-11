@@ -43,10 +43,10 @@ const SiteThemeToggle = () => {
   };
 
   return (
-    <div className="relative flex items-center bg-white/10 backdrop-blur-sm rounded-full p-1 border border-white/20 site-light:bg-slate-100 site-light:border-slate-300">
+    <div className="relative flex items-center bg-white/15 backdrop-blur-sm rounded-full p-1 border border-white/30 site-light:bg-slate-200/80 site-light:border-slate-300/80 shadow-sm">
       {/* Background slider */}
       <div 
-        className="absolute top-1 bottom-1 w-8 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] rounded-full transition-transform duration-300 ease-out shadow-lg"
+        className="absolute top-1 bottom-1 w-8 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] rounded-full transition-transform duration-300 ease-out shadow-lg site-light:from-[#4F46E5] site-light:to-[#7C3AED]"
         style={{
           transform: `translateX(${getActiveIndex() * 32}px)`
         }}
@@ -61,7 +61,7 @@ const SiteThemeToggle = () => {
             className={`relative z-10 w-8 h-6 flex items-center justify-center rounded-full transition-all duration-300 ${
               theme === themeOption.value 
                 ? 'text-white' 
-                : 'text-white/60 hover:text-white/80 site-light:text-slate-500 site-light:hover:text-slate-700'
+                : 'text-white/70 hover:text-white/90 site-light:text-slate-600 site-light:hover:text-slate-800'
             }`}
             aria-label={`Switch to ${themeOption.label} theme`}
             title={`${themeOption.label} mode`}

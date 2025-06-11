@@ -238,8 +238,8 @@ export default function ReviewsPage() {
           <div className="text-center mb-16">
             {/* Category Badge */}
             <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-4 py-2 mb-6">
-              <div className="w-2 h-2 bg-[#F59E0B] rounded-full animate-pulse"></div>
-              <span className="text-[#F59E0B] text-sm font-semibold uppercase tracking-wider">Success Stories</span>
+              <div className="w-2 h-2 bg-amber-400 site-light:bg-amber-600 rounded-full animate-pulse"></div>
+              <span className="text-amber-400 site-light:text-amber-600 text-sm font-semibold uppercase tracking-wider">Success Stories</span>
             </div>
 
             {/* Title */}
@@ -273,6 +273,160 @@ export default function ReviewsPage() {
       {/* Reviews Grid */}
       <section className="py-16 site-section-bg relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Filters Section */}
+          <div className="mb-16">
+            <div className="site-glass backdrop-blur-xl rounded-3xl p-8 site-border border shadow-2xl">
+              <div className="text-center mb-8">
+                <h2 className="text-2xl font-bold site-text-primary mb-4">
+                  Find Reviews by <span className="bg-gradient-to-r from-[#4F46E5] to-[#10B981] bg-clip-text text-transparent">Your Interest</span>
+                </h2>
+                <p className="site-text-secondary">
+                  Filter through our success stories to find professionals in your field or certification path
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Search */}
+                <div>
+                  <label className="block text-sm font-semibold site-text-primary mb-2">
+                    Search Reviews
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="Search by name, company, or content..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl site-glass site-border border site-text-primary placeholder-site-text-muted focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/50 focus:border-[#4F46E5]/50 transition-all duration-300"
+                    />
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      <svg className="w-5 h-5 site-text-muted" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Certification Filter */}
+                <div>
+                  <label className="block text-sm font-semibold site-text-primary mb-2">
+                    Certification
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={selectedCertification}
+                      onChange={(e) => setSelectedCertification(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl site-glass site-border border site-text-primary focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/50 focus:border-[#4F46E5]/50 transition-all duration-300 appearance-none bg-transparent"
+                    >
+                      {certificationTypes.map((cert) => (
+                        <option key={cert} value={cert} className="bg-slate-800 site-light:bg-white site-text-primary">
+                          {cert}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                      <svg className="w-5 h-5 site-text-muted" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Industry Filter */}
+                <div>
+                  <label className="block text-sm font-semibold site-text-primary mb-2">
+                    Industry
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={selectedIndustry}
+                      onChange={(e) => setSelectedIndustry(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl site-glass site-border border site-text-primary focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/50 focus:border-[#4F46E5]/50 transition-all duration-300 appearance-none bg-transparent"
+                    >
+                      {industries.map((industry) => (
+                        <option key={industry} value={industry} className="bg-slate-800 site-light:bg-white site-text-primary">
+                          {industry}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                      <svg className="w-5 h-5 site-text-muted" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Active Filters Display */}
+              {(selectedCertification !== "All Certifications" || selectedIndustry !== "All Industries" || searchTerm) && (
+                <div className="mt-6 flex flex-wrap items-center gap-3">
+                  <span className="text-sm site-text-secondary">Active filters:</span>
+                  
+                  {selectedCertification !== "All Certifications" && (
+                    <div className="flex items-center gap-2 bg-indigo-500/20 site-light:bg-indigo-500/30 text-indigo-400 site-light:text-indigo-600 px-3 py-1 rounded-full text-sm border border-indigo-500/30">
+                      <span>{selectedCertification}</span>
+                      <button
+                        onClick={() => setSelectedCertification("All Certifications")}
+                        className="hover:text-indigo-300 site-light:hover:text-indigo-700 transition-colors"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  )}
+                  
+                  {selectedIndustry !== "All Industries" && (
+                    <div className="flex items-center gap-2 bg-emerald-500/20 site-light:bg-emerald-500/30 text-emerald-400 site-light:text-emerald-600 px-3 py-1 rounded-full text-sm border border-emerald-500/30">
+                      <span>{selectedIndustry}</span>
+                      <button
+                        onClick={() => setSelectedIndustry("All Industries")}
+                        className="hover:text-emerald-300 site-light:hover:text-emerald-700 transition-colors"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  )}
+                  
+                  {searchTerm && (
+                    <div className="flex items-center gap-2 bg-amber-500/20 site-light:bg-amber-500/30 text-amber-400 site-light:text-amber-600 px-3 py-1 rounded-full text-sm border border-amber-500/30">
+                      <span>"{searchTerm}"</span>
+                      <button
+                        onClick={() => setSearchTerm("")}
+                        className="hover:text-amber-300 site-light:hover:text-amber-700 transition-colors"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  )}
+                  
+                  <button
+                    onClick={() => {
+                      setSelectedCertification("All Certifications");
+                      setSelectedIndustry("All Industries");
+                      setSearchTerm("");
+                    }}
+                    className="text-sm site-text-muted hover:site-text-primary transition-colors underline"
+                  >
+                    Clear all
+                  </button>
+                </div>
+              )}
+
+              {/* Results Count */}
+              <div className="mt-6 text-center">
+                <p className="site-text-secondary">
+                  Showing <span className="font-semibold text-indigo-400 site-light:text-indigo-600">{filteredTestimonials.length}</span> of <span className="font-semibold">{testimonials.length}</span> reviews
+                </p>
+              </div>
+            </div>
+          </div>
+
           {filteredTestimonials.length === 0 ? (
             <div className="text-center py-12">
               <div className="site-glass backdrop-blur-xl rounded-3xl p-12 site-border border">
@@ -315,14 +469,14 @@ export default function ReviewsPage() {
                             unoptimized
                           />
                         </div>
-                        <div className="absolute -bottom-2 -right-2 w-6 h-6 bg-[#10B981] rounded-lg flex items-center justify-center">
+                        <div className="absolute -bottom-2 -right-2 w-6 h-6 bg-emerald-500 rounded-lg flex items-center justify-center">
                           <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                           </svg>
                         </div>
                       </div>
                       <div className="flex-1">
-                        <h3 className="text-lg font-bold site-text-primary group-hover:text-[#4F46E5] transition-colors">
+                        <h3 className="text-lg font-bold site-text-primary group-hover:text-indigo-400 site-light:group-hover:text-indigo-600 transition-colors">
                           {testimonial.name}
                         </h3>
                         <p className="site-text-secondary text-sm">{testimonial.position}</p>
@@ -333,30 +487,30 @@ export default function ReviewsPage() {
                     {/* Rating */}
                     <div className="flex gap-1 mb-4">
                       {[...Array(testimonial.rating)].map((_, i) => (
-                        <svg key={i} className="w-5 h-5 text-[#F59E0B]" fill="currentColor" viewBox="0 0 24 24">
+                        <svg key={i} className="w-5 h-5 text-amber-400 site-light:text-amber-500" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                         </svg>
                       ))}
                     </div>
 
                     {/* Content Preview */}
-                    <blockquote className="text-site-text-primary leading-relaxed mb-6 line-clamp-4">
+                    <blockquote className="site-text-primary leading-relaxed mb-6 line-clamp-4">
                       "{testimonial.content}"
                     </blockquote>
 
                     {/* Certification Badge */}
                     <div className="flex items-center justify-between">
                       <div className="bg-gradient-to-r from-[#4F46E5]/20 to-[#7C3AED]/20 site-light:from-[#4F46E5]/30 site-light:to-[#7C3AED]/30 rounded-xl px-3 py-1 border border-[#4F46E5]/30">
-                        <span className="text-[#4F46E5] text-sm font-semibold">{testimonial.certification}</span>
+                        <span className="text-indigo-400 site-light:text-indigo-600 text-sm font-semibold">{testimonial.certification}</span>
                       </div>
-                      <div className="text-[#10B981] text-sm font-bold">
+                      <div className="text-emerald-400 site-light:text-emerald-600 text-sm font-bold">
                         {testimonial.achievement}
                       </div>
                     </div>
 
                     {/* Read More Indicator */}
                     <div className="mt-4 text-center">
-                      <span className="text-[#4F46E5] text-sm font-semibold group-hover:underline">
+                      <span className="text-indigo-400 site-light:text-indigo-600 text-sm font-semibold group-hover:underline">
                         Read Full Story →
                       </span>
                     </div>
@@ -465,7 +619,7 @@ export default function ReviewsPage() {
                     unoptimized
                   />
                 </div>
-                <div className="absolute -bottom-3 -right-3 w-8 h-8 bg-[#10B981] rounded-xl flex items-center justify-center">
+                <div className="absolute -bottom-3 -right-3 w-8 h-8 bg-emerald-500 rounded-xl flex items-center justify-center">
                   <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
@@ -480,7 +634,7 @@ export default function ReviewsPage() {
                 {/* Rating */}
                 <div className="flex gap-1 mt-3">
                   {[...Array(selectedReview.rating)].map((_, i) => (
-                    <svg key={i} className="w-6 h-6 text-[#F59E0B]" fill="currentColor" viewBox="0 0 24 24">
+                    <svg key={i} className="w-6 h-6 text-amber-400 site-light:text-amber-500" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                     </svg>
                   ))}
@@ -526,11 +680,11 @@ export default function ReviewsPage() {
                   <div className="bg-gradient-to-r from-[#10B981]/20 to-[#059669]/20 site-light:from-[#10B981]/30 site-light:to-[#059669]/30 rounded-2xl p-6 border border-[#10B981]/30 site-light:border-[#10B981]/50">
                     <div className="flex items-center justify-between">
                       <div>
-                        <div className="text-sm text-[#10B981] mb-1 font-semibold">AFTER</div>
+                        <div className="text-sm text-emerald-400 site-light:text-emerald-600 mb-1 font-semibold">AFTER</div>
                         <div className="text-xl font-bold site-text-primary">{selectedReview.afterRole}</div>
                       </div>
-                      <div className="w-12 h-12 bg-[#10B981]/20 site-light:bg-[#10B981]/30 rounded-xl flex items-center justify-center">
-                        <svg className="w-6 h-6 text-[#10B981]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                      <div className="w-12 h-12 bg-emerald-500/20 site-light:bg-emerald-500/30 rounded-xl flex items-center justify-center">
+                        <svg className="w-6 h-6 text-emerald-400 site-light:text-emerald-600" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M5 3l14 9-14 9V3z" />
                         </svg>
                       </div>
@@ -545,26 +699,26 @@ export default function ReviewsPage() {
                 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="site-glass rounded-xl p-4 site-border border text-center">
-                    <div className="text-2xl font-bold text-[#4F46E5] mb-1">{selectedReview.certification}</div>
+                    <div className="text-2xl font-bold text-indigo-400 site-light:text-indigo-600 mb-1">{selectedReview.certification}</div>
                     <div className="text-xs site-text-muted">Certification</div>
                   </div>
                   <div className="site-glass rounded-xl p-4 site-border border text-center">
-                    <div className="text-2xl font-bold text-[#F59E0B] mb-1">{selectedReview.courseDuration}</div>
+                    <div className="text-2xl font-bold text-amber-400 site-light:text-amber-600 mb-1">{selectedReview.courseDuration}</div>
                     <div className="text-xs site-text-muted">Course Duration</div>
                   </div>
                   <div className="site-glass rounded-xl p-4 site-border border text-center">
-                    <div className="text-2xl font-bold text-[#10B981] mb-1">{selectedReview.timeframe}</div>
+                    <div className="text-2xl font-bold text-emerald-400 site-light:text-emerald-600 mb-1">{selectedReview.timeframe}</div>
                     <div className="text-xs site-text-muted">To Success</div>
                   </div>
                   <div className="site-glass rounded-xl p-4 site-border border text-center">
-                    <div className="text-2xl font-bold text-[#7C3AED] mb-1">{selectedReview.industry}</div>
+                    <div className="text-2xl font-bold text-violet-400 site-light:text-violet-600 mb-1">{selectedReview.industry}</div>
                     <div className="text-xs site-text-muted">Industry</div>
                   </div>
                 </div>
 
                 <div className="mt-6 bg-gradient-to-r from-[#10B981]/20 to-[#059669]/20 site-light:from-[#10B981]/30 site-light:to-[#059669]/30 rounded-2xl p-4 border border-[#10B981]/30">
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-[#10B981] mb-1">{selectedReview.achievement}</div>
+                    <div className="text-2xl font-bold text-emerald-400 site-light:text-emerald-600 mb-1">{selectedReview.achievement}</div>
                     <div className="text-sm site-text-secondary">Career Achievement</div>
                   </div>
                 </div>

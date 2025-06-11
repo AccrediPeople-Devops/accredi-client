@@ -157,7 +157,7 @@ export default function BlogDetailsPage({ params }: { params: Promise<{ id: stri
             <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-4 py-2 mb-6">
               <div className="w-2 h-2 bg-[#4F46E5] rounded-full animate-pulse"></div>
               <span className="text-[#4F46E5] text-sm font-semibold uppercase tracking-wider">{blogPost.category}</span>
-            </div>
+        </div>
 
             <h1 className="text-4xl lg:text-6xl font-black mb-8 leading-tight site-text-primary">
               {blogPost.title}
@@ -204,7 +204,7 @@ export default function BlogDetailsPage({ params }: { params: Promise<{ id: stri
                       <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                     </svg>
                     <span>{blogPost.views} views</span>
-                  </div>
+                </div>
                 </div>
               </div>
             </div>
@@ -235,8 +235,8 @@ export default function BlogDetailsPage({ params }: { params: Promise<{ id: stri
                 <div 
                   className="prose prose-lg max-w-none site-text-primary"
                   dangerouslySetInnerHTML={{ __html: blogPost.content }}
-                />
-              </div>
+                    />
+                  </div>
 
               {/* Article Actions */}
               <div className="site-glass backdrop-blur-xl rounded-3xl p-6 shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500 mb-8">
@@ -254,7 +254,7 @@ export default function BlogDetailsPage({ params }: { params: Promise<{ id: stri
                       </Link>
                     ))}
                   </div>
-
+                  
                   {/* Actions */}
                   <div className="flex items-center gap-4">
                     <button
@@ -277,105 +277,105 @@ export default function BlogDetailsPage({ params }: { params: Promise<{ id: stri
                       </svg>
                       <span className="font-medium">{blogPost.shares}</span>
                     </button>
-                  </div>
-                </div>
-              </div>
+                        </div>
+                      </div>
+                    </div>
 
               {/* Author Bio */}
               <div className="site-glass backdrop-blur-xl rounded-3xl p-8 shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500 mb-8">
                 <div className="flex flex-col lg:flex-row items-center gap-6">
-                  <Image
+                      <Image
                     src={blogPost.author.avatar}
                     alt={blogPost.author.name}
                     width={120}
                     height={120}
                     className="w-30 h-30 rounded-full object-cover"
-                    unoptimized
-                  />
+                        unoptimized
+                      />
                   <div className="flex-1 text-center lg:text-left">
                     <h3 className="text-2xl font-black site-text-primary mb-2">{blogPost.author.name}</h3>
                     <p className="text-lg font-medium text-[#4F46E5] mb-4">{blogPost.author.title}</p>
                     <p className="site-text-secondary leading-relaxed">
                       {blogPost.author.bio}
                     </p>
-                  </div>
-                </div>
-              </div>
+                        </div>
+                      </div>
+                    </div>
 
               {/* Comments Section */}
               <div className="site-glass backdrop-blur-xl rounded-3xl p-8 shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500">
                 <h3 className="text-2xl font-black site-text-primary mb-8">Leave a Review</h3>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
-                  {/* Rating */}
+                    {/* Rating */}
                   <div>
                     <label className="block text-sm font-bold site-text-primary mb-2">Your Rating</label>
-                    <div className="flex gap-1">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <button
-                          key={star}
+                      <div className="flex gap-1">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <button
+                            key={star}
                           type="button"
-                          onClick={() => handleRatingClick(star)}
+                            onClick={() => handleRatingClick(star)}
                           className={`w-8 h-8 transition-colors ${
                             star <= rating ? 'text-yellow-400' : 'site-text-muted'
-                          }`}
-                        >
-                          <svg fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-                          </svg>
-                        </button>
-                      ))}
+                            }`}
+                          >
+                            <svg fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                            </svg>
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
 
                   {/* Form Fields */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-bold site-text-primary mb-2">Name *</label>
-                      <input
-                        type="text"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleInputChange}
+                        <input
+                          type="text"
+                          name="name"
+                          value={formData.name}
+                          onChange={handleInputChange}
                         className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-2xl site-border border focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300 site-text-primary"
                         placeholder="Your full name"
-                        required
-                      />
+                          required
+                        />
                     </div>
                     <div>
                       <label className="block text-sm font-bold site-text-primary mb-2">Email *</label>
-                      <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
+                        <input
+                          type="email"
+                          name="email"
+                          value={formData.email}
+                          onChange={handleInputChange}
                         className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-2xl site-border border focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300 site-text-primary"
                         placeholder="Your email address"
-                        required
-                      />
-                    </div>
+                          required
+                        />
+                      </div>
                   </div>
 
                   <div>
                     <label className="block text-sm font-bold site-text-primary mb-2">Review *</label>
-                    <textarea
-                      name="review"
-                      value={formData.review}
-                      onChange={handleInputChange}
-                      rows={5}
+                      <textarea
+                        name="review"
+                        value={formData.review}
+                        onChange={handleInputChange}
+                        rows={5}
                       className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-2xl site-border border focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300 site-text-primary resize-none"
                       placeholder="Share your thoughts about this article..."
-                      required
+                        required
                     />
                   </div>
 
-                  <button
-                    type="submit"
+                      <button
+                        type="submit"
                     className="bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#7C3AED] hover:to-[#6D28D9] text-white font-bold py-4 px-8 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:shadow-[#4F46E5]/25"
-                  >
-                    Submit Review
-                  </button>
-                </form>
+                      >
+                        Submit Review
+                      </button>
+                    </form>
               </div>
             </div>
 
@@ -399,8 +399,8 @@ export default function BlogDetailsPage({ params }: { params: Promise<{ id: stri
                       className="w-full px-4 py-3 pl-12 site-glass backdrop-blur-sm rounded-2xl site-border border focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300 site-text-primary"
                     />
                     <svg className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 site-text-muted" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
                   </div>
                 </div>
 
@@ -418,15 +418,15 @@ export default function BlogDetailsPage({ params }: { params: Promise<{ id: stri
                     {relatedPosts.map((post) => (
                       <Link key={post.id} href={`/blog/${post.id}`} className="group block">
                         <div className="flex gap-4 p-3 rounded-2xl hover:bg-white/10 site-light:hover:bg-white/40 transition-all duration-300">
-                          <Image
-                            src={post.image}
-                            alt={post.title}
-                            width={80}
-                            height={60}
+                        <Image
+                          src={post.image}
+                          alt={post.title}
+                          width={80}
+                          height={60}
                             className="w-20 h-15 object-cover rounded-xl flex-shrink-0"
-                            unoptimized
-                          />
-                          <div className="flex-1">
+                          unoptimized
+                        />
+                        <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2 text-xs">
                               <span className="text-[#4F46E5] font-medium">{post.category}</span>
                               <span className="site-text-muted">•</span>

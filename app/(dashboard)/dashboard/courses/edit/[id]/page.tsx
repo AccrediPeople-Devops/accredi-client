@@ -6,7 +6,8 @@ import Link from "next/link";
 import Input from "@/app/components/Input";
 import RichTextEditor from "@/app/components/RichTextEditor";
 import ImageUpload from "@/app/components/ImageUpload";
-import MultipleImageUpload from "@/app/components/MultipleImageUpload";
+import EnhancedImageUpload from "@/app/components/EnhancedImageUpload";
+import ComponentsInput from "@/app/components/ComponentsInput";
 import KeyFeaturesInput from "@/app/components/KeyFeaturesInput";
 import courseService from "@/app/components/service/course.service";
 import courseCategoryService from "@/app/components/service/courseCategory.service";
@@ -20,6 +21,16 @@ interface FileUpload {
   key: string;
   _id?: string;
   path?: string;
+  isEmoji?: boolean;
+}
+
+interface ComponentItem {
+  image: {
+    path: string;
+    key: string;
+  };
+  description: string;
+  _id?: string;
 }
 
 interface CourseFormData {
@@ -30,10 +41,11 @@ interface CourseFormData {
   upload: {
     courseImage: FileUpload[];
     courseSampleCertificate: FileUpload[];
-    courseBadge: FileUpload[];
+    courseBadge: FileUpload;
   };
   keyFeatures: string[];
   broucher: FileUpload[];
+  components: ComponentItem[];
 }
 
 interface CourseCategory {
@@ -62,10 +74,11 @@ function CourseEditor({ courseId }: { courseId: string }) {
     upload: {
       courseImage: [],
       courseSampleCertificate: [],
-      courseBadge: [],
+      courseBadge: { url: "", key: "" },
     },
     keyFeatures: [],
     broucher: [],
+    components: [],
   });
 
   useEffect(() => {
@@ -135,16 +148,19 @@ function CourseEditor({ courseId }: { courseId: string }) {
                   }));
               }
 
-              // Process courseBadge
+              // Process courseBadge - convert array to single object
               if (
                 courseData.upload.courseBadge &&
+                Array.isArray(courseData.upload.courseBadge) &&
                 courseData.upload.courseBadge.length > 0
               ) {
-                courseData.upload.courseBadge =
-                  courseData.upload.courseBadge.map((img: any) => ({
-                    ...img,
-                    url: img.path ? `${config.imageUrl}${img.path}` : "",
-                  }));
+                const badge = courseData.upload.courseBadge[0];
+                courseData.upload.courseBadge = {
+                  ...badge,
+                  url: badge.path ? `${config.imageUrl}${badge.path}` : "",
+                };
+              } else if (!courseData.upload.courseBadge || Array.isArray(courseData.upload.courseBadge)) {
+                courseData.upload.courseBadge = { url: "", key: "" };
               }
             }
 
@@ -154,6 +170,11 @@ function CourseEditor({ courseId }: { courseId: string }) {
                 ...img,
                 url: img.path ? `${config.imageUrl}${img.path}` : "",
               }));
+            }
+
+            // Process components
+            if (!courseData.components) {
+              courseData.components = [];
             }
 
             setFormData(courseData);
@@ -194,18 +215,17 @@ function CourseEditor({ courseId }: { courseId: string }) {
     }));
   };
 
-  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: checked,
-    }));
-  };
-
   const handleKeyFeaturesChange = (features: string[]) => {
     setFormData((prev) => ({
       ...prev,
       keyFeatures: features,
+    }));
+  };
+
+  const handleComponentsChange = (components: ComponentItem[]) => {
+    setFormData((prev) => ({
+      ...prev,
+      components,
     }));
   };
 
@@ -294,133 +314,106 @@ function CourseEditor({ courseId }: { courseId: string }) {
     }
   };
 
-  const handleMultipleImageUpload = async (
-    type: "courseBadge",
-    files: FileUpload[]
-  ) => {
-    console.log(`handleMultipleImageUpload called for ${type} with ${files.length} files`);
-    
+  const handleBadgeImageUpload = async (file: FileUpload) => {
+    if (!file.url || file.url === "") {
+      // Image was removed
+      setFormData((prev) => ({
+        ...prev,
+        upload: {
+          ...prev.upload,
+          courseBadge: { url: "", key: "" },
+        },
+      }));
+      return;
+    }
+
+    if (file.path) {
+      // File already has path, just update form data
+      setFormData((prev) => ({
+        ...prev,
+        upload: {
+          ...prev.upload,
+          courseBadge: file,
+        },
+      }));
+      return;
+    }
+
+    setIsUploadingImage(true);
+
     try {
-      // Find which files are new (have url but no path)
-      const newFiles = files.filter((file) => file.url && file.url !== "" && !file.path);
-      console.log(`New files to upload: ${newFiles.length}`);
-      
-      // If this is an update to remove files, handle it directly
-      if (files.length < formData.upload[type].length) {
-        console.log(`Detected file removal. Updating state directly.`);
+      // Handle emoji case
+      if (file.isEmoji) {
+        // For emoji, we don't need to upload to server, just save the data URL
         setFormData((prev) => ({
           ...prev,
           upload: {
             ...prev.upload,
-            [type]: [...files],
+            courseBadge: file,
           },
         }));
-        return; // Exit early as deletion is already handled in the component
+        return;
       }
 
-      if (newFiles.length > 0) {
-        setIsUploadingImage(true);
+      // Extract actual File object from the url (which is a Blob URL)
+      const response = await fetch(file.url);
+      const blob = await response.blob();
+      const fileExtension = file.url.split(".").pop() || "jpg";
+      const actualFile = new File([blob], `upload.${fileExtension}`, {
+        type: blob.type,
+      });
 
-        try {
-          // Process each new file for upload
-          const uploadedFiles: FileUpload[] = [];
-          const existingFiles = files.filter((file) => file.path);
+      // Upload to server
+      const uploadResponse = await uploadService.uploadImage(actualFile);
 
-          for (const file of newFiles) {
-            try {
-              // Extract actual File object from the url (which is a Blob URL)
-              const response = await fetch(file.url);
-              const blob = await response.blob();
-              const fileExtension = file.url.split(".").pop() || "jpg";
-              const actualFile = new File([blob], `upload.${fileExtension}`, {
-                type: blob.type,
-              });
+      if (
+        uploadResponse &&
+        uploadResponse.upload &&
+        uploadResponse.upload[0]
+      ) {
+        const uploadedFile = uploadResponse.upload[0];
+        const path = uploadedFile.path;
+        const key = uploadedFile.key || path;
 
-              // Upload to server
-              const uploadResponse = await uploadService.uploadImage(actualFile);
+        // Create a new file object with the server response
+        const serverFile: FileUpload = {
+          url: `${config.imageUrl}${path}`,
+          key: key,
+          path: path,
+        };
 
-              if (
-                uploadResponse &&
-                uploadResponse.upload &&
-                uploadResponse.upload[0]
-              ) {
-                const uploadedFile = uploadResponse.upload[0];
-                const path = uploadedFile.path;
-                const key = uploadedFile.key || path;
-
-                // Create a new file object with the server response
-                uploadedFiles.push({
-                  url: `${config.imageUrl}${path}`,
-                  key: key,
-                  path: path,
-                });
-              }
-            } catch (err) {
-              console.error(`Error uploading individual file for ${type}:`, err);
-              // Continue with other files
-            }
-          }
-
-          // Update form data with all files (existing + newly uploaded)
-          if (uploadedFiles.length > 0) {
-            setFormData((prev) => ({
-              ...prev,
-              upload: {
-                ...prev.upload,
-                [type]: [...existingFiles, ...uploadedFiles],
-              },
-            }));
-          }
-        } catch (err) {
-          console.error(`Error in batch upload for ${type}:`, err);
-          setError(`Failed to upload some ${type} images. Please try again.`);
-        } finally {
-          setIsUploadingImage(false);
-        }
-      } else if (files.length === 0) {
-        // All files were removed - deletion is now handled directly in the MultipleImageUpload component
         setFormData((prev) => ({
           ...prev,
           upload: {
             ...prev.upload,
-            [type]: [],
+            courseBadge: serverFile,
           },
         }));
+      } else {
+        throw new Error("Failed to upload course badge");
       }
-    } catch (error) {
-      console.error(`Error handling ${type}:`, error);
-      setError(`Failed to process ${type}. Please try again.`);
+    } catch (err) {
+      console.error("Error uploading course badge:", err);
+      setError("Failed to upload course badge. Please try again.");
+    } finally {
       setIsUploadingImage(false);
     }
   };
 
   const prepareDataForSubmission = () => {
-    // Create a clean object with only the fields needed for the update API
-    const preparedData: any = {
-      title: formData.title,
-      categoryId: formData.categoryId,
-      shortDescription: formData.shortDescription,
-      description: formData.description,
-      keyFeatures: formData.keyFeatures || [],
-      upload: {
-        courseImage: [],
-        courseSampleCertificate: [],
-        courseBadge: []
-      },
-      broucher: []
-    };
+    const preparedData: any = { ...formData };
 
     // Format for upload.courseImage
     if (
       formData.upload.courseImage &&
       formData.upload.courseImage.length > 0
     ) {
-      preparedData.upload.courseImage = formData.upload.courseImage
-        .filter(img => img && img.path && img.key)
-        .map(img => ({
+      preparedData.upload.courseImage = formData.upload.courseImage.map(
+        (img) => ({
           key: img.key,
-          path: img.path
-        }));
+          path: img.path,
+        })
+      );
     }
 
     // Format for upload.courseSampleCertificate
@@ -428,42 +421,40 @@ function CourseEditor({ courseId }: { courseId: string }) {
       formData.upload.courseSampleCertificate &&
       formData.upload.courseSampleCertificate.length > 0
     ) {
-      preparedData.upload.courseSampleCertificate = formData.upload.courseSampleCertificate
-        .filter(img => img && img.path && img.key)
-        .map(img => ({
+      preparedData.upload.courseSampleCertificate =
+        formData.upload.courseSampleCertificate.map((img) => ({
           key: img.key,
-          path: img.path
+          path: img.path,
         }));
     }
 
     // Format for upload.courseBadge
-    if (formData.upload.courseBadge && formData.upload.courseBadge.length > 0) {
-      preparedData.upload.courseBadge = formData.upload.courseBadge
-        .filter(img => img && img.path && img.key)
-        .map(img => ({
-          key: img.key,
-          path: img.path
-        }));
+    if (formData.upload.courseBadge && formData.upload.courseBadge.key && formData.upload.courseBadge.path) {
+      preparedData.upload.courseBadge = {
+        key: formData.upload.courseBadge.key,
+        path: formData.upload.courseBadge.path,
+      };
+    }
+
+    // Format for components
+    if (formData.components && formData.components.length > 0) {
+      preparedData.components = formData.components.map((component) => ({
+        image: {
+          key: component.image.key,
+          path: component.image.path,
+        },
+        description: component.description,
+      }));
     }
 
     // Format for broucher
     if (formData.broucher && formData.broucher.length > 0) {
-      preparedData.broucher = formData.broucher
-        .filter(img => img && img.path && img.key)
-        .map(img => ({
-          key: img.key,
-          path: img.path
-        }));
+      preparedData.broucher = formData.broucher.map((img) => ({
+        key: img.key,
+        path: img.path,
+      }));
     }
 
-    // Make sure _id and other metadata fields are not included in the update data
-    if (preparedData._id) delete preparedData._id;
-    if (preparedData.createdAt) delete preparedData.createdAt;
-    if (preparedData.updatedAt) delete preparedData.updatedAt;
-    if (preparedData.__v) delete preparedData.__v;
-    
-    console.log('Final prepared data for API:', JSON.stringify(preparedData, null, 2));
-    
     return preparedData;
   };
 
@@ -487,7 +478,7 @@ function CourseEditor({ courseId }: { courseId: string }) {
         throw new Error("Full description is required");
       }
       // Check for required course image
-      if (!formData.upload.courseImage.length || 
+      if (!formData.upload.courseImage.length ||
           !formData.upload.courseImage[0].path ||
           !formData.upload.courseImage[0].key) {
         throw new Error("Course image is required");
@@ -495,52 +486,23 @@ function CourseEditor({ courseId }: { courseId: string }) {
 
       // Prepare the data
       const preparedData = prepareDataForSubmission();
-      
-      console.log("Submitting updated course data:", preparedData);
 
-      try {
-        // Submit the updated course data
-        const response = await courseService.updateCourse(courseId, preparedData);
-        
-        console.log("API Response:", response);
+      console.log("Updating course with data:", preparedData);
 
-        if (response && (response.course || response.status === "success" || response.status === true)) {
-          // Successfully updated course
-          router.push("/dashboard/courses");
-        } else if (response && response.message) {
-          // Server returned an error message
-          throw new Error(response.message);
-        } else {
-          throw new Error("Failed to update course. Server did not provide a reason.");
-        }
-      } catch (err: any) {
-        console.error("API call error:", err);
-        
-        // Extract the most useful error message
-        if (err.response) {
-          if (err.response.data && typeof err.response.data === 'object' && err.response.data.message) {
-            throw new Error(err.response.data.message);
-          } else if (typeof err.response.data === 'string') {
-            throw new Error(`API Error: ${err.response.data}`);
-          } else {
-            throw new Error(`API Error: ${err.response.status}`);
-          }
-        }
-        throw err; // Re-throw to be caught by the outer catch
+      // Submit the course data
+      const response = await courseService.updateCourse(courseId, preparedData);
+
+      console.log("API Response:", response);
+
+      if (response && (response.course || response.status === "success" || response.status === true)) {
+        // Successfully updated course
+        router.push("/dashboard/courses");
+      } else {
+        throw new Error("Failed to update course");
       }
     } catch (err: any) {
       console.error("Error updating course:", err);
-      
-      // Extract the most useful error message
-      let errorMessage = "An error occurred while updating the course";
-      
-      if (err.response && err.response.data && err.response.data.message) {
-        errorMessage = err.response.data.message;
-      } else if (err.message) {
-        errorMessage = err.message;
-      }
-      
-      setError(errorMessage);
+      setError(err.message || "An error occurred while updating the course");
     } finally {
       setIsLoading(false);
     }
@@ -548,7 +510,7 @@ function CourseEditor({ courseId }: { courseId: string }) {
 
   if (isLoadingCourse || isLoadingCategories) {
     return (
-      <div className="flex justify-center items-center py-20">
+      <div className="flex justify-center py-8">
         <LoadingSpinner size="large" text="Loading course data..." />
       </div>
     );
@@ -563,7 +525,7 @@ function CourseEditor({ courseId }: { courseId: string }) {
             Edit Course
           </h1>
           <p className="text-[var(--foreground-muted)]">
-            Update course information and media
+            Update course details and settings
           </p>
         </div>
         <Link
@@ -613,6 +575,7 @@ function CourseEditor({ courseId }: { courseId: string }) {
                 name="title"
                 value={formData.title}
                 onChange={handleChange}
+                placeholder="Enter course title"
                 className="w-full px-4 py-2 bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] rounded-[var(--radius-md)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                 required
               />
@@ -644,19 +607,15 @@ function CourseEditor({ courseId }: { courseId: string }) {
 
             <div className="md:col-span-2">
               <label 
-                htmlFor="shortDescription"
                 className="block text-sm font-medium text-[var(--foreground-muted)] mb-1"
               >
                 Short Description *
               </label>
-              <textarea
-                id="shortDescription"
-                name="shortDescription"
+              <RichTextEditor
                 value={formData.shortDescription}
-                onChange={handleChange}
-                rows={3}
-                className="w-full px-4 py-2 bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] rounded-[var(--radius-md)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                required
+                onChange={(value) => handleRichTextChange("shortDescription", value)}
+                placeholder="Brief description for the course"
+                minHeight="120px"
               />
             </div>
           </div>
@@ -725,14 +684,13 @@ function CourseEditor({ courseId }: { courseId: string }) {
               <label 
                 className="block text-sm font-medium text-[var(--foreground-muted)] mb-2"
               >
-                Course Badges
+                Course Badge
               </label>
-              <MultipleImageUpload
+              <EnhancedImageUpload
                 value={formData.upload.courseBadge}
-                onChange={(files) =>
-                  handleMultipleImageUpload("courseBadge", files)
-                }
+                onChange={handleBadgeImageUpload}
                 isLoading={isUploadingImage}
+                allowEmoji={true}
               />
             </div>
 
@@ -774,6 +732,25 @@ function CourseEditor({ courseId }: { courseId: string }) {
           </div>
         </div>
 
+        {/* Components */}
+        <div className="bg-[var(--input-bg)] p-6 rounded-[var(--radius-lg)]">
+          <h2 className="text-lg font-medium text-[var(--foreground)] mb-4">
+            Course Components
+          </h2>
+          <div>
+            <label 
+              className="block text-sm font-medium text-[var(--foreground-muted)] mb-2"
+            >
+              Add Components
+            </label>
+            <ComponentsInput
+              value={formData.components}
+              onChange={handleComponentsChange}
+              isLoading={isUploadingImage}
+            />
+          </div>
+        </div>
+
         {/* Submit button */}
         <div className="flex justify-end">
           <button
@@ -796,11 +773,7 @@ function CourseEditor({ courseId }: { courseId: string }) {
   );
 }
 
-// Main page component that handles unwrapping of params
 export default function EditCoursePage({ params }: { params: Promise<{ id: string }> }) {
-  // Unwrap params using React.use()
-  const unwrappedParams = use(params);
-  const courseId = unwrappedParams.id;
-  
-  return <CourseEditor courseId={courseId} />;
+  const resolvedParams = use(params);
+  return <CourseEditor courseId={resolvedParams.id} />;
 }
