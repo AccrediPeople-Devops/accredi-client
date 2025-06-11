@@ -10,7 +10,9 @@ export default function ThemeSelector() {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const themeOptions = [
+    { id: "pureBlack", label: "Pure Black", color: "#000000" },
     { id: "purpleElegance", label: "Purple Elegance", color: "#7E57C2" },
+    { id: "darkMinimal", label: "Dark Minimal", color: "#FFFFFF" },
     {
       id: "blackWhiteMinimal",
       label: "Black & White Minimal",

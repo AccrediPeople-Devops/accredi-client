@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { themes, ThemeType, Theme, PurpleEleganceTheme } from "../theme";
+import { themes, ThemeType, Theme, PureBlackTheme } from "../theme";
 
 type ThemeContextType = {
   currentTheme: Theme;
@@ -10,18 +10,18 @@ type ThemeContextType = {
 };
 
 const ThemeContext = createContext<ThemeContextType>({
-  currentTheme: PurpleEleganceTheme,
-  themeType: "purpleElegance",
+  currentTheme: PureBlackTheme,
+  themeType: "pureBlack",
   setTheme: () => {},
 });
 
 export const useTheme = () => useContext(ThemeContext);
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-  // Get saved theme from localStorage or default to 'purpleElegance'
-  const [themeType, setThemeType] = useState<ThemeType>("purpleElegance");
+  // Get saved theme from localStorage or default to 'pureBlack'
+  const [themeType, setThemeType] = useState<ThemeType>("pureBlack");
   const [currentTheme, setCurrentTheme] = useState<Theme>(
-    themes.purpleElegance
+    themes.pureBlack
   );
 
   // Load theme from localStorage when component mounts
@@ -34,7 +34,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
         applyThemeToDocument(themes[savedTheme]);
       } else {
         // If no theme is saved, apply the default theme
-        applyThemeToDocument(themes.purpleElegance);
+        applyThemeToDocument(themes.pureBlack);
       }
     }
   }, []);
@@ -63,11 +63,15 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
       // Apply colors
       root.style.setProperty("--background", theme.colors.background);
       root.style.setProperty("--foreground", theme.colors.text);
+      root.style.setProperty("--foreground-muted", theme.colors.mutedText || adjustColor(theme.colors.text, 0.6));
       root.style.setProperty("--primary", theme.colors.primary);
+      root.style.setProperty("--primary-hover", theme.colors.primaryHover || adjustColor(theme.colors.primary, 0.8));
+      root.style.setProperty("--primary-text", theme.colors.primaryText || (isLightColor(theme.colors.primary) ? "#121212" : "#FFFFFF"));
       root.style.setProperty("--secondary", theme.colors.secondary);
       root.style.setProperty("--input-bg", theme.colors.inputBg);
       root.style.setProperty("--error", theme.colors.error);
       root.style.setProperty("--success", theme.colors.success);
+      root.style.setProperty("--border", theme.colors.border || adjustColor(theme.colors.text, 0.2));
 
       // Apply border radius
       root.style.setProperty("--radius-sm", theme.borderRadius.small);
@@ -82,6 +86,55 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
       // Apply typography
       root.style.setProperty("--font-family", theme.typography.fontFamily);
     }
+  };
+
+  // Helper function to adjust color opacity
+  const adjustColor = (color: string, opacity: number): string => {
+    // If color is in hex format, convert to rgba
+    if (color.startsWith('#')) {
+      const r = parseInt(color.slice(1, 3), 16);
+      const g = parseInt(color.slice(3, 5), 16);
+      const b = parseInt(color.slice(5, 7), 16);
+      return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+    }
+    
+    // If already rgba, adjust opacity
+    if (color.startsWith('rgba')) {
+      return color.replace(/rgba\((\d+),\s*(\d+),\s*(\d+),\s*[\d.]+\)/, `rgba($1, $2, $3, ${opacity})`);
+    }
+    
+    // If rgb, convert to rgba
+    if (color.startsWith('rgb')) {
+      return color.replace(/rgb/, 'rgba').replace(/\)/, `, ${opacity})`);
+    }
+    
+    return color;
+  };
+
+  // Helper function to determine if a color is light or dark
+  const isLightColor = (color: string): boolean => {
+    // If color is in hex format, convert to rgb
+    let r, g, b;
+    if (color.startsWith('#')) {
+      r = parseInt(color.slice(1, 3), 16);
+      g = parseInt(color.slice(3, 5), 16);
+      b = parseInt(color.slice(5, 7), 16);
+    } else if (color.startsWith('rgb')) {
+      const match = color.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+      if (match) {
+        r = parseInt(match[1]);
+        g = parseInt(match[2]);
+        b = parseInt(match[3]);
+      } else {
+        return false; // Default to false if can't parse
+      }
+    } else {
+      return false; // Default to false for unknown formats
+    }
+    
+    // Calculate brightness using the formula: (0.299*R + 0.587*G + 0.114*B)
+    const brightness = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return brightness > 0.5; // If brightness > 0.5, it's a light color
   };
 
   return (
