@@ -7,6 +7,9 @@ import courseService from "@/app/components/service/course.service";
 import config from "@/app/components/config/config";
 import { Course } from "@/app/types/course";
 import paymentService from "@/app/components/service/payment.service";
+import geolocationService, {
+  GeolocationData,
+} from "@/app/components/service/geolocation.service";
 
 interface CoursePageProps {
   params: Promise<{ slug: string }>;
@@ -20,6 +23,11 @@ export default function CoursePage({ params }: CoursePageProps) {
   const [course, setCourse] = useState<Course | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+
+  // Geolocation and currency state
+  const [geolocationData, setGeolocationData] =
+    useState<GeolocationData | null>(null);
+  const [currencyLoading, setCurrencyLoading] = useState(true);
 
   const [showBrochureModal, setShowBrochureModal] = useState(false);
   const [brochureFormData, setBrochureFormData] = useState({
@@ -48,6 +56,26 @@ export default function CoursePage({ params }: CoursePageProps) {
   // Error dialog state
   const [showErrorDialog, setShowErrorDialog] = useState(false);
   const [errorDialogMessage, setErrorDialogMessage] = useState("");
+
+  // Fetch geolocation data for currency conversion
+  useEffect(() => {
+    const fetchGeolocationData = async () => {
+      setCurrencyLoading(true);
+      try {
+        console.log("Fetching geolocation data for currency conversion...");
+        const geoData = await geolocationService.getCurrentUserGeolocation();
+        setGeolocationData(geoData);
+        console.log("Geolocation data loaded:", geoData);
+      } catch (err: any) {
+        console.error("Error fetching geolocation data:", err);
+        // If geolocation fails, we'll show USD by default
+      } finally {
+        setCurrencyLoading(false);
+      }
+    };
+
+    fetchGeolocationData();
+  }, []);
 
   // Fetch course data
   useEffect(() => {
@@ -122,6 +150,11 @@ export default function CoursePage({ params }: CoursePageProps) {
         <div className="flex flex-col items-center space-y-4">
           <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin"></div>
           <p className="site-text-primary text-lg">Loading course...</p>
+          {currencyLoading && (
+            <p className="site-text-secondary text-sm">
+              Converting prices to your local currency...
+            </p>
+          )}
         </div>
       </div>
     );
@@ -240,11 +273,19 @@ export default function CoursePage({ params }: CoursePageProps) {
 
   const handlePayment = async () => {
     try {
+      // Determine the currency to use for payment
+      const paymentCurrency =
+        geolocationData?.geoplugin_currencyCode?.toLowerCase() || "usd";
+      const localTotal = geolocationData
+        ? getLocalPrice(calculateTotal())
+        : calculateTotal();
+
       const paymentData = {
         type: "stripe",
         shedule_id: selectedSchedule.id,
         couponCode: enrollFormData.couponCode || "",
-        currency: "inr",
+        currency: paymentCurrency,
+        amount: localTotal,
         userId: "680fc19e638ed8389d944000", // You may want to get this dynamically
         // Additional form data
         fullName: enrollFormData.fullName,
@@ -252,6 +293,10 @@ export default function CoursePage({ params }: CoursePageProps) {
         contactNumber: enrollFormData.contactNumber,
         country: enrollFormData.country,
         city: enrollFormData.city,
+        // Geolocation data for analytics
+        userCountry: geolocationData?.geoplugin_countryName || "Unknown",
+        userCity: geolocationData?.geoplugin_city || "Unknown",
+        userIP: geolocationData?.geoplugin_request || "Unknown",
       };
 
       console.log("Processing payment:", paymentData);
@@ -351,6 +396,35 @@ export default function CoursePage({ params }: CoursePageProps) {
         couponCode: "",
       });
     }
+  };
+
+  // Helper functions for currency conversion
+  const formatPrice = (usdPrice: number): string => {
+    if (!geolocationData || currencyLoading) {
+      return `USD $${usdPrice}`;
+    }
+
+    const localPrice = geolocationService.convertUSDToLocalCurrency(
+      usdPrice,
+      geolocationData.geoplugin_currencyConverter
+    );
+
+    return geolocationService.formatCurrency(
+      localPrice,
+      geolocationData.geoplugin_currencySymbol_UTF8,
+      geolocationData.geoplugin_currencyCode
+    );
+  };
+
+  const getLocalPrice = (usdPrice: number): number => {
+    if (!geolocationData) {
+      return usdPrice;
+    }
+
+    return geolocationService.convertUSDToLocalCurrency(
+      usdPrice,
+      geolocationData.geoplugin_currencyConverter
+    );
   };
 
   const calculateTotal = () => {
@@ -1008,6 +1082,39 @@ export default function CoursePage({ params }: CoursePageProps) {
               Choose from flexible learning options designed to fit your
               schedule and learning preferences.
             </p>
+
+            {/* Currency Conversion Banner */}
+            {geolocationData &&
+              !currencyLoading &&
+              geolocationData.geoplugin_currencyCode !== "USD" && (
+                <div className="inline-flex items-center gap-3 site-glass backdrop-blur-xl rounded-2xl px-6 py-3 mt-4 mb-4 shadow-lg hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-300">
+                  <div className="w-8 h-8 bg-gradient-to-br from-[#10B981] to-[#059669] rounded-full flex items-center justify-center">
+                    <svg
+                      className="w-4 h-4 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
+                      />
+                    </svg>
+                  </div>
+                  <div className="text-left">
+                    <div className="text-sm font-bold site-text-primary">
+                      Prices shown in {geolocationData.geoplugin_currencyCode}
+                    </div>
+                    <div className="text-xs site-text-muted">
+                      📍 {geolocationData.geoplugin_city},{" "}
+                      {geolocationData.geoplugin_countryName}
+                    </div>
+                  </div>
+                </div>
+              )}
+
             <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-4 py-2 mt-4">
               <svg
                 className="w-4 h-4 text-[#10B981]"
@@ -1357,16 +1464,30 @@ export default function CoursePage({ params }: CoursePageProps) {
 
                         <div className="text-center site-glass backdrop-blur-sm rounded-2xl p-4">
                           <div className="text-sm site-text-muted line-through mb-1">
-                            USD ${schedule.standardPrice}
+                            {formatPrice(schedule.standardPrice)}
                           </div>
                           <div className="text-3xl font-black bg-gradient-to-r from-[#4F46E5] to-[#10B981] bg-clip-text text-transparent mb-2">
-                            USD ${schedule.earlyBirdPrice}
+                            {formatPrice(schedule.earlyBirdPrice)}
                           </div>
                           {selectedMode === "self-paced" && (
                             <div className="inline-flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-[#F59E0B] to-[#EF4444] text-white rounded-full text-xs font-bold mb-3">
                               ⚡ Limited Time Offer
                             </div>
                           )}
+                          {currencyLoading && (
+                            <div className="text-xs site-text-muted mt-2">
+                              Converting to local currency...
+                            </div>
+                          )}
+                          {geolocationData &&
+                            !currencyLoading &&
+                            geolocationData.geoplugin_currencyCode !==
+                              "USD" && (
+                              <div className="text-xs site-text-muted mt-2">
+                                📍 {geolocationData.geoplugin_city},{" "}
+                                {geolocationData.geoplugin_countryName}
+                              </div>
+                            )}
                         </div>
                       </div>
 
@@ -1748,7 +1869,7 @@ export default function CoursePage({ params }: CoursePageProps) {
                   <div className="flex justify-between font-bold text-lg border-t site-border pt-2">
                     <span className="site-text-primary">Total:</span>
                     <span className="bg-gradient-to-r from-[#4F46E5] to-[#10B981] bg-clip-text text-transparent">
-                      USD ${calculateTotal().toFixed(2)}
+                      {formatPrice(calculateTotal())}
                     </span>
                   </div>
                 </div>
@@ -1931,7 +2052,7 @@ export default function CoursePage({ params }: CoursePageProps) {
                       d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
                     />
                   </svg>
-                  ENROLL NOW - USD ${calculateTotal().toFixed(2)}
+                  ENROLL NOW - {formatPrice(calculateTotal())}
                 </span>
               </button>
 
