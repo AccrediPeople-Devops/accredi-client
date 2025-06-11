@@ -1,164 +1,32 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { HiOutlineRefresh, HiOutlineDesktopComputer, HiOutlineCloud, HiOutlineCog, HiOutlineChartBar, HiOutlineCode, HiOutlineLockClosed, HiOutlineMenu } from "react-icons/hi";
 import { BiData, BiBarChartAlt2 } from "react-icons/bi";
 import SiteThemeToggle from "./SiteThemeToggle";
+import courseService from "../service/course.service";
+import { Course } from "@/app/types/course";
+import { CourseCategory } from "@/app/types/courseCategory";
+import config from "../config/config";
 
 const DOMAIN_ICONS: Record<string, React.ReactElement> = {
   "Project Management": <HiOutlineDesktopComputer className="w-4 h-4 mr-2" />,
   "Quality Management": <HiOutlineChartBar className="w-4 h-4 mr-2" />,
   "Agile and Scrum": <HiOutlineRefresh className="w-4 h-4 mr-2" />,
-  "Soft Skills Courses": <HiOutlineCog className="w-4 h-4 mr-2" />,
+  "Soft Skills": <HiOutlineCog className="w-4 h-4 mr-2" />,
   "Cloud Computing": <HiOutlineCloud className="w-4 h-4 mr-2" />,
   "E-Learning": <HiOutlineCode className="w-4 h-4 mr-2" />,
+  "Technology": <HiOutlineCode className="w-4 h-4 mr-2" />,
+  "Business": <BiBarChartAlt2 className="w-4 h-4 mr-2" />,
+  "Data Science": <BiData className="w-4 h-4 mr-2" />,
+  "Security": <HiOutlineLockClosed className="w-4 h-4 mr-2" />,
 };
 
-const ACCREDI_DOMAINS = [
-  "Project Management",
-  "Quality Management", 
-  "Agile and Scrum",
-  "Soft Skills Courses",
-  "Cloud Computing",
-  "E-Learning"
-];
-
-const DOMAIN_COURSES: Record<string, any> = {
-  "Project Management": {
-    description: "Master project management methodologies with industry-leading certifications and training programs.",
-    courses: [
-      {
-        title: "PMP® Certification Training – Leading Instructor-led Online PMP® Course in the USA & Canada",
-        slug: "pmp-certification-training",
-        provider: "PMI",
-        hours: "36 Hours",
-        badge: "Best Seller",
-        badgeColor: "bg-orange-500",
-        icon: "🏆"
-      },
-      {
-        title: "Project Management Fundamentals Training",
-        slug: "project-management-fundamentals",
-        provider: "Accredi",
-        hours: "24 Hours",
-        icon: "📊"
-      },
-      {
-        title: "PMI Risk Management Professional (PMI-RMP)®",
-        slug: "pmi-rmp-certification",
-        provider: "PMI",
-        hours: "32 Hours",
-        badge: "Popular",
-        badgeColor: "bg-[#4F46E5]",
-        icon: "⚠️"
-      },
-      {
-        title: "Program Management Professional (PgMP)®",
-        slug: "pgmp-certification",
-        provider: "PMI",
-        hours: "40 Hours",
-        badge: "Advanced",
-        badgeColor: "bg-green-500",
-        icon: "🎯"
-      }
-    ]
-  },
-  "Quality Management": {
-    description: "Enhance quality management skills with Six Sigma and Lean methodologies certification training.",
-    courses: [
-      {
-        title: "Lean Six Sigma Green Belt Certification Training",
-        slug: "lean-six-sigma-green-belt",
-        provider: "IASSC",
-        hours: "32 Hours",
-        badge: "Popular",
-        badgeColor: "bg-[#4F46E5]",
-        icon: "🟢"
-      },
-      {
-        title: "Lean Six Sigma Black Belt Certification Training",
-        slug: "lean-six-sigma-black-belt",
-        provider: "IASSC",
-        hours: "40 Hours",
-        badge: "Advanced",
-        badgeColor: "bg-green-500",
-        icon: "⚫"
-      }
-    ]
-  },
-  "Agile and Scrum": {
-    description: "Master Agile methodologies and Scrum framework for efficient project delivery and team collaboration.",
-    courses: [
-      {
-        title: "Agile Certified Practitioner (PMI-ACP)® Training",
-        slug: "pmi-acp-certification",
-        provider: "PMI",
-        hours: "24 Hours",
-        badge: "Trending",
-        badgeColor: "bg-[#B39DDB]",
-        icon: "🚀"
-      }
-    ]
-  },
-  "Soft Skills Courses": {
-    description: "Develop essential soft skills for effective leadership, communication, and project management.",
-    courses: [
-      {
-        title: "Conflict Management Training",
-        slug: "conflict-management-training",
-        provider: "Accredi",
-        hours: "16 Hours",
-        icon: "🤝"
-      },
-      {
-        title: "Project Management Techniques Training",
-        slug: "project-management-techniques",
-        provider: "Accredi",
-        hours: "20 Hours",
-        icon: "🛠️"
-      }
-    ]
-  },
-  "Cloud Computing": {
-    description: "Build cloud expertise with AWS certification training and cloud architecture best practices.",
-    courses: [
-      {
-        title: "AWS® Certified Cloud Practitioner Training",
-        slug: "aws-cloud-practitioner",
-        provider: "AWS",
-        hours: "24 Hours",
-        badge: "Popular",
-        badgeColor: "bg-[#4F46E5]",
-        icon: "☁️"
-      },
-      {
-        title: "AWS® Certified Solutions Architect - Associate Training",
-        slug: "aws-solutions-architect-associate",
-        provider: "AWS",
-        hours: "32 Hours",
-        badge: "Best Seller",
-        badgeColor: "bg-orange-500",
-        icon: "🏗️"
-      }
-    ]
-  },
-  "E-Learning": {
-    description: "Flexible online learning options for professional development and certification preparation.",
-    courses: [
-      {
-        title: "PMP® Certification Training – Leading Online PMP® Course in USA & Canada",
-        slug: "pmp-online-certification",
-        provider: "PMI",
-        hours: "36 Hours",
-        badge: "Online",
-        badgeColor: "bg-[#B39DDB]",
-        icon: "💻"
-      }
-    ]
-  }
-};
+interface CategoryWithCourses extends CourseCategory {
+  courses: Course[];
+}
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -166,7 +34,9 @@ const Navbar = () => {
   const [isMobileMenuAnimating, setIsMobileMenuAnimating] = useState(false);
   const [isMobileCoursesOpen, setIsMobileCoursesOpen] = useState(false);
   const [selectedMobileDomain, setSelectedMobileDomain] = useState<string | null>(null);
-  const [activeDomain, setActiveDomain] = useState(ACCREDI_DOMAINS[0]);
+  const [categories, setCategories] = useState<CategoryWithCourses[]>([]);
+  const [activeDomain, setActiveDomain] = useState<CategoryWithCourses | null>(null);
+  const [isLoadingCourses, setIsLoadingCourses] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const allCoursesBtnRef = useRef<HTMLButtonElement>(null);
   const navRef = useRef<HTMLDivElement>(null);
@@ -174,6 +44,126 @@ const Navbar = () => {
   // Timeout refs for hover delays
   const menuCloseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const menuOpenTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Fetch courses and categories
+  useEffect(() => {
+    const fetchCoursesAndCategories = async () => {
+      setIsLoadingCourses(true);
+      try {
+        console.log("Fetching courses for navbar...");
+        const coursesResponse = await courseService.getAllCourses();
+        
+        let coursesData: Course[] = [];
+        if (coursesResponse?.status && coursesResponse?.courses) {
+          coursesData = coursesResponse.courses.filter((course: Course) => !course.isDeleted);
+        } else if (Array.isArray(coursesResponse)) {
+          coursesData = coursesResponse.filter((course: Course) => !course.isDeleted);
+        }
+
+        console.log("Processed courses for navbar:", coursesData.length);
+
+        // Extract unique categories from courses and group courses by category
+        const categoriesMap = new Map<string, CategoryWithCourses>();
+        
+        coursesData.forEach(course => {
+          if (course.categoryId && typeof course.categoryId === 'object') {
+            const category = course.categoryId as any;
+            const categoryId = category._id;
+            
+            if (!categoriesMap.has(categoryId)) {
+              categoriesMap.set(categoryId, {
+                ...category,
+                courses: []
+              });
+            }
+            categoriesMap.get(categoryId)!.courses.push(course);
+          }
+        });
+
+        const categoriesWithCourses = Array.from(categoriesMap.values())
+          .filter(category => category.courses.length > 0) // Only show categories that have courses
+          .sort((a, b) => b.courses.length - a.courses.length); // Sort by number of courses
+
+        console.log("Categories with courses:", categoriesWithCourses.map(cat => `${cat.name}: ${cat.courses.length} courses`));
+
+        setCategories(categoriesWithCourses);
+        if (categoriesWithCourses.length > 0) {
+          setActiveDomain(categoriesWithCourses[0]);
+        }
+      } catch (error) {
+        console.error("Error fetching courses for navbar:", error);
+      } finally {
+        setIsLoadingCourses(false);
+      }
+    };
+
+    fetchCoursesAndCategories();
+  }, []);
+
+  // Helper function to get course image URL
+  const getCourseImageUrl = (course: Course) => {
+    if (course.upload?.courseImage?.[0]) {
+      const image = course.upload.courseImage[0];
+      if (image.path) {
+        if (image.path.startsWith('http')) {
+          return image.path;
+        } else {
+          return `${config.imageUrl}${image.path}`;
+        }
+      } else if (image.url) {
+        return image.url;
+      } else if (image.key) {
+        return `${config.imageUrl}${image.key}`;
+      }
+    }
+    return "/api/placeholder/300/200";
+  };
+
+  // Helper function to get category image URL
+  const getCategoryImageUrl = (category: CourseCategory) => {
+    if (category.image?.[0]) {
+      const image = category.image[0];
+      if (image.url) {
+        return `${config.apiUrl}${image.url}`;
+      } else if (image.path) {
+        if (image.path.startsWith('http')) {
+          return image.path;
+        } else {
+          return `${config.apiUrl}${image.path}`;
+        }
+      } else if (image.key) {
+        return `${config.imageUrl}${image.key}`;
+      }
+    }
+    return "/api/placeholder/40/40";
+  };
+
+  // Helper function to get a default icon based on category name (fallback)
+  const getCategoryIcon = (categoryName: string) => {
+    // Try to find a matching icon by checking if category name contains keywords
+    const name = categoryName.toLowerCase();
+    if (name.includes('project') || name.includes('management')) {
+      return DOMAIN_ICONS["Project Management"];
+    } else if (name.includes('quality') || name.includes('six sigma') || name.includes('lean')) {
+      return DOMAIN_ICONS["Quality Management"];
+    } else if (name.includes('agile') || name.includes('scrum')) {
+      return DOMAIN_ICONS["Agile and Scrum"];
+    } else if (name.includes('cloud') || name.includes('aws')) {
+      return DOMAIN_ICONS["Cloud Computing"];
+    } else if (name.includes('soft') || name.includes('skill')) {
+      return DOMAIN_ICONS["Soft Skills"];
+    } else if (name.includes('data') || name.includes('analytics')) {
+      return DOMAIN_ICONS["Data Science"];
+    } else if (name.includes('security') || name.includes('cyber')) {
+      return DOMAIN_ICONS["Security"];
+    } else if (name.includes('business')) {
+      return DOMAIN_ICONS["Business"];
+    } else if (name.includes('technology') || name.includes('tech')) {
+      return DOMAIN_ICONS["Technology"];
+    }
+    // Default icon
+    return <HiOutlineDesktopComputer className="w-4 h-4 mr-2" />;
+  };
 
   // Open menu on All Courses button or menu hover with slight delay
   const handleMenuOpen = () => {
@@ -381,7 +371,7 @@ const Navbar = () => {
               {/* Sign Up Button */}
               <Link
                 href="/signup"
-                className="relative px-6 py-2 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white rounded-xl hover:shadow-xl hover:shadow-[#4F46E5]/25 transition-all duration-300 text-sm font-medium hover:scale-105"
+                className="relative px-6 py-2 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white rounded-xl hover:shadow-xl hover:shadow-[#4F46E5]/25 transition-all duration-300 text-sm font-medium hover:scale-105 border border-[#4F46E5]/20 site-light:border-[#4F46E5]/30 site-light:shadow-sm"
                 onMouseEnter={handleImmediateMenuClose}
               >
                 Sign Up
@@ -435,28 +425,50 @@ const Navbar = () => {
           >
             {/* Sidebar */}
             <div className="w-72 bg-white/5 site-light:bg-slate-100/80 backdrop-blur-sm h-full py-6 px-0 flex flex-col border-r border-white/20 site-light:border-slate-200 overflow-y-auto text-[15px]">
-              <div className="font-semibold text-white site-light:text-slate-900 mb-4 pl-8 text-[15px]">Course Domains</div>
-              <ul className="flex-1">
-                {ACCREDI_DOMAINS.map((domain) => (
-                  <li
-                    key={domain}
-                    className={`flex items-center px-8 py-3 cursor-pointer text-[15px] transition-all duration-300 hover:scale-105
-                      ${activeDomain === domain
-                        ? "bg-gradient-to-r from-[#4F46E5]/20 to-[#7C3AED]/20 site-light:from-[#4F46E5]/10 site-light:to-[#7C3AED]/10 text-[#4F46E5] font-semibold border-r-2 border-[#4F46E5]"
-                        : "text-gray-300 site-light:text-slate-600 hover:bg-white/10 site-light:hover:bg-slate-100 hover:text-white site-light:hover:text-slate-900"
-                      }`}
-                    onClick={() => setActiveDomain(domain)}
-                  >
-                    {DOMAIN_ICONS[domain] ?? <HiOutlineDesktopComputer className="w-4 h-4 mr-2" />}
-                    {domain}
-                    {activeDomain === domain && (
-                      <svg className="ml-auto w-4 h-4 text-[#4F46E5]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                      </svg>
-                    )}
-                  </li>
-                ))}
-              </ul>
+              <div className="font-semibold text-white site-light:text-slate-900 mb-4 pl-8 text-[15px]">Course Categories</div>
+              {isLoadingCourses ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                </div>
+              ) : (
+                <ul className="flex-1">
+                  {categories.map((category) => (
+                    <li
+                      key={category._id}
+                      className={`flex items-center px-8 py-3 cursor-pointer text-[15px] transition-all duration-300 hover:scale-105
+                        ${activeDomain?._id === category._id
+                          ? "bg-gradient-to-r from-[#4F46E5]/20 to-[#7C3AED]/20 site-light:from-[#4F46E5]/10 site-light:to-[#7C3AED]/10 text-[#4F46E5] font-semibold border-r-2 border-[#4F46E5]"
+                          : "text-gray-300 site-light:text-slate-600 hover:bg-white/10 site-light:hover:bg-slate-100 hover:text-white site-light:hover:text-slate-900"
+                        }`}
+                      onClick={() => setActiveDomain(category)}
+                    >
+                      <div className="w-6 h-6 rounded-full overflow-hidden mr-3 bg-white/10 flex items-center justify-center flex-shrink-0">
+                        {category.image?.[0] ? (
+                          <Image
+                            src={getCategoryImageUrl(category)}
+                            alt={category.name}
+                            width={24}
+                            height={24}
+                            className="w-full h-full object-cover"
+                            unoptimized
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            {getCategoryIcon(category.name)}
+                          </div>
+                        )}
+                      </div>
+                      <span className="flex-1">{category.name}</span>
+                      <span className="text-xs text-gray-400 site-light:text-slate-500 ml-2">({category.courses.length})</span>
+                      {activeDomain?._id === category._id && (
+                        <svg className="ml-2 w-4 h-4 text-[#4F46E5]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
               <Link
                 href="/courses"
                 className="block mt-4 text-[14px] font-bold text-[#4F46E5] hover:text-white site-light:hover:text-[#4F46E5] transition-colors pl-8 hover:underline"
@@ -466,67 +478,87 @@ const Navbar = () => {
             </div>
             {/* Main Content */}
             <div className="flex-1 bg-white/5 site-light:bg-white/50 backdrop-blur-sm h-full p-8 overflow-y-auto text-[15px] flex flex-col justify-start border-l border-white/10 site-light:border-slate-200" style={{ borderRadius: "0 0 20px 0" }}>
-              <div className="font-bold text-2xl text-white site-light:text-slate-900 mb-2">{activeDomain}</div>
-              <div className="text-sm text-gray-300 site-light:text-slate-600 mb-6">
-                {DOMAIN_COURSES[activeDomain]?.description || `Master ${activeDomain.toLowerCase()} methodologies for efficient and timely project delivery.`}
-                <Link href={`/courses?domain=${activeDomain.toLowerCase().replace(/\s+/g, '-')}`} className="ml-2 text-[#4F46E5] text-sm font-medium hover:underline">View All {activeDomain} Courses</Link>
-              </div>
-              
-              {/* Course List */}
-              <div className="space-y-4">
-                <div className="font-semibold text-white site-light:text-slate-900 mb-4 text-[16px]">Available Courses</div>
-                {DOMAIN_COURSES[activeDomain]?.courses?.map((course: any, idx: number) => (
-                  <Link
-                    key={idx}
-                    href={`/courses/${course.slug}`}
-                    className="block p-4 bg-white/5 site-light:bg-white/70 backdrop-blur-sm border border-white/20 site-light:border-slate-200 rounded-2xl hover:bg-white/10 site-light:hover:bg-white/90 hover:shadow-xl transition-all duration-300 group hover:scale-105"
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="text-2xl">{course.icon}</div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          {course.provider && (
-                            <>
-                              <span className="text-xs font-medium text-gray-300 site-light:text-slate-500">{course.provider}</span>
-                              <span className="w-1 h-1 bg-gray-400 site-light:bg-slate-400 rounded-full"></span>
-                            </>
-                          )}
-                          <span className="text-xs text-gray-400 site-light:text-slate-500">{course.hours}</span>
-                          {course.badge && (
-                            <span className={`px-2 py-0.5 text-xs text-white rounded-full ${course.badgeColor}`}>
-                              {course.badge}
-                            </span>
-                          )}
-                        </div>
-                        <h4 className="text-sm font-medium text-white site-light:text-slate-800 group-hover:text-[#4F46E5] transition-colors leading-tight">
-                          {course.title}
-                        </h4>
-                      </div>
-                      <svg className="w-4 h-4 text-gray-400 site-light:text-slate-500 group-hover:text-[#4F46E5] transition-colors" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
-                  </Link>
-                )) || (
-                  <div className="text-center py-8 text-gray-400 site-light:text-slate-500">
-                    Course details coming soon for {activeDomain}
+              {activeDomain ? (
+                <>
+                  <div className="font-bold text-2xl text-white site-light:text-slate-900 mb-2">{activeDomain.name}</div>
+                  <div className="text-sm text-gray-300 site-light:text-slate-600 mb-6">
+                    {activeDomain.description || `Explore our comprehensive ${activeDomain.name.toLowerCase()} courses designed to advance your career.`}
+                    <Link href={`/courses?category=${activeDomain._id}`} className="ml-2 text-[#4F46E5] text-sm font-medium hover:underline">
+                      View All {activeDomain.name} Courses
+                    </Link>
                   </div>
-                )}
-              </div>
+                  
+                  {/* Course List */}
+                  <div className="space-y-4">
+                    <div className="font-semibold text-white site-light:text-slate-900 mb-4 text-[16px]">
+                      Available Courses ({activeDomain.courses.length})
+                    </div>
+                    {activeDomain.courses.length > 0 ? (
+                      activeDomain.courses.slice(0, 6).map((course: Course, idx: number) => (
+                        <Link
+                          key={course._id}
+                          href={`/courses/${course._id}`}
+                          className="block p-4 bg-white/5 site-light:bg-white/70 backdrop-blur-sm border border-white/20 site-light:border-slate-200 rounded-2xl hover:bg-white/10 site-light:hover:bg-white/90 hover:shadow-xl transition-all duration-300 group hover:scale-105"
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+                              {course.upload?.courseImage?.[0] ? (
+                                <Image
+                                  src={getCourseImageUrl(course)}
+                                  alt={course.title}
+                                  width={48}
+                                  height={48}
+                                  className="w-full h-full object-cover"
+                                  unoptimized
+                                />
+                              ) : (
+                                <span className="text-white font-bold text-lg">
+                                  {course.title.charAt(0).toUpperCase()}
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="text-sm font-medium text-white site-light:text-slate-800 group-hover:text-[#4F46E5] transition-colors leading-tight mb-1">
+                                {course.title}
+                              </h4>
+                              {course.shortDescription && (
+                                <p className="text-xs text-gray-400 site-light:text-slate-500 line-clamp-2">
+                                  {course.shortDescription}
+                                </p>
+                              )}
+                            </div>
+                            <svg className="w-4 h-4 text-gray-400 site-light:text-slate-500 group-hover:text-[#4F46E5] transition-colors flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                            </svg>
+                          </div>
+                        </Link>
+                      ))
+                    ) : (
+                      <div className="text-center py-8 text-gray-400 site-light:text-slate-500">
+                        No courses available in this category yet.
+                      </div>
+                    )}
+                    {activeDomain.courses.length > 6 && (
+                      <Link
+                        href={`/courses?category=${activeDomain._id}`}
+                        className="block mt-4 text-center py-3 text-[#4F46E5] hover:text-white site-light:hover:text-[#4F46E5] border border-[#4F46E5]/30 rounded-xl hover:bg-[#4F46E5]/10 transition-all duration-300"
+                      >
+                        View All {activeDomain.courses.length} Courses
+                      </Link>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <div className="flex items-center justify-center h-full">
+                  <div className="text-center">
+                    <div className="w-12 h-12 border-2 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-gray-400 site-light:text-slate-500">Loading courses...</p>
+                  </div>
+                </div>
+              )}
             </div>
-            {/* Right Sidebar */}
+            {/* Right Sidebar - Removed Popular Resources, kept Help section only */}
             <div className="w-72 bg-white/5 site-light:bg-slate-100/60 backdrop-blur-sm h-full py-6 px-6 border-l border-white/20 site-light:border-slate-200 flex flex-col overflow-y-auto text-[14px]">
-              <div className="font-semibold text-white site-light:text-slate-900 mb-4">Popular Resources</div>
-              <ul>
-                <li className="mb-3 text-[#4F46E5] cursor-pointer hover:text-white site-light:hover:text-[#4F46E5] transition-colors">PMP Study Guide <span aria-hidden>→</span></li>
-                <li className="mb-3 text-[#4F46E5] cursor-pointer hover:text-white site-light:hover:text-[#4F46E5] transition-colors">Project Management Tips <span aria-hidden>→</span></li>
-                <li className="mb-3 text-[#4F46E5] cursor-pointer hover:text-white site-light:hover:text-[#4F46E5] transition-colors">Certification Comparison <span aria-hidden>→</span></li>
-                <li className="mb-3 text-[#4F46E5] cursor-pointer hover:text-white site-light:hover:text-[#4F46E5] transition-colors">Free Practice Tests <span aria-hidden>→</span></li>
-                <li className="mb-3 text-[#4F46E5] cursor-pointer hover:text-white site-light:hover:text-[#4F46E5] transition-colors">Career Guidance <span aria-hidden>→</span></li>
-              </ul>
-              
-              <hr className="my-4 border-white/20 site-light:border-slate-200" />
-              
               <div className="font-semibold text-white site-light:text-slate-900 mb-4">Need Help?</div>
               <div className="space-y-3">
                 <Link href="/contact" className="block text-sm text-gray-300 site-light:text-slate-600 hover:text-[#4F46E5] transition-colors">
@@ -539,6 +571,32 @@ const Navbar = () => {
                   About Accredi
                 </Link>
               </div>
+              
+              {/* Course Statistics */}
+              {categories.length > 0 && (
+                <>
+                  <hr className="my-6 border-white/20 site-light:border-slate-200" />
+                  <div className="font-semibold text-white site-light:text-slate-900 mb-4">Quick Stats</div>
+                  <div className="space-y-3">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-300 site-light:text-slate-600">Total Categories:</span>
+                      <span className="text-white site-light:text-slate-900 font-medium">{categories.length}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-300 site-light:text-slate-600">Total Courses:</span>
+                      <span className="text-white site-light:text-slate-900 font-medium">
+                        {categories.reduce((total, cat) => total + cat.courses.length, 0)}
+                      </span>
+                    </div>
+                    {activeDomain && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-300 site-light:text-slate-600">In {activeDomain.name}:</span>
+                        <span className="text-[#4F46E5] font-medium">{activeDomain.courses.length}</span>
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </React.Fragment>
@@ -672,7 +730,7 @@ const Navbar = () => {
               {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-white/20 site-light:border-slate-200">
                 <h2 className="text-lg font-bold site-text-primary">
-                  {selectedMobileDomain || "Course Domains"}
+                  {selectedMobileDomain || "Course Categories"}
                 </h2>
                 <button 
                   onClick={() => {
@@ -690,16 +748,32 @@ const Navbar = () => {
               {/* Domains List or Domain Detail */}
               <div className="flex-1 overflow-y-auto">
                 {!selectedMobileDomain ? (
-                  // Domains List
-                  ACCREDI_DOMAINS.map((domain) => (
+                  // Categories List
+                  categories.map((category) => (
                     <button
-                      key={domain}
-                      onClick={() => setSelectedMobileDomain(domain)}
+                      key={category._id}
+                      onClick={() => setSelectedMobileDomain(category._id)}
                       className="w-full flex items-center justify-between px-4 py-4 border-b border-white/20 site-light:border-slate-200 hover:bg-white/10 site-light:hover:bg-slate-100"
                     >
                       <div className="flex items-center gap-3">
-                        {DOMAIN_ICONS[domain] ?? <HiOutlineDesktopComputer className="w-5 h-5 site-text-secondary" />}
-                        <span className="text-sm font-medium site-text-primary">{domain}</span>
+                        <div className="w-8 h-8 rounded-full overflow-hidden bg-white/10 flex items-center justify-center flex-shrink-0">
+                          {category.image?.[0] ? (
+                            <Image
+                              src={getCategoryImageUrl(category)}
+                              alt={category.name}
+                              width={32}
+                              height={32}
+                              className="w-full h-full object-cover"
+                              unoptimized
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              {getCategoryIcon(category.name)}
+                            </div>
+                          )}
+                        </div>
+                        <span className="text-sm font-medium site-text-primary">{category.name}</span>
+                        <span className="text-xs text-gray-400 site-light:text-slate-500">({category.courses.length})</span>
                       </div>
                       <svg className="w-5 h-5 site-text-muted" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -707,7 +781,7 @@ const Navbar = () => {
                     </button>
                   ))
                 ) : (
-                  // Domain Detail View
+                  // Category Detail View
                   <div className="p-4">
                     {/* Back Button */}
                     <button
@@ -720,52 +794,74 @@ const Navbar = () => {
                       Back to Menu
                     </button>
 
-                    {/* Domain Header */}
+                    {/* Category Header */}
                     <div className="mb-6">
-                      <h2 className="text-xl font-bold site-text-primary mb-2">{selectedMobileDomain}</h2>
-                      <p className="text-sm site-text-secondary mb-3">
-                        {DOMAIN_COURSES[selectedMobileDomain]?.description || `Master ${selectedMobileDomain.toLowerCase()} methodologies for efficient and timely project delivery.`}
-                      </p>
-                      <a href="#" className="text-sm text-[#4F46E5] font-medium">
-                        View All {selectedMobileDomain} Courses
-                      </a>
+                      {(() => {
+                        const selectedCategory = categories.find(cat => cat._id === selectedMobileDomain);
+                        return selectedCategory ? (
+                          <>
+                            <h2 className="text-xl font-bold site-text-primary mb-2">{selectedCategory.name}</h2>
+                            <p className="text-sm site-text-secondary mb-3">
+                              {selectedCategory.description || `Explore our comprehensive ${selectedCategory.name.toLowerCase()} courses designed to advance your career.`}
+                            </p>
+                            <Link 
+                              href={`/courses?category=${selectedCategory._id}`} 
+                              className="text-sm text-[#4F46E5] font-medium"
+                              onClick={() => {
+                                setIsMobileCoursesOpen(false);
+                                setSelectedMobileDomain(null);
+                              }}
+                            >
+                              View All {selectedCategory.name} Courses
+                            </Link>
+                          </>
+                        ) : null;
+                      })()}
                     </div>
 
-                    {/* Course Categories */}
-                    {DOMAIN_COURSES[selectedMobileDomain] ? (
-                      <div className="space-y-6">
-                        {/* Courses */}
-                        {DOMAIN_COURSES[selectedMobileDomain].courses?.length > 0 && (
+                    {/* Courses */}
+                    {(() => {
+                      const selectedCategory = categories.find(cat => cat._id === selectedMobileDomain);
+                      return selectedCategory && selectedCategory.courses.length > 0 ? (
+                        <div className="space-y-6">
                           <div>
-                            <h3 className="text-lg font-bold site-text-primary mb-4">Available Courses</h3>
+                            <h3 className="text-lg font-bold site-text-primary mb-4">
+                              Available Courses ({selectedCategory.courses.length})
+                            </h3>
                             <div className="space-y-4">
-                              {DOMAIN_COURSES[selectedMobileDomain].courses.map((course: any, idx: number) => (
+                              {selectedCategory.courses.slice(0, 6).map((course: Course) => (
                                 <Link
-                                  key={idx}
-                                  href={`/courses/${course.slug}`}
+                                  key={course._id}
+                                  href={`/courses/${course._id}`}
                                   onClick={() => {
                                     setIsMobileCoursesOpen(false);
                                     setSelectedMobileDomain(null);
                                   }}
                                   className="flex gap-3 p-3 site-border border rounded-lg hover:shadow-md transition-shadow site-glass hover:bg-white/15 site-light:hover:bg-white/70"
                                 >
-                                  <div className="text-2xl">{course.icon}</div>
-                                  <div className="flex-1">
-                                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                                      {course.provider && (
-                                        <>
-                                          <span className="text-xs site-text-muted">{course.provider}</span>
-                                          <span className="w-1 h-1 bg-gray-400 site-light:bg-slate-400 rounded-full"></span>
-                                        </>
-                                      )}
-                                      <span className="text-xs site-text-muted">{course.hours}</span>
-                                      {course.badge && (
-                                        <span className={`px-2 py-0.5 text-xs text-white rounded ${course.badgeColor}`}>
-                                          {course.badge}
-                                        </span>
-                                      )}
-                                    </div>
-                                    <p className="text-sm font-medium site-text-primary leading-tight">{course.title}</p>
+                                  <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                                    {course.upload?.courseImage?.[0] ? (
+                                      <Image
+                                        src={getCourseImageUrl(course)}
+                                        alt={course.title}
+                                        width={40}
+                                        height={40}
+                                        className="w-full h-full object-cover"
+                                        unoptimized
+                                      />
+                                    ) : (
+                                      <span className="text-white font-bold text-sm">
+                                        {course.title.charAt(0).toUpperCase()}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium site-text-primary leading-tight mb-1">{course.title}</p>
+                                    {course.shortDescription && (
+                                      <p className="text-xs site-text-muted line-clamp-2">
+                                        {course.shortDescription}
+                                      </p>
+                                    )}
                                   </div>
                                   <svg className="w-5 h-5 site-text-muted flex-shrink-0 self-center" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -773,15 +869,26 @@ const Navbar = () => {
                                 </Link>
                               ))}
                             </div>
+                            {selectedCategory.courses.length > 6 && (
+                              <Link
+                                href={`/courses?category=${selectedCategory._id}`}
+                                onClick={() => {
+                                  setIsMobileCoursesOpen(false);
+                                  setSelectedMobileDomain(null);
+                                }}
+                                className="block mt-4 text-center py-3 text-[#4F46E5] border border-[#4F46E5]/30 rounded-xl hover:bg-[#4F46E5]/10 transition-all duration-300"
+                              >
+                                View All {selectedCategory.courses.length} Courses
+                              </Link>
+                            )}
                           </div>
-                        )}
-                      </div>
-                    ) : (
-                      // Fallback for domains without detailed course data
-                      <div className="text-center py-8">
-                        <p className="site-text-muted">Course details coming soon for {selectedMobileDomain}</p>
-                      </div>
-                    )}
+                        </div>
+                      ) : (
+                        <div className="text-center py-8">
+                          <p className="site-text-muted">No courses available in this category yet.</p>
+                        </div>
+                      );
+                    })()}
                   </div>
                 )}
               </div>

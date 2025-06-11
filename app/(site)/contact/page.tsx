@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Breadcrumb from "@/app/components/site/Breadcrumb";
+import courseService from "@/app/components/service/course.service";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -14,6 +15,50 @@ export default function ContactPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [courses, setCourses] = useState<string[]>([]);
+  const [isLoadingCourses, setIsLoadingCourses] = useState(true);
+
+  // Fetch courses from API
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        setIsLoadingCourses(true);
+        const response = await courseService.getAllCourses();
+        
+        let coursesData = [];
+        if (response && response.courses && Array.isArray(response.courses)) {
+          coursesData = response.courses;
+        } else if (Array.isArray(response)) {
+          coursesData = response;
+        } else if (response && response.data && Array.isArray(response.data)) {
+          coursesData = response.data;
+        }
+
+        // Extract course titles for the dropdown
+        const courseTitles = coursesData.map((course: any) => course.title).sort();
+        setCourses([...courseTitles, 'Other']); // Add 'Other' as the last option
+      } catch (error) {
+        console.error('Error fetching courses:', error);
+        // Fallback to static courses if API fails
+        setCourses([
+          "Project Management (PMP)",
+          "Agile & Scrum",
+          "Data Science & Analytics", 
+          "Cloud Computing (AWS/Azure)",
+          "Cybersecurity",
+          "Digital Marketing",
+          "IT Service Management",
+          "Business Analysis",
+          "Quality Management",
+          "Other"
+        ]);
+      } finally {
+        setIsLoadingCourses(false);
+      }
+    };
+
+    fetchCourses();
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -48,19 +93,6 @@ export default function ContactPage() {
 
   const breadcrumbItems = [
     { label: "Contact" }
-  ];
-
-  const courses = [
-    "Project Management (PMP)",
-    "Agile & Scrum",
-    "Data Science & Analytics",
-    "Cloud Computing (AWS/Azure)",
-    "Cybersecurity",
-    "Digital Marketing",
-    "IT Service Management",
-    "Business Analysis",
-    "Quality Management",
-    "Other"
   ];
 
   return (
@@ -116,7 +148,7 @@ export default function ContactPage() {
               <div className="site-glass backdrop-blur-xl rounded-3xl p-8 shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500 h-full">
                 <div className="mb-8">
                   <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-4 py-2 mb-6">
-                    <span className="text-[#10B981] text-sm font-bold">📞 CONTACT INFO</span>
+                    <span className="text-emerald-400 site-light:text-emerald-600 text-sm font-bold">📞 CONTACT INFO</span>
                   </div>
                   <h3 className="text-3xl lg:text-4xl font-black mb-6 leading-tight site-text-primary">
                     Let's Start Your
@@ -137,9 +169,12 @@ export default function ContactPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                       </svg>
                     </div>
-                    <div>
+                    <div className="min-w-0 flex-1">
                       <h4 className="font-bold site-text-primary mb-1">Email Support</h4>
-                      <a href="mailto:Support@accredipeoplecertifications.com" className="text-[#4F46E5] hover:underline text-lg">
+                      <a 
+                        href="mailto:Support@accredipeoplecertifications.com" 
+                        className="text-indigo-400 site-light:text-indigo-600 hover:underline text-lg break-all"
+                      >
                         Support@accredipeoplecertifications.com
                       </a>
                     </div>
@@ -153,7 +188,7 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <h4 className="font-bold site-text-primary mb-1">Phone Support</h4>
-                      <a href="tel:+12534008265" className="text-[#10B981] hover:underline text-lg">
+                      <a href="tel:+12534008265" className="text-emerald-400 site-light:text-emerald-600 hover:underline text-lg">
                         +1 253-400-8265
                       </a>
                     </div>
@@ -190,7 +225,7 @@ export default function ContactPage() {
               <div className="site-glass backdrop-blur-xl rounded-3xl p-8 shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500">
                 <div className="mb-8">
                   <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-4 py-2 mb-6">
-                    <span className="text-[#4F46E5] text-sm font-bold">📝 GET STARTED</span>
+                    <span className="text-indigo-400 site-light:text-indigo-600 text-sm font-bold">📝 GET STARTED</span>
                   </div>
                   <h3 className="text-3xl lg:text-4xl font-black mb-4 leading-tight site-text-primary">
                     Send Us a Message
@@ -253,17 +288,34 @@ export default function ContactPage() {
                       </div>
                       <div>
                         <label className="block text-sm font-bold site-text-primary mb-2">Course of Interest</label>
-                        <select
-                          name="course"
-                          value={formData.course}
-                          onChange={handleInputChange}
-                          className="w-full px-4 py-4 site-glass backdrop-blur-sm rounded-2xl site-border border focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300 site-text-primary"
-                        >
-                          <option value="">Select a course</option>
-                          {courses.map((course, index) => (
-                            <option key={index} value={course}>{course}</option>
-                          ))}
-                        </select>
+                        <div className="relative">
+                          <select
+                            name="course"
+                            value={formData.course}
+                            onChange={handleInputChange}
+                            className="w-full px-4 py-4 site-glass backdrop-blur-sm rounded-2xl site-border border focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300 site-text-primary appearance-none bg-transparent"
+                            disabled={isLoadingCourses}
+                          >
+                            {isLoadingCourses ? (
+                              <option value="">Loading courses...</option>
+                            ) : (
+                              <>
+                                <option value="">Select a course</option>
+                                {courses.map((course, index) => (
+                                  <option key={index} value={course} className="bg-slate-800 site-light:bg-white">
+                                    {course}
+                                  </option>
+                                ))}
+                              </>
+                            )}
+                          </select>
+                          {/* Custom dropdown arrow */}
+                          <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                            <svg className="w-5 h-5 site-text-secondary" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </div>
+                        </div>
                       </div>
                   </div>
 

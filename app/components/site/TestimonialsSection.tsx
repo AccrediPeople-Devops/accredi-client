@@ -102,9 +102,9 @@ export default function TestimonialsSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Header */}
         <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-4 py-2 mb-6">
-            <div className="w-2 h-2 bg-[#F59E0B] rounded-full animate-pulse"></div>
-            <span className="text-[#F59E0B] text-sm font-semibold uppercase tracking-wider">Latest Reviews</span>
+          <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-6 py-3 mb-6">
+            <div className="w-2 h-2 bg-amber-400 site-light:bg-amber-600 rounded-full animate-pulse"></div>
+            <span className="text-amber-400 site-light:text-amber-600 text-sm font-semibold uppercase tracking-wider">Latest Reviews</span>
           </div>
           <h2 className="text-4xl md:text-5xl font-black site-text-primary mb-6">
             <strong>What Our Students Say</strong>
@@ -150,9 +150,9 @@ export default function TestimonialsSection() {
 
                 {/* Rating */}
               <div className="flex justify-center gap-1">
-                  {[...Array(currentTestimonial.rating)].map((_, i) => (
-                  <svg key={i} className="w-6 h-6 text-[#F59E0B]" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  {[...Array(5)].map((_, i) => (
+                    <svg key={i} className="w-6 h-6 text-amber-400 site-light:text-amber-500" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
                     </svg>
                   ))}
                 </div>

@@ -35,9 +35,9 @@ class CourseService {
       
       if (allResponse && allResponse.status && allResponse.courses && Array.isArray(allResponse.courses)) {
         const foundCourse = allResponse.courses.find((course: any) => course._id === id);
-        if (foundCourse) {
+      if (foundCourse) {
           console.log("CourseService: Found course:", foundCourse);
-          return { status: true, course: foundCourse };
+        return { status: true, course: foundCourse };
         }
       }
       
@@ -65,8 +65,8 @@ class CourseService {
   async getCoursesByCategory(categoryId: string) {
     try {
       // Get all courses and filter by category
-      const allResponse = await this.getAllCourses();
-      
+        const allResponse = await this.getAllCourses();
+        
       if (allResponse && allResponse.status && allResponse.courses && Array.isArray(allResponse.courses)) {
         // Filter courses by categoryId
         const filteredCourses = allResponse.courses.filter((course: any) => {

@@ -99,9 +99,9 @@ export default function ContactCTASection() {
           {/* Left Column - Contact Section */}
           <div className="text-center lg:text-left">
             {/* Contact Label */}
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 mb-8">
-              <div className="w-2 h-2 bg-[#B39DDB] rounded-full animate-pulse"></div>
-              <span className="text-[#B39DDB] text-sm font-semibold uppercase tracking-wider">Contact</span>
+            <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-6 py-3 mb-6">
+              <div className="w-2 h-2 bg-purple-400 site-light:bg-purple-600 rounded-full animate-pulse"></div>
+              <span className="text-purple-400 site-light:text-purple-600 text-sm font-semibold uppercase tracking-wider">Contact</span>
             </div>
             
             {/* Main Heading */}
@@ -167,7 +167,7 @@ export default function ContactCTASection() {
             {/* Connect with us */}
             <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-6 border border-white/20 shadow-2xl">
               <h3 className="text-white font-bold text-xl mb-6 flex items-center gap-2">
-                <svg className="w-6 h-6 text-[#4F46E5]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-indigo-400 site-light:text-indigo-600" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
                 </svg>
                 Connect with us
@@ -193,7 +193,7 @@ export default function ContactCTASection() {
             {/* We Accept */}
             <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-6 border border-white/20 shadow-2xl">
               <h3 className="text-white font-bold text-xl mb-6 flex items-center gap-2">
-                <svg className="w-6 h-6 text-[#10B981]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-emerald-400 site-light:text-emerald-600" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                 </svg>
                 We Accept
@@ -217,7 +217,7 @@ export default function ContactCTASection() {
             {/* Global Contact Numbers */}
             <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-6 border border-white/20 shadow-2xl">
               <h3 className="text-white font-bold text-xl mb-6 flex items-center gap-2">
-                <svg className="w-6 h-6 text-[#F59E0B]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-amber-400 site-light:text-amber-600" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                 </svg>
                 Global Contact Numbers
@@ -233,7 +233,7 @@ export default function ContactCTASection() {
                       <div key={numIndex}>
                         <a 
                           href={`tel:${number}`}
-                          className="text-gray-300 hover:text-[#4F46E5] transition-colors duration-300 text-sm block font-medium"
+                          className="text-gray-300 hover:text-indigo-400 site-light:text-slate-600 site-light:hover:text-indigo-600 transition-colors duration-300 text-sm block font-medium"
                         >
                           {number}
                         </a>

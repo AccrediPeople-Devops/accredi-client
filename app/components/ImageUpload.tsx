@@ -191,10 +191,16 @@ export default function ImageUpload({
         type="file"
         ref={fileInputRef}
         onChange={handleFileChange}
-        accept="image/*"
+        accept="image/*,.png,.jpg,.jpeg,.gif,.webp"
         className="hidden"
         disabled={isLoading || deleteLoading}
       />
+
+      {!preview && !isLoading && !deleteLoading && (
+        <div className="mt-1 text-xs text-[var(--foreground-muted)]">
+          💡 Supports all image formats including PNG with transparency
+        </div>
+      )}
 
       {error && <p className="mt-1 text-sm text-[var(--error)]">{error}</p>}
     </div>

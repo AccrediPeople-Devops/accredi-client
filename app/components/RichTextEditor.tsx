@@ -41,6 +41,9 @@ export default function RichTextEditor({
     alignCenter: false,
     alignRight: false,
     alignJustify: false,
+    heading1: false,
+    heading2: false,
+    heading3: false,
   });
   
   // Initialize editor content and handle updates
@@ -70,7 +73,7 @@ export default function RichTextEditor({
     };
   }, []);
 
-  // Add styling for links and lists in the editor
+  // Add styling for links, lists, and headings in the editor
   useEffect(() => {
     if (typeof window === 'undefined') return; // Skip on server
     
@@ -100,6 +103,27 @@ export default function RichTextEditor({
         
         #${editorId} li {
           margin-bottom: 0.5em;
+        }
+        
+        #${editorId} h1 {
+          font-size: 2em;
+          font-weight: bold;
+          margin: 0.67em 0;
+          line-height: 1.2;
+        }
+        
+        #${editorId} h2 {
+          font-size: 1.5em;
+          font-weight: bold;
+          margin: 0.75em 0;
+          line-height: 1.3;
+        }
+        
+        #${editorId} h3 {
+          font-size: 1.25em;
+          font-weight: bold;
+          margin: 0.83em 0;
+          line-height: 1.4;
         }
       `;
       document.head.appendChild(style);
@@ -171,6 +195,26 @@ export default function RichTextEditor({
   const updateActiveFormats = () => {
     if (!editorRef.current) return;
     
+    // Check for heading tags
+    const selection = window.getSelection();
+    let heading1 = false, heading2 = false, heading3 = false;
+    
+    if (selection && selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0);
+      let node: Node | null = range.commonAncestorContainer;
+      
+      // Walk up the DOM tree to find heading tags
+      while (node && node !== editorRef.current) {
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          const tagName = (node as Element).tagName;
+          if (tagName === 'H1') heading1 = true;
+          if (tagName === 'H2') heading2 = true;
+          if (tagName === 'H3') heading3 = true;
+        }
+        node = node.parentNode;
+      }
+    }
+    
     setActiveFormats({
       bold: document.queryCommandState("bold"),
       italic: document.queryCommandState("italic"),
@@ -182,6 +226,9 @@ export default function RichTextEditor({
       alignCenter: document.queryCommandState("justifyCenter"),
       alignRight: document.queryCommandState("justifyRight"),
       alignJustify: document.queryCommandState("justifyFull"),
+      heading1,
+      heading2,
+      heading3,
     });
   };
 
@@ -224,6 +271,27 @@ export default function RichTextEditor({
     </button>
   );
 
+  const headingButton = (
+    level: 1 | 2 | 3,
+    isActive: boolean,
+    tooltip: string
+  ) => (
+    <button
+      type="button"
+      className={`px-2 py-1.5 rounded-md transition-colors font-medium text-sm ${
+        isActive
+          ? "bg-[#5B2C6F]/20 text-white"
+          : "text-white/70 hover:bg-[#2D2D44] hover:text-white"
+      }`}
+      onClick={() => {
+        executeCommand("formatBlock", `<h${level}>`);
+      }}
+      title={tooltip}
+    >
+      H{level}
+    </button>
+  );
+
   return (
     <div className="mb-4 w-full">
       {label && (
@@ -260,6 +328,13 @@ export default function RichTextEditor({
             <span className="underline text-sm">U</span>,
             "Underline"
           )}
+          
+          <div className="w-px h-6 bg-[#3A3A55] mx-1"></div>
+          
+          {/* Headings */}
+          {headingButton(1, activeFormats.heading1, "Heading 1")}
+          {headingButton(2, activeFormats.heading2, "Heading 2")}
+          {headingButton(3, activeFormats.heading3, "Heading 3")}
           
           <div className="w-px h-6 bg-[#3A3A55] mx-1"></div>
           
