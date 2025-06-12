@@ -3,6 +3,7 @@ import React, { useState, useEffect, use } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Breadcrumb from "@/app/components/site/Breadcrumb";
+import RichTextRenderer from "@/app/components/RichTextRenderer";
 import courseService from "@/app/components/service/course.service";
 import config from "@/app/components/config/config";
 import { Course } from "@/app/types/course";
@@ -634,13 +635,14 @@ export default function CoursePage({ params }: CoursePageProps) {
                     <span className="site-text-primary">
                       {courseData.title.split("®")[0]}®{" "}
                     </span>
-                    <span className="bg-gradient-to-r from-[#4F46E5] to-[#10B981] bg-clip-text text-transparent">
-                      Certification Training
-                    </span>
                   </h1>
-                  <p className="text-xl site-text-secondary font-medium leading-relaxed">
-                    {courseData.description}
-                  </p>
+                  {/* Short Description Card */}
+                  <div className="site-glass backdrop-blur-xl rounded-2xl p-6 shadow-xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-300 mt-6">
+                    <RichTextRenderer 
+                      content={courseData.description}
+                      className="text-lg leading-relaxed"
+                    />
+                  </div>
                 </div>
 
                 {/* Action Buttons */}
@@ -713,46 +715,44 @@ export default function CoursePage({ params }: CoursePageProps) {
                     </div>
                   </div>
                 </div>
-
-                {/* Authorization Badge and Share */}
-                <div className="flex items-center justify-between gap-4">
-                  {/* PMI Badge */}
-                  <div className="site-glass backdrop-blur-xl rounded-2xl p-4 shadow-xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500 flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] rounded-xl flex items-center justify-center">
-                      <span className="text-white font-bold text-sm">PMI</span>
-                    </div>
-                    <div>
-                      <div className="text-sm font-bold site-text-primary">
-                        Authorized Partner
-                      </div>
-                      <div className="text-xs site-text-muted">
-                        Official Training Provider
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Share Button */}
-                  <button className="site-glass backdrop-blur-xl w-12 h-12 rounded-xl flex items-center justify-center hover:bg-white/20 site-light:hover:bg-white/60 transition-all duration-300 hover:scale-110 shadow-xl">
-                    <svg
-                      className="w-5 h-5 site-text-secondary"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
-                      />
-                    </svg>
-                  </button>
-                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
+
+      {/* Course Overview Section */}
+      {course.description && (
+        <section className="py-16 md:py-24 site-section-bg relative overflow-hidden">
+          <div className="absolute inset-0">
+            <div className="absolute top-20 left-20 w-64 h-64 bg-[#4F46E5]/5 site-light:bg-[#4F46E5]/10 rounded-full blur-3xl"></div>
+            <div className="absolute bottom-20 right-20 w-80 h-80 bg-[#10B981]/5 site-light:bg-[#10B981]/10 rounded-full blur-3xl"></div>
+          </div>
+
+          <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-4 py-2 mb-6">
+                <div className="w-2 h-2 bg-[#4F46E5] rounded-full animate-pulse"></div>
+                <span className="text-[#4F46E5] text-sm font-semibold uppercase tracking-wider">
+                  About This Course
+                </span>
+              </div>
+              <h2 className="text-4xl lg:text-5xl xl:text-6xl font-black mb-6 leading-tight">
+                <span className="bg-gradient-to-r from-[#4F46E5] to-[#10B981] bg-clip-text text-transparent">
+                  Course Overview
+                </span>
+              </h2>
+            </div>
+
+            <div className="site-glass backdrop-blur-xl rounded-3xl p-8 md:p-12 shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500">
+              <RichTextRenderer 
+                content={course.description}
+                className="text-lg leading-relaxed"
+              />
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Course Components Section */}
       {course.components && course.components.length > 0 && (
