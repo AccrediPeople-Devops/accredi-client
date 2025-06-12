@@ -10,11 +10,7 @@ class UploadService {
   async uploadImage(file: File) {
     const formData = this.imageToFormData(file);
     try {
-      const res = await axiosInstance.post("/uploads/v1", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const res = await axiosInstance.post("/uploads/v1", formData);
       return res.data;
     } catch (error) {
       console.error("Error uploading image:", error);

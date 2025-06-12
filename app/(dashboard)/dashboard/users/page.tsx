@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { User } from "@/app/types/user";
 import UserService from "@/app/components/service/user.service";
+import AuthService from "@/app/components/service/auth.service";
 import uploadService from "@/app/components/service/upload.service";
 import config from "@/app/components/config/config";
 import Modal from "@/app/components/Modal";
@@ -13,6 +14,7 @@ import Modal from "@/app/components/Modal";
 export default function UsersPage() {
   const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [activeTab, setActiveTab] = useState("active");
@@ -22,6 +24,57 @@ export default function UsersPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [userToDelete, setUserToDelete] = useState<string | null>(null);
   const [error, setError] = useState("");
+
+  const fetchCurrentUser = async () => {
+    try {
+      // Since /auth/v1/me doesn't exist, let's find current user from the users list
+      console.log("Finding current user from users list...");
+      await findCurrentUserFromList();
+    } catch (err: any) {
+      console.error("Error fetching current user:", err);
+    }
+  };
+
+  const findCurrentUserFromList = async () => {
+    try {
+      // Get the token to extract user info or try to find current user another way
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      // Try to decode the token to get user email (if it's a JWT)
+      try {
+        const tokenPayload = JSON.parse(atob(token.split('.')[1]));
+        console.log("Token payload:", tokenPayload);
+        
+        // Fetch users and find the one matching the token
+        const res = await UserService.getAllUsers();
+        if (res?.users) {
+          const foundUser = res.users.find((user: User) => 
+            user.email === tokenPayload.email || 
+            user._id === tokenPayload.userId ||
+            user._id === tokenPayload.id
+          );
+          
+          if (foundUser) {
+            setCurrentUser(foundUser);
+            console.log("Found current user from users list:", foundUser);
+          } else {
+            // Fallback: if we can't find by token, assume the first superadmin is the current user
+            // This is just for testing - remove in production
+            const superadmin = res.users.find((user: User) => user.role === "superadmin");
+            if (superadmin) {
+              setCurrentUser(superadmin);
+              console.log("Fallback: Using first superadmin as current user:", superadmin);
+            }
+          }
+        }
+      } catch (tokenError) {
+        console.error("Error decoding token:", tokenError);
+      }
+    } catch (err) {
+      console.error("Error in findCurrentUserFromList:", err);
+    }
+  };
 
   const fetchUsers = async () => {
     setIsLoading(true);
@@ -39,8 +92,75 @@ export default function UsersPage() {
   };
 
   useEffect(() => {
+    fetchCurrentUser();
     fetchUsers();
   }, []);
+
+  // Permission check functions
+  const canEditUser = (targetUser: User): boolean => {
+    console.log("canEditUser check:", { currentUser, targetUser: targetUser.role });
+    if (!currentUser) {
+      console.log("No current user, returning false");
+      return false;
+    }
+    
+    // Superadmin cannot be edited
+    if (targetUser.role === "superadmin") {
+      console.log("Target is superadmin, cannot edit");
+      return false;
+    }
+    
+    // Only superadmin can edit admins
+    if (targetUser.role === "admin") {
+      const canEdit = currentUser.role === "superadmin";
+      console.log("Target is admin, current user can edit:", canEdit);
+      return canEdit;
+    }
+    
+    // Both admin and superadmin can edit users
+    if (targetUser.role === "user") {
+      const canEdit = currentUser.role === "admin" || currentUser.role === "superadmin";
+      console.log("Target is user, current user can edit:", canEdit);
+      return canEdit;
+    }
+    
+    return false;
+  };
+
+  const canDeleteUser = (targetUser: User): boolean => {
+    console.log("canDeleteUser check:", { currentUser, targetUser: targetUser.role });
+    if (!currentUser) {
+      console.log("No current user, returning false");
+      return false;
+    }
+    
+    // Superadmin cannot be deleted
+    if (targetUser.role === "superadmin") {
+      console.log("Target is superadmin, cannot delete");
+      return false;
+    }
+    
+    // Only superadmin can delete admins
+    if (targetUser.role === "admin") {
+      const canDelete = currentUser.role === "superadmin";
+      console.log("Target is admin, current user can delete:", canDelete);
+      return canDelete;
+    }
+    
+    // Both admin and superadmin can delete users
+    if (targetUser.role === "user") {
+      const canDelete = currentUser.role === "admin" || currentUser.role === "superadmin";
+      console.log("Target is user, current user can delete:", canDelete);
+      return canDelete;
+    }
+    
+    return false;
+  };
+
+  const canCreateUser = (): boolean => {
+    if (!currentUser) return false;
+    return currentUser.role === "admin" || currentUser.role === "superadmin";
+  };
 
   // Filter users based on search, role, and deleted state
   const filteredUsers = users.filter((user) => {
@@ -130,6 +250,8 @@ export default function UsersPage() {
 
   const getRoleColor = (role: string) => {
     switch (role) {
+      case "superadmin":
+        return "bg-red-100 text-red-700";
       case "admin":
         return "bg-[var(--primary)]/20 text-[var(--primary)]";
       case "user":
@@ -147,26 +269,39 @@ export default function UsersPage() {
           <p className="text-[var(--foreground-muted)]">
             Manage users and their permissions
           </p>
+          {/* Temporary debug info */}
+          {currentUser && (
+            <div className="mt-2 px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded">
+              Debug: Currently logged in as {currentUser.fullName} ({currentUser.role})
+            </div>
+          )}
+          {!currentUser && (
+            <div className="mt-2 px-3 py-1 bg-red-100 text-red-800 text-sm rounded">
+              Debug: No current user detected
+            </div>
+          )}
         </div>
 
-        <Link
-          href="/dashboard/users/add"
-          className="px-4 py-2 bg-[var(--primary)] text-white rounded-[var(--radius-md)] flex items-center gap-2 hover:bg-[var(--primary-hover)] transition-colors"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5"
-            viewBox="0 0 20 20"
-            fill="currentColor"
+        {canCreateUser() && (
+          <Link
+            href="/dashboard/users/add"
+            className="px-4 py-2 bg-[var(--primary)] text-white rounded-[var(--radius-md)] flex items-center gap-2 hover:bg-[var(--primary-hover)] transition-colors"
           >
-            <path
-              fillRule="evenodd"
-              d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-              clipRule="evenodd"
-            />
-          </svg>
-          Add User
-        </Link>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                clipRule="evenodd"
+              />
+            </svg>
+            Add User
+          </Link>
+        )}
       </div>
 
       {/* Tabs for Active/Deleted */}
@@ -230,6 +365,7 @@ export default function UsersPage() {
             className="px-4 py-2 w-full bg-[var(--input-bg)] text-[var(--foreground)] border border-[var(--border)] rounded-[var(--radius-md)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
           >
             <option value="all">All Roles</option>
+            <option value="superadmin">Super Admin</option>
             <option value="admin">Admin</option>
             <option value="user">User</option>
           </select>
@@ -363,7 +499,7 @@ export default function UsersPage() {
                         user.role
                       )}`}
                     >
-                      {user.role === "admin" ? "Admin" : "User"}
+                      {user.role === "superadmin" ? "Super Admin" : user.role === "admin" ? "Admin" : "User"}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--foreground-muted)]">
@@ -372,38 +508,78 @@ export default function UsersPage() {
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     {activeTab === "active" ? (
                       <div className="flex justify-end space-x-2">
-                        <Link
-                          href={`/dashboard/users/edit/${user._id}`}
-                          className="p-1.5 bg-[var(--primary)]/10 text-[var(--primary)] rounded-[var(--radius-sm)] hover:bg-[var(--primary)]/20"
-                          title="Edit"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-5 w-5"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
+                        {canEditUser(user) ? (
+                          <Link
+                            href={`/dashboard/users/edit/${user._id}`}
+                            className="p-1.5 bg-[var(--primary)]/10 text-[var(--primary)] rounded-[var(--radius-sm)] hover:bg-[var(--primary)]/20"
+                            title="Edit user"
                           >
-                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                          </svg>
-                        </Link>
-                        <button
-                          onClick={() => handleDeleteClick(user._id)}
-                          className="p-1.5 bg-red-100 text-red-600 rounded-[var(--radius-sm)] hover:bg-red-200"
-                          title="Delete"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-5 w-5"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-5 w-5"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                            </svg>
+                          </Link>
+                        ) : (
+                          <div
+                            className="p-1.5 bg-gray-100 text-gray-400 rounded-[var(--radius-sm)] cursor-not-allowed"
+                            title={user.role === "superadmin" ? "Super Admin cannot be edited" : 
+                                   user.role === "admin" ? "Only Super Admin can edit Admins" : 
+                                   "Insufficient permissions"}
                           >
-                            <path
-                              fillRule="evenodd"
-                              d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        </button>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-5 w-5"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                            </svg>
+                          </div>
+                        )}
+                        {canDeleteUser(user) ? (
+                          <button
+                            onClick={() => handleDeleteClick(user._id)}
+                            className="p-1.5 bg-red-100 text-red-600 rounded-[var(--radius-sm)] hover:bg-red-200"
+                            title="Delete user"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-5 w-5"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          </button>
+                        ) : (
+                          <div
+                            className="p-1.5 bg-gray-100 text-gray-400 rounded-[var(--radius-sm)] cursor-not-allowed"
+                            title={user.role === "superadmin" ? "Super Admin cannot be deleted" : 
+                                   user.role === "admin" ? "Only Super Admin can delete Admins" : 
+                                   "Insufficient permissions"}
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-5 w-5"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <div className="flex justify-end">

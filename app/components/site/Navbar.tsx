@@ -7,8 +7,11 @@ import { HiOutlineRefresh, HiOutlineDesktopComputer, HiOutlineCloud, HiOutlineCo
 import { BiData, BiBarChartAlt2 } from "react-icons/bi";
 import SiteThemeToggle from "./SiteThemeToggle";
 import courseService from "../service/course.service";
+import UserService from "../service/user.service";
+import AuthService from "../service/auth.service";
 import { Course } from "@/app/types/course";
 import { CourseCategory } from "@/app/types/courseCategory";
+import { User } from "@/app/types/user";
 import config from "../config/config";
 
 const DOMAIN_ICONS: Record<string, React.ReactElement> = {
@@ -37,13 +40,81 @@ const Navbar = () => {
   const [categories, setCategories] = useState<CategoryWithCourses[]>([]);
   const [activeDomain, setActiveDomain] = useState<CategoryWithCourses | null>(null);
   const [isLoadingCourses, setIsLoadingCourses] = useState(false);
+  
+  // User authentication state
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  
   const menuRef = useRef<HTMLDivElement>(null);
   const allCoursesBtnRef = useRef<HTMLButtonElement>(null);
   const navRef = useRef<HTMLDivElement>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
 
   // Timeout refs for hover delays
   const menuCloseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const menuOpenTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Check if user is authenticated
+  const checkAuthStatus = async () => {
+    setIsCheckingAuth(true);
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setCurrentUser(null);
+        setIsCheckingAuth(false);
+        return;
+      }
+
+      // Try to decode token and find user
+      try {
+        const tokenPayload = JSON.parse(atob(token.split('.')[1]));
+        const res = await UserService.getAllUsers();
+        
+        if (res?.users) {
+          const foundUser = res.users.find((user: User) => 
+            user.email === tokenPayload.email || 
+            user._id === tokenPayload.userId ||
+            user._id === tokenPayload.id
+          );
+          
+          if (foundUser) {
+            setCurrentUser(foundUser);
+          } else {
+            // Token exists but user not found, clear it
+            localStorage.removeItem("token");
+            localStorage.removeItem("refreshToken");
+            setCurrentUser(null);
+          }
+        }
+      } catch (tokenError) {
+        console.error("Error decoding token:", tokenError);
+        localStorage.removeItem("token");
+        localStorage.removeItem("refreshToken");
+        setCurrentUser(null);
+      }
+    } catch (err) {
+      console.error("Error checking auth status:", err);
+      setCurrentUser(null);
+    } finally {
+      setIsCheckingAuth(false);
+    }
+  };
+
+  const handleLogout = () => {
+    AuthService.logout();
+    setCurrentUser(null);
+    setIsUserMenuOpen(false);
+    // Optionally redirect to home page
+    window.location.href = "/";
+  };
+
+  const getUserProfileImage = (user: User) => {
+    if (user.profileImage?.path) {
+      return `${config.imageUrl}${user.profileImage.path}`;
+    }
+    return null;
+  };
 
   // Fetch courses and categories
   useEffect(() => {
@@ -98,6 +169,7 @@ const Navbar = () => {
     };
 
     fetchCoursesAndCategories();
+    checkAuthStatus();
   }, []);
 
   // Helper function to get course image URL
@@ -219,23 +291,24 @@ const Navbar = () => {
     };
   }, []);
 
-  // Handle click outside to close mega menu
-  React.useEffect(() => {
+  // Handle click outside to close menus
+  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (isMenuOpen && 
-          menuRef.current && 
-          !menuRef.current.contains(event.target as Node) &&
-          allCoursesBtnRef.current &&
-          !allCoursesBtnRef.current.contains(event.target as Node)) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node) && 
+          allCoursesBtnRef.current && !allCoursesBtnRef.current.contains(event.target as Node)) {
         setIsMenuOpen(false);
+      }
+      
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isMenuOpen]);
+  }, []);
 
   // Mobile menu animation handlers
   const openMobileMenu = () => {
@@ -359,23 +432,160 @@ const Navbar = () => {
                 Reviews
               </Link>
 
-              {/* Sign In Button */}
-              <Link
-                href="/login"
-                className="relative pr-4 pl-4 py-2 hover:bg-white/10 rounded-xl flex items-center gap-0.5 text-white font-normal cursor-pointer duration-300 transition-all hover:scale-105 site-light:text-slate-700 site-light:hover:text-slate-900 site-light:hover:bg-slate-100"
-                onMouseEnter={handleImmediateMenuClose}
-              >
-                Sign In
-              </Link>
+              {/* Authentication Section */}
+              {isCheckingAuth ? (
+                <div className="w-20 h-10 bg-white/10 rounded-xl animate-pulse"></div>
+              ) : currentUser ? (
+                /* User Profile Dropdown */
+                <div className="relative" ref={userMenuRef}>
+                  <button
+                    onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                    className="flex items-center gap-2 px-3 py-2 hover:bg-white/10 rounded-xl transition-all duration-300 hover:scale-105 site-light:hover:bg-slate-100"
+                    onMouseEnter={handleImmediateMenuClose}
+                  >
+                    <div className="w-8 h-8 rounded-full overflow-hidden bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] flex items-center justify-center">
+                      {getUserProfileImage(currentUser) ? (
+                        <Image
+                          src={getUserProfileImage(currentUser)!}
+                          alt={currentUser.fullName}
+                          width={32}
+                          height={32}
+                          className="w-full h-full object-cover"
+                          unoptimized
+                        />
+                      ) : (
+                        <span className="text-white font-medium text-sm">
+                          {currentUser.fullName.charAt(0).toUpperCase()}
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-white font-medium text-sm site-light:text-slate-700">
+                      {currentUser.fullName.split(' ')[0]}
+                    </span>
+                    <svg 
+                      className={`w-4 h-4 text-white site-light:text-slate-700 transition-transform duration-200 ${isUserMenuOpen ? 'rotate-180' : ''}`} 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth={2} 
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
 
-              {/* Sign Up Button */}
-              <Link
-                href="/signup"
-                className="relative px-6 py-2 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white rounded-xl hover:shadow-xl hover:shadow-[#4F46E5]/25 transition-all duration-300 text-sm font-medium hover:scale-105 border border-[#4F46E5]/20 site-light:border-[#4F46E5]/30 site-light:shadow-sm"
-                onMouseEnter={handleImmediateMenuClose}
-              >
-                Sign Up
-              </Link>
+                  {/* User Dropdown Menu */}
+                  {isUserMenuOpen && (
+                    <div className="absolute right-0 top-full mt-2 w-64 bg-white site-dark:bg-[#1A1A3E] rounded-xl shadow-xl border border-white/20 site-light:border-slate-200 overflow-hidden z-50">
+                      {/* User Info */}
+                      <div className="px-4 py-3 border-b border-white/20 site-light:border-slate-200">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] flex items-center justify-center">
+                            {getUserProfileImage(currentUser) ? (
+                              <Image
+                                src={getUserProfileImage(currentUser)!}
+                                alt={currentUser.fullName}
+                                width={40}
+                                height={40}
+                                className="w-full h-full object-cover"
+                                unoptimized
+                              />
+                            ) : (
+                              <span className="text-white font-medium">
+                                {currentUser.fullName.charAt(0).toUpperCase()}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-slate-900 site-dark:text-white truncate">
+                              {currentUser.fullName}
+                            </p>
+                            <p className="text-xs text-slate-500 site-dark:text-slate-400 truncate">
+                              {currentUser.email}
+                            </p>
+                            <div className="flex items-center gap-1 mt-1">
+                              <span className={`px-2 py-0.5 text-xs rounded-full font-medium ${
+                                currentUser.role === 'superadmin' ? 'bg-red-100 text-red-700' :
+                                currentUser.role === 'admin' ? 'bg-blue-100 text-blue-700' :
+                                'bg-green-100 text-green-700'
+                              }`}>
+                                {currentUser.role === 'superadmin' ? 'Super Admin' : 
+                                 currentUser.role === 'admin' ? 'Admin' : 'User'}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Menu Items */}
+                      <div className="py-2">
+                        {(currentUser.role === 'admin' || currentUser.role === 'superadmin') && (
+                          <Link
+                            href="/dashboard"
+                            className="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 site-dark:text-slate-300 hover:bg-slate-100 site-dark:hover:bg-white/10 transition-colors"
+                            onClick={() => setIsUserMenuOpen(false)}
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 00-2-2z" />
+                            </svg>
+                            Dashboard
+                          </Link>
+                        )}
+                        <Link
+                          href="/profile"
+                          className="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 site-dark:text-slate-300 hover:bg-slate-100 site-dark:hover:bg-white/10 transition-colors"
+                          onClick={() => setIsUserMenuOpen(false)}
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                          My Profile
+                        </Link>
+                        <Link
+                          href="/my-courses"
+                          className="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 site-dark:text-slate-300 hover:bg-slate-100 site-dark:hover:bg-white/10 transition-colors"
+                          onClick={() => setIsUserMenuOpen(false)}
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                          </svg>
+                          My Courses
+                        </Link>
+                        <div className="border-t border-white/20 site-light:border-slate-200 my-2"></div>
+                        <button
+                          onClick={handleLogout}
+                          className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 site-dark:hover:bg-red-900/20 transition-colors"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                          </svg>
+                          Sign Out
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                /* Sign In & Sign Up Buttons */
+                <>
+                  {/* Sign In Button */}
+                  <Link
+                    href="/login"
+                    className="relative pr-4 pl-4 py-2 hover:bg-white/10 rounded-xl flex items-center gap-0.5 text-white font-normal cursor-pointer duration-300 transition-all hover:scale-105 site-light:text-slate-700 site-light:hover:text-slate-900 site-light:hover:bg-slate-100"
+                    onMouseEnter={handleImmediateMenuClose}
+                  >
+                    Sign In
+                  </Link>
+
+                  {/* Sign Up Button */}
+                  <Link
+                    href="/signup"
+                    className="relative px-6 py-2 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white rounded-xl hover:shadow-xl hover:shadow-[#4F46E5]/25 transition-all duration-300 text-sm font-medium hover:scale-105 border border-[#4F46E5]/20 site-light:border-[#4F46E5]/30 site-light:shadow-sm"
+                    onMouseEnter={handleImmediateMenuClose}
+                  >
+                    Sign Up
+                  </Link>
+                </>
+              )}
 
               {/* Site Theme Toggle - Far Right */}
               <div className="ml-4">
@@ -685,27 +895,135 @@ const Navbar = () => {
                     </Link>
                   </div>
                   
-                  {/* Sign In Link */}
-                  <div className="border-b border-white/20 site-light:border-slate-200">
-                    <Link
-                      href="/login"
-                      className="flex items-center justify-between py-3 site-text-primary hover:text-[#4F46E5] transition-colors"
-                      onClick={closeMobileMenu}
-                    >
-                      <span className="text-sm font-medium">Sign In</span>
-                    </Link>
-                  </div>
-                  
-                  {/* Sign Up Link */}
-                  <div>
-                    <Link
-                      href="/signup"
-                      className="flex items-center justify-center py-3 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white rounded-xl font-medium transition-all duration-300 hover:scale-105"
-                      onClick={closeMobileMenu}
-                    >
-                      <span className="text-sm font-medium">Sign Up</span>
-                    </Link>
-                  </div>
+                  {/* Authentication Section */}
+                  {isCheckingAuth ? (
+                    <div className="py-3">
+                      <div className="h-8 bg-white/10 rounded animate-pulse"></div>
+                    </div>
+                  ) : currentUser ? (
+                    /* User Profile Section */
+                    <>
+                      <div className="border-b border-white/20 site-light:border-slate-200 py-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] flex items-center justify-center">
+                            {getUserProfileImage(currentUser) ? (
+                              <Image
+                                src={getUserProfileImage(currentUser)!}
+                                alt={currentUser.fullName}
+                                width={40}
+                                height={40}
+                                className="w-full h-full object-cover"
+                                unoptimized
+                              />
+                            ) : (
+                              <span className="text-white font-medium">
+                                {currentUser.fullName.charAt(0).toUpperCase()}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium site-text-primary truncate">
+                              {currentUser.fullName}
+                            </p>
+                            <p className="text-xs site-text-secondary truncate">
+                              {currentUser.email}
+                            </p>
+                            <span className={`inline-block px-2 py-0.5 text-xs rounded-full font-medium mt-1 ${
+                              currentUser.role === 'superadmin' ? 'bg-red-100 text-red-700' :
+                              currentUser.role === 'admin' ? 'bg-blue-100 text-blue-700' :
+                              'bg-green-100 text-green-700'
+                            }`}>
+                              {currentUser.role === 'superadmin' ? 'Super Admin' : 
+                               currentUser.role === 'admin' ? 'Admin' : 'User'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* User Menu Items */}
+                      {(currentUser.role === 'admin' || currentUser.role === 'superadmin') && (
+                        <div className="border-b border-white/20 site-light:border-slate-200">
+                          <Link
+                            href="/dashboard"
+                            className="flex items-center justify-between py-3 site-text-primary hover:text-[#4F46E5] transition-colors"
+                            onClick={closeMobileMenu}
+                          >
+                            <span className="text-sm font-medium">Dashboard</span>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 00-2-2z" />
+                            </svg>
+                          </Link>
+                        </div>
+                      )}
+
+                      <div className="border-b border-white/20 site-light:border-slate-200">
+                        <Link
+                          href="/profile"
+                          className="flex items-center justify-between py-3 site-text-primary hover:text-[#4F46E5] transition-colors"
+                          onClick={closeMobileMenu}
+                        >
+                          <span className="text-sm font-medium">My Profile</span>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                        </Link>
+                      </div>
+
+                      <div className="border-b border-white/20 site-light:border-slate-200">
+                        <Link
+                          href="/my-courses"
+                          className="flex items-center justify-between py-3 site-text-primary hover:text-[#4F46E5] transition-colors"
+                          onClick={closeMobileMenu}
+                        >
+                          <span className="text-sm font-medium">My Courses</span>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                          </svg>
+                        </Link>
+                      </div>
+                      
+                      {/* Sign Out Link */}
+                      <div>
+                        <button
+                          onClick={() => {
+                            handleLogout();
+                            closeMobileMenu();
+                          }}
+                          className="w-full flex items-center justify-between py-3 text-red-600 hover:text-red-700 transition-colors"
+                        >
+                          <span className="text-sm font-medium">Sign Out</span>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                          </svg>
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    /* Sign In & Sign Up Links */
+                    <>
+                      {/* Sign In Link */}
+                      <div className="border-b border-white/20 site-light:border-slate-200">
+                        <Link
+                          href="/login"
+                          className="flex items-center justify-between py-3 site-text-primary hover:text-[#4F46E5] transition-colors"
+                          onClick={closeMobileMenu}
+                        >
+                          <span className="text-sm font-medium">Sign In</span>
+                        </Link>
+                      </div>
+                      
+                      {/* Sign Up Link */}
+                      <div>
+                        <Link
+                          href="/signup"
+                          className="flex items-center justify-center py-3 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white rounded-xl font-medium transition-all duration-300 hover:scale-105"
+                          onClick={closeMobileMenu}
+                        >
+                          <span className="text-sm font-medium">Sign Up</span>
+                        </Link>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
               

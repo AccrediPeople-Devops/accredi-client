@@ -118,31 +118,10 @@ class CourseService {
       console.log('Updating course with ID:', id);
       console.log('Update data:', JSON.stringify(data, null, 2));
       
-      // Try multiple endpoint formats and HTTP methods
-      try {
-        console.log('Trying PUT to /courses/v1/update/{id}');
-        const response = await axiosInstance.put(`/courses/v1/update/${id}`, data);
-        return response.data;
-      } catch (firstError) {
-        console.log('First attempt failed, trying standard PUT...');
-        try {
-          console.log('Trying PUT to /courses/v1/{id}');
-          const response = await axiosInstance.put(`/courses/v1/${id}`, data);
-          return response.data;
-        } catch (secondError) {
-          console.log('Second attempt failed, trying with course wrapper...');
-          try {
-            console.log('Trying PUT with course wrapper');
-            const response = await axiosInstance.put(`/courses/v1/${id}`, { course: data });
-            return response.data;
-          } catch (thirdError) {
-            console.log('Third attempt failed, trying POST method...');
-            // Try POST method as some APIs use POST for updates
-            const response = await axiosInstance.post(`/courses/v1/${id}/update`, data);
-            return response.data;
-          }
-        }
-      }
+      // Use the standard PUT endpoint that matches the pattern used by other services
+      const response = await axiosInstance.put(`/courses/v1/${id}`, data);
+      console.log('Update successful:', response.data);
+      return response.data;
     } catch (error: any) {
       console.error('Course update error:', error);
       

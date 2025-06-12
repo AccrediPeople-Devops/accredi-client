@@ -10,17 +10,15 @@ const getToken = () => {
   return null;
 };
 
-const token = getToken();
-
 const axiosInstance = axios.create({
   baseURL: config.apiUrl,
-  headers: {
-    Authorization: token ? `Bearer ${token}` : undefined,
-  },
 });
 
 axiosInstance.interceptors.request.use((config) => {
-  config.headers.Authorization = `Bearer ${localStorage.getItem("token")}`;
+  const token = getToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
   return config;
 });
 
@@ -39,9 +37,10 @@ axiosInstance.interceptors.response.use(
         await AuthService.generateTokenByRefreshToken();
 
         // Update the authorization header with new token
-        originalRequest.headers.Authorization = `Bearer ${localStorage.getItem(
-          "token"
-        )}`;
+        const newToken = getToken();
+        if (newToken) {
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+        }
 
         // Retry the original request
         return axiosInstance(originalRequest);

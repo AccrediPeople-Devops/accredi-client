@@ -1,4 +1,3 @@
-import { config } from "../config/config";
 import axiosInstance from "../config/axiosInstance";
 
 export interface PaymentData {
@@ -55,7 +54,7 @@ class PaymentService {
       description,
     };
 
-    return this.processPayment(paymentData);
+    return this.getStripeCheckoutSession(paymentData);
   }
 
   // Utility method to format amount for display

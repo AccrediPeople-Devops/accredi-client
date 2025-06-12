@@ -10,8 +10,6 @@ interface ReviewListProps {
   isLoading: boolean;
   onEdit: (review: Review) => void;
   onDelete: (id: string) => void;
-  onToggleActive: (id: string, isActive: boolean) => void;
-  showDeletedUI?: boolean;
 }
 
 export default function ReviewList({
@@ -19,8 +17,6 @@ export default function ReviewList({
   isLoading,
   onEdit,
   onDelete,
-  onToggleActive,
-  showDeletedUI = false,
 }: ReviewListProps) {
   if (isLoading) {
     return (
@@ -62,9 +58,7 @@ export default function ReviewList({
       {reviews.map((review) => (
         <div
           key={review._id}
-          className={`p-4 border border-[var(--primary)]/10 rounded-[var(--radius-md)] shadow-[var(--shadow-sm)] bg-[var(--background)] ${
-            !review.isActive && "opacity-70"
-          }`}
+          className="p-4 border border-[var(--primary)]/10 rounded-[var(--radius-md)] shadow-[var(--shadow-sm)] bg-[var(--background)]"
         >
           <div className="flex items-start justify-between">
             <div className="flex items-center space-x-3">
@@ -146,26 +140,8 @@ export default function ReviewList({
             </p>
           </div>
 
-          <div className="mt-4 flex items-center justify-between">
-            <div className="text-sm text-[var(--foreground)]/70">
-              {new Date(review.createdAt).toLocaleDateString()}
-            </div>
-
-            <div className="flex items-center">
-              <span className="text-sm text-[var(--foreground)]/70 mr-2">
-                {review.isActive ? "Active" : "Inactive"}
-              </span>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="sr-only peer"
-                  checked={review.isActive}
-                  onChange={() => onToggleActive(review._id, !review.isActive)}
-                  aria-label={`Toggle active state for ${review.name}`}
-                />
-                <div className="w-9 h-5 bg-[var(--input-bg)] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[var(--primary)]/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[var(--primary)]"></div>
-              </label>
-            </div>
+          <div className="mt-4 text-sm text-[var(--foreground)]/70">
+            {new Date(review.createdAt).toLocaleDateString()}
           </div>
         </div>
       ))}

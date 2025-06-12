@@ -66,10 +66,21 @@ export default function ComponentsInput({
     setUploadingIndex(index);
     
     try {
+      // Debug: Check if token exists
+      const token = localStorage.getItem('token');
+      console.log('Token exists:', !!token);
+      if (!token) {
+        console.error('No authentication token found');
+        throw new Error('Please login again - authentication token missing');
+      }
+      
+      // Upload image to server
       const uploadResponse = await uploadService.uploadImage(file);
       
       if (uploadResponse && uploadResponse.upload && uploadResponse.upload[0]) {
         const uploadedFile = uploadResponse.upload[0];
+        
+        // Update component with server response
         const updatedComponents = [...value];
         updatedComponents[index] = {
           ...updatedComponents[index],

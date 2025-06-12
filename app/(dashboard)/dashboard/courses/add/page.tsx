@@ -134,6 +134,18 @@ export default function AddCoursePage() {
     }));
   };
 
+  const insertWhatYouWillGet = () => {
+    const currentContent = formData.shortDescription;
+    const newContent = currentContent 
+      ? `${currentContent}<h3>What you will get</h3><ul><li></li></ul>`
+      : `<h3>What you will get</h3><ul><li></li></ul>`;
+    
+    setFormData((prev) => ({
+      ...prev,
+      shortDescription: newContent,
+    }));
+  };
+
   const handleSingleImageUpload = async (
     type: "courseImage" | "courseSampleCertificate" | "broucher",
     file: FileUpload
@@ -233,7 +245,7 @@ export default function AddCoursePage() {
     }
 
     if (file.path) {
-      // File already has path, just update form data
+      // File already has path (uploaded from EnhancedImageUpload), just update form data
       setFormData((prev) => ({
         ...prev,
         upload: {
@@ -247,19 +259,6 @@ export default function AddCoursePage() {
     setIsUploadingImage(true);
 
     try {
-      // Handle emoji case
-      if (file.isEmoji) {
-        // For emoji, we don't need to upload to server, just save the data URL
-        setFormData((prev) => ({
-          ...prev,
-          upload: {
-            ...prev.upload,
-            courseBadge: file,
-          },
-        }));
-        return;
-      }
-
       // Extract actual File object from the url (which is a Blob URL)
       const response = await fetch(file.url);
       const blob = await response.blob();
@@ -335,10 +334,12 @@ export default function AddCoursePage() {
 
     // Format for upload.courseBadge
     if (formData.upload.courseBadge && formData.upload.courseBadge.key && formData.upload.courseBadge.path) {
-      preparedData.upload.courseBadge = {
+      preparedData.upload.courseBadge = [{
         key: formData.upload.courseBadge.key,
         path: formData.upload.courseBadge.path,
-      };
+      }];
+    } else {
+      preparedData.upload.courseBadge = [];
     }
 
     // Format for components
@@ -509,11 +510,31 @@ export default function AddCoursePage() {
               </div>
 
               <div className="md:col-span-2">
-                <label 
-                  className="block text-sm font-medium text-[var(--foreground-muted)] mb-1"
-                >
-                  Short Description *
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-sm font-medium text-[var(--foreground-muted)]">
+                    Short Description *
+                  </label>
+                  <button
+                    type="button"
+                    onClick={insertWhatYouWillGet}
+                    className="px-3 py-1 text-xs bg-[var(--primary)] text-white rounded-[var(--radius-sm)] hover:bg-[var(--primary-hover)] transition-colors flex items-center gap-1"
+                    title="Insert 'What you will get' heading"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-3 w-3"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    What you will get
+                  </button>
+                </div>
                 <RichTextEditor
                   value={formData.shortDescription}
                   onChange={(value) => handleRichTextChange("shortDescription", value)}

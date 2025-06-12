@@ -229,6 +229,18 @@ function CourseEditor({ courseId }: { courseId: string }) {
     }));
   };
 
+  const insertWhatYouWillGet = () => {
+    const currentContent = formData.shortDescription;
+    const newContent = currentContent 
+      ? `${currentContent}<h3>What you will get</h3><ul><li></li></ul>`
+      : `<h3>What you will get</h3><ul><li></li></ul>`;
+    
+    setFormData((prev) => ({
+      ...prev,
+      shortDescription: newContent,
+    }));
+  };
+
   const handleSingleImageUpload = async (
     type: "courseImage" | "courseSampleCertificate" | "broucher",
     file: FileUpload
@@ -328,7 +340,7 @@ function CourseEditor({ courseId }: { courseId: string }) {
     }
 
     if (file.path) {
-      // File already has path, just update form data
+      // File already has path (uploaded from EnhancedImageUpload), just update form data
       setFormData((prev) => ({
         ...prev,
         upload: {
@@ -342,19 +354,6 @@ function CourseEditor({ courseId }: { courseId: string }) {
     setIsUploadingImage(true);
 
     try {
-      // Handle emoji case
-      if (file.isEmoji) {
-        // For emoji, we don't need to upload to server, just save the data URL
-        setFormData((prev) => ({
-          ...prev,
-          upload: {
-            ...prev.upload,
-            courseBadge: file,
-          },
-        }));
-        return;
-      }
-
       // Extract actual File object from the url (which is a Blob URL)
       const response = await fetch(file.url);
       const blob = await response.blob();
@@ -430,10 +429,12 @@ function CourseEditor({ courseId }: { courseId: string }) {
 
     // Format for upload.courseBadge
     if (formData.upload.courseBadge && formData.upload.courseBadge.key && formData.upload.courseBadge.path) {
-      preparedData.upload.courseBadge = {
+      preparedData.upload.courseBadge = [{
         key: formData.upload.courseBadge.key,
         path: formData.upload.courseBadge.path,
-      };
+      }];
+    } else {
+      preparedData.upload.courseBadge = [];
     }
 
     // Format for components
@@ -464,6 +465,12 @@ function CourseEditor({ courseId }: { courseId: string }) {
     setError("");
 
     try {
+      // Check authentication first
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("You are not authenticated. Please log in again.");
+      }
+
       // Validate required fields
       if (!formData.title) {
         throw new Error("Course title is required");
@@ -484,13 +491,22 @@ function CourseEditor({ courseId }: { courseId: string }) {
         throw new Error("Course image is required");
       }
 
-      // Prepare the data
+      // Prepare the data with better validation
       const preparedData = prepareDataForSubmission();
 
-      console.log("Updating course with data:", preparedData);
+      // Remove specific database fields that the API doesn't accept for updates
+      const cleanedData = { ...preparedData };
+      delete cleanedData._id;
+      delete cleanedData.createdAt;
+      delete cleanedData.updatedAt;
+      delete cleanedData.__v;
 
-      // Submit the course data
-      const response = await courseService.updateCourse(courseId, preparedData);
+      console.log("Updating course with cleaned data:", cleanedData);
+      console.log("Course ID:", courseId);
+      console.log("Token exists:", !!token);
+
+      // Submit the course data with better error handling
+      const response = await courseService.updateCourse(courseId, cleanedData);
 
       console.log("API Response:", response);
 
@@ -498,11 +514,31 @@ function CourseEditor({ courseId }: { courseId: string }) {
         // Successfully updated course
         router.push("/dashboard/courses");
       } else {
-        throw new Error("Failed to update course");
+        throw new Error("Failed to update course - Invalid response from server");
       }
     } catch (err: any) {
       console.error("Error updating course:", err);
-      setError(err.message || "An error occurred while updating the course");
+      
+      // Handle specific error types
+      if (err.response?.status === 401) {
+        setError("Authentication failed. Please log in again and try updating the course.");
+        // Optionally redirect to login
+        setTimeout(() => {
+          localStorage.removeItem("token");
+          localStorage.removeItem("refreshToken");
+          window.location.href = "/login";
+        }, 3000);
+      } else if (err.response?.status === 400) {
+        const errorMessage = err.response?.data?.message || "Invalid data format. Please check all required fields.";
+        setError(`Bad Request: ${errorMessage}`);
+        console.error("400 Error Details:", err.response?.data);
+      } else if (err.response?.status === 404) {
+        setError("Course not found. It may have been deleted.");
+      } else if (err.message?.includes("Network Error") || err.code === "NETWORK_ERROR") {
+        setError("Network error. Please check your internet connection and try again.");
+      } else {
+        setError(err.message || "An error occurred while updating the course");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -605,26 +641,46 @@ function CourseEditor({ courseId }: { courseId: string }) {
               </select>
             </div>
 
-            <div className="md:col-span-2">
-              <label 
-                className="block text-sm font-medium text-[var(--foreground-muted)] mb-1"
-              >
-                Short Description *
-              </label>
-              <RichTextEditor
-                value={formData.shortDescription}
-                onChange={(value) => handleRichTextChange("shortDescription", value)}
-                placeholder="Brief description for the course"
-                minHeight="120px"
-              />
-            </div>
+                          <div className="md:col-span-2">
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-sm font-medium text-[var(--foreground-muted)]">
+                    Short Description *
+                  </label>
+                  <button
+                    type="button"
+                    onClick={insertWhatYouWillGet}
+                    className="px-3 py-1 text-xs bg-[var(--primary)] text-white rounded-[var(--radius-sm)] hover:bg-[var(--primary-hover)] transition-colors flex items-center gap-1"
+                    title="Insert 'What you will get' heading"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-3 w-3"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    What you will get
+                  </button>
+                </div>
+                <RichTextEditor
+                  value={formData.shortDescription}
+                  onChange={(value) => handleRichTextChange("shortDescription", value)}
+                  placeholder="Brief description for the course"
+                  minHeight="120px"
+                />
+              </div>
           </div>
         </div>
 
         {/* Full Description */}
         <div className="bg-[var(--input-bg)] p-6 rounded-[var(--radius-lg)]">
           <h2 className="text-lg font-medium text-[var(--foreground)] mb-4">
-            Full Description
+            Full Description (Course Overview)
           </h2>
           <div>
             <label 

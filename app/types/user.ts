@@ -12,7 +12,7 @@ export interface User {
   country: string;
   city: string;
   profileImage?: ProfileImage;
-  role: "admin" | "user";
+  role: "superadmin" | "admin" | "user";
   isActive: boolean;
   isDeleted?: boolean;
   createdAt: string;
@@ -23,12 +23,12 @@ export interface User {
 export interface UserFormData {
   fullName: string;
   email: string;
-  password?: string;
+  password: string;
   contactNumber: string;
   country: string;
   city: string;
+  role: "superadmin" | "admin" | "user";
   profileImage?: ProfileImage;
-  role: "admin" | "user";
 }
 
 export interface UserApiResponse {
