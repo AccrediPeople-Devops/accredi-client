@@ -14,7 +14,7 @@ class CourseService {
    */
   async getAllCourses() {
     try {
-      const response = await axiosInstance.get("/courses");
+      const response = await axiosInstance.get("/courses/v1");
       return response.data;
     } catch (error) {
       throw error;
@@ -29,30 +29,39 @@ class CourseService {
   async getCourseById(id: string) {
     try {
       console.log("CourseService: Fetching course with ID:", id);
-      
+
       // Fetch all courses from the /courses endpoint
       const allResponse = await this.getAllCourses();
-      
-      if (allResponse && allResponse.status && allResponse.courses && Array.isArray(allResponse.courses)) {
-        const foundCourse = allResponse.courses.find((course: any) => course._id === id);
-      if (foundCourse) {
+
+      if (
+        allResponse &&
+        allResponse.status &&
+        allResponse.courses &&
+        Array.isArray(allResponse.courses)
+      ) {
+        const foundCourse = allResponse.courses.find(
+          (course: any) => course._id === id
+        );
+        if (foundCourse) {
           console.log("CourseService: Found course:", foundCourse);
-        return { status: true, course: foundCourse };
+          return { status: true, course: foundCourse };
         }
       }
-      
+
       // Return a not found error if we couldn't find the course
-      return { 
-        status: false, 
-        message: `Course not found with ID: ${id}`
+      return {
+        status: false,
+        message: `Course not found with ID: ${id}`,
       };
     } catch (error: any) {
       console.error("CourseService: Error fetching course:", error);
-      
+
       // Return a structured error
-      return { 
-        status: false, 
-        message: error.response?.data?.message || `Error fetching course with ID: ${id}`
+      return {
+        status: false,
+        message:
+          error.response?.data?.message ||
+          `Error fetching course with ID: ${id}`,
       };
     }
   }
@@ -65,27 +74,34 @@ class CourseService {
   async getCoursesByCategory(categoryId: string) {
     try {
       // Get all courses and filter by category
-        const allResponse = await this.getAllCourses();
-        
-      if (allResponse && allResponse.status && allResponse.courses && Array.isArray(allResponse.courses)) {
+      const allResponse = await this.getAllCourses();
+
+      if (
+        allResponse &&
+        allResponse.status &&
+        allResponse.courses &&
+        Array.isArray(allResponse.courses)
+      ) {
         // Filter courses by categoryId
         const filteredCourses = allResponse.courses.filter((course: any) => {
           // Check different possible field names for the category ID
           return (
-            course.categoryId === categoryId || 
+            course.categoryId === categoryId ||
             course.category === categoryId ||
             (course.categoryId && course.categoryId._id === categoryId) ||
             (course.category && course.category._id === categoryId)
           );
         });
-        
-        console.log(`Found ${filteredCourses.length} courses for category ${categoryId}`);
-        return { 
-          status: true, 
-          courses: filteredCourses 
+
+        console.log(
+          `Found ${filteredCourses.length} courses for category ${categoryId}`
+        );
+        return {
+          status: true,
+          courses: filteredCourses,
         };
       }
-      
+
       return { status: false, courses: [] };
     } catch (error) {
       console.error("Error getting courses by category:", error);
@@ -115,23 +131,23 @@ class CourseService {
    */
   async updateCourse(id: string, data: any) {
     try {
-      console.log('Updating course with ID:', id);
-      console.log('Update data:', JSON.stringify(data, null, 2));
-      
+      console.log("Updating course with ID:", id);
+      console.log("Update data:", JSON.stringify(data, null, 2));
+
       // Use the standard PUT endpoint that matches the pattern used by other services
       const response = await axiosInstance.put(`/courses/v1/${id}`, data);
-      console.log('Update successful:', response.data);
+      console.log("Update successful:", response.data);
       return response.data;
     } catch (error: any) {
-      console.error('Course update error:', error);
-      
+      console.error("Course update error:", error);
+
       // Log more detailed error information
       if (error.response) {
-        console.error('Error response data:', error.response.data);
-        console.error('Error response status:', error.response.status);
-        console.error('Error response headers:', error.response.headers);
+        console.error("Error response data:", error.response.data);
+        console.error("Error response status:", error.response.status);
+        console.error("Error response headers:", error.response.headers);
       }
-      
+
       throw error;
     }
   }
@@ -237,30 +253,45 @@ class CourseService {
     try {
       // First try the dedicated endpoint for recent courses
       try {
-        const response = await axiosInstance.get(`/courses/v1/recent?limit=${limit}`);
+        const response = await axiosInstance.get(
+          `/courses/v1/recent?limit=${limit}`
+        );
         return response.data;
       } catch (directError: any) {
-        console.log("Direct recent courses endpoint failed:", directError.message);
-        
+        console.log(
+          "Direct recent courses endpoint failed:",
+          directError.message
+        );
+
         // Fallback: get all courses and sort manually
-        console.log("Using fallback method - fetch all courses and sort by date");
+        console.log(
+          "Using fallback method - fetch all courses and sort by date"
+        );
         const allResponse = await this.getAllCourses();
-        
+
         // Extract courses from the response with flexible handling of response structure
         let allCourses = [];
-        if (allResponse && allResponse.courses && Array.isArray(allResponse.courses)) {
+        if (
+          allResponse &&
+          allResponse.courses &&
+          Array.isArray(allResponse.courses)
+        ) {
           allCourses = allResponse.courses;
         } else if (Array.isArray(allResponse)) {
           allCourses = allResponse;
-        } else if (allResponse && allResponse.data && Array.isArray(allResponse.data)) {
+        } else if (
+          allResponse &&
+          allResponse.data &&
+          Array.isArray(allResponse.data)
+        ) {
           allCourses = allResponse.data;
         }
-        
+
         // Handle empty courses array
         if (allCourses.length === 0) {
           return { status: true, courses: [] };
         }
-        
+
         // Filter out duplicates by ID (just in case)
         const uniqueCoursesMap = new Map();
         allCourses.forEach((course: any) => {
@@ -268,22 +299,22 @@ class CourseService {
             uniqueCoursesMap.set(course._id, course);
           }
         });
-        
+
         const uniqueCourses = Array.from(uniqueCoursesMap.values());
-        
+
         // Sort by creation date (newest first)
         const sortedCourses = uniqueCourses.sort((a, b) => {
           const dateA = new Date(a.createdAt || a.created || 0).getTime();
           const dateB = new Date(b.createdAt || b.created || 0).getTime();
           return dateB - dateA;
         });
-        
+
         // Return only the requested number of courses
         const recentCourses = sortedCourses.slice(0, limit);
-        
-        return { 
-          status: true, 
-          courses: recentCourses 
+
+        return {
+          status: true,
+          courses: recentCourses,
         };
       }
     } catch (error) {

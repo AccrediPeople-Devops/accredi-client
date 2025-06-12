@@ -28,7 +28,7 @@ export default function SchedulesPage() {
       console.log("Fetching all schedules");
       const res = await scheduleService.getAllSchedules();
       console.log("Schedules response:", res);
-      
+
       if (res && res.schedules) {
         console.log(`Got ${res.schedules.length} schedules`);
         setSchedules(res.schedules);
@@ -50,33 +50,42 @@ export default function SchedulesPage() {
   // Fetch course names for all schedules
   const fetchCourseNames = async () => {
     if (schedules.length === 0) return;
-    
+
     try {
       // Get unique course IDs
-      const uniqueCourseIds = [...new Set(schedules.map(schedule => schedule.courseId))];
-      
+      const uniqueCourseIds = [
+        ...new Set(schedules.map((schedule) => schedule.courseId)),
+      ];
+
       // Fetch names for each course ID
       const courseNamesMap: Record<string, string> = {};
-      
+
       await Promise.all(
         uniqueCourseIds.map(async (courseId) => {
           try {
             const courseResponse = await courseService.getCourseById(courseId);
-            if (courseResponse && courseResponse.status && courseResponse.course) {
+            if (
+              courseResponse &&
+              courseResponse.status &&
+              courseResponse.course
+            ) {
               courseNamesMap[courseId] = courseResponse.course.title;
-            } else if (courseResponse && '_id' in courseResponse) {
+            } else if (courseResponse && "_id" in courseResponse) {
               const course = courseResponse as any;
               courseNamesMap[courseId] = course.title;
             } else {
               courseNamesMap[courseId] = "Unknown Course";
             }
           } catch (err) {
-            console.error(`Error fetching course name for ID ${courseId}:`, err);
+            console.error(
+              `Error fetching course name for ID ${courseId}:`,
+              err
+            );
             courseNamesMap[courseId] = "Unknown Course";
           }
         })
       );
-      
+
       setCourseNames(courseNamesMap);
     } catch (err) {
       console.error("Error fetching course names:", err);
@@ -96,34 +105,46 @@ export default function SchedulesPage() {
   // Filter schedules based on search and status
   const filteredSchedules = schedules.filter((schedule) => {
     // Match search term
-    const matchesSearch = searchTerm === "" || 
-      (courseNames[schedule.courseId] && courseNames[schedule.courseId].toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (schedule.instructorName && schedule.instructorName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (schedule.country && schedule.country.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (schedule.city && schedule.city.toLowerCase().includes(searchTerm.toLowerCase()));
-    
+    const matchesSearch =
+      searchTerm === "" ||
+      (courseNames[schedule.courseId] &&
+        courseNames[schedule.courseId]
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())) ||
+      (schedule.instructorName &&
+        schedule.instructorName
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())) ||
+      (schedule.country &&
+        schedule.country.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (schedule.city &&
+        schedule.city.toLowerCase().includes(searchTerm.toLowerCase()));
+
     // Match status filter
     const matchesStatus =
       statusFilter === "all" ||
-      (statusFilter === "upcoming" && new Date(schedule.startDate) > new Date()) ||
-      (statusFilter === "ongoing" && new Date(schedule.startDate) <= new Date() && new Date(schedule.endDate) >= new Date()) ||
+      (statusFilter === "upcoming" &&
+        new Date(schedule.startDate) > new Date()) ||
+      (statusFilter === "ongoing" &&
+        new Date(schedule.startDate) <= new Date() &&
+        new Date(schedule.endDate) >= new Date()) ||
       (statusFilter === "completed" && new Date(schedule.endDate) < new Date());
-    
+
     return matchesSearch && matchesStatus;
   });
 
   // Format date for display
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "N/A";
-    
+
     const date = new Date(dateString);
     // Check if date is invalid
     if (isNaN(date.getTime())) return "N/A";
-    
+
     return date.toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
-      day: "numeric"
+      day: "numeric",
     });
   };
 
@@ -134,16 +155,16 @@ export default function SchedulesPage() {
 
   // Format price for display
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
     }).format(price);
   };
 
   // Format schedule type for display
   const formatScheduleType = (type: string) => {
     if (!type) return "N/A";
-    return type.charAt(0).toUpperCase() + type.slice(1).replace(/-/g, ' ');
+    return type.charAt(0).toUpperCase() + type.slice(1).replace(/-/g, " ");
   };
 
   // Get schedule status based on dates
@@ -151,7 +172,7 @@ export default function SchedulesPage() {
     const now = new Date();
     const start = new Date(startDate);
     const end = new Date(endDate);
-    
+
     if (now < start) return "upcoming";
     if (now >= start && now <= end) return "ongoing";
     return "completed";
@@ -174,13 +195,15 @@ export default function SchedulesPage() {
     try {
       console.log("Deleting schedule with ID:", scheduleToDelete);
       await scheduleService.deleteSchedule(scheduleToDelete);
-      
+
       // Remove the deleted schedule from the list
-      setSchedules(schedules.filter(schedule => schedule._id !== scheduleToDelete));
-      
+      setSchedules(
+        schedules.filter((schedule) => schedule._id !== scheduleToDelete)
+      );
+
       setSuccessMessage("Schedule deleted successfully");
       setShowDeleteModal(false);
-      
+
       setTimeout(() => {
         setSuccessMessage("");
       }, 3000);
@@ -230,7 +253,7 @@ export default function SchedulesPage() {
           {error}
         </div>
       )}
-      
+
       {successMessage && (
         <div className="p-4 bg-green-50 border border-green-200 text-green-800 rounded-[var(--radius-md)]">
           {successMessage}
@@ -271,10 +294,9 @@ export default function SchedulesPage() {
             No schedules found
           </h3>
           <p className="mt-2 text-[var(--foreground)]/60">
-            {searchTerm || statusFilter !== "all" 
-              ? "Try adjusting your search or filters" 
-              : "Add your first schedule to get started"
-            }
+            {searchTerm || statusFilter !== "all"
+              ? "Try adjusting your search or filters"
+              : "Add your first schedule to get started"}
           </p>
         </div>
       ) : (
@@ -307,9 +329,15 @@ export default function SchedulesPage() {
             </thead>
             <tbody className="bg-[var(--background)] divide-y divide-[var(--primary)]/10">
               {filteredSchedules.map((schedule) => {
-                const status = getScheduleStatus(schedule.startDate, schedule.endDate);
+                const status = getScheduleStatus(
+                  schedule.startDate,
+                  schedule.endDate
+                );
                 return (
-                  <tr key={schedule._id} className="hover:bg-[var(--primary)]/5">
+                  <tr
+                    key={schedule._id}
+                    className="hover:bg-[var(--primary)]/5"
+                  >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-[var(--foreground)]">
                         {getCourseName(schedule.courseId)}
@@ -338,18 +366,22 @@ export default function SchedulesPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        status === 'upcoming' 
-                          ? 'bg-blue-100 text-blue-800' 
-                          : status === 'ongoing'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-gray-100 text-gray-800'
-                      }`}>
+                      <span
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          status === "upcoming"
+                            ? "bg-blue-100 text-blue-800"
+                            : status === "ongoing"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-gray-100 text-gray-800"
+                        }`}
+                      >
                         {status.charAt(0).toUpperCase() + status.slice(1)}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--foreground)]">
-                      {formatPrice(schedule.price)}
+                      {formatPrice(
+                        schedule.offerPrice || schedule.standardPrice
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end space-x-2">
@@ -401,34 +433,17 @@ export default function SchedulesPage() {
       )}
 
       {/* Delete Confirmation Modal */}
-      <Modal 
-        isOpen={showDeleteModal} 
+      <Modal
+        isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
         title="Delete Schedule"
-      >
-        <div className="space-y-4">
-          <p className="text-[var(--foreground)]">
-            Are you sure you want to delete this schedule? This action cannot be undone.
-          </p>
-          
-          <div className="flex justify-end space-x-3">
-            <button
-              onClick={() => setShowDeleteModal(false)}
-              className="px-4 py-2 text-[var(--foreground)] border border-[var(--primary)]/30 rounded-[var(--radius-md)] hover:bg-[var(--primary)]/5 transition-colors"
-              disabled={isDeleting !== null}
-            >
-              Cancel
-            </button>
-            <button
-              onClick={confirmDelete}
-              disabled={isDeleting !== null}
-              className="px-4 py-2 bg-red-600 text-white rounded-[var(--radius-md)] hover:bg-red-700 transition-colors disabled:opacity-50"
-            >
-              {isDeleting ? "Deleting..." : "Delete"}
-            </button>
-          </div>
-        </div>
-      </Modal>
+        description="Are you sure you want to delete this schedule? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={confirmDelete}
+        isConfirming={isDeleting !== null}
+        variant="danger"
+      />
     </div>
   );
-} 
+}
