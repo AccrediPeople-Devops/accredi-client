@@ -475,9 +475,9 @@ const Navbar = () => {
 
                   {/* User Dropdown Menu */}
                   {isUserMenuOpen && (
-                    <div className="absolute right-0 top-full mt-2 w-64 bg-white site-dark:bg-[#1A1A3E] rounded-xl shadow-xl border border-white/20 site-light:border-slate-200 overflow-hidden z-50">
+                    <div className="absolute right-0 top-full mt-2 w-64 site-glass backdrop-blur-xl rounded-xl shadow-2xl border site-border overflow-hidden z-50">
                       {/* User Info */}
-                      <div className="px-4 py-3 border-b border-white/20 site-light:border-slate-200">
+                      <div className="px-4 py-3 border-b site-border">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] flex items-center justify-center">
                             {getUserProfileImage(currentUser) ? (
@@ -496,17 +496,17 @@ const Navbar = () => {
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-slate-900 site-dark:text-white truncate">
+                            <p className="text-sm font-medium site-text-primary truncate">
                               {currentUser.fullName}
                             </p>
-                            <p className="text-xs text-slate-500 site-dark:text-slate-400 truncate">
+                            <p className="text-xs site-text-secondary truncate">
                               {currentUser.email}
                             </p>
                             <div className="flex items-center gap-1 mt-1">
                               <span className={`px-2 py-0.5 text-xs rounded-full font-medium ${
-                                currentUser.role === 'superadmin' ? 'bg-red-100 text-red-700' :
-                                currentUser.role === 'admin' ? 'bg-blue-100 text-blue-700' :
-                                'bg-green-100 text-green-700'
+                                currentUser.role === 'superadmin' ? 'bg-red-500/20 text-red-400 site-light:bg-red-100 site-light:text-red-700' :
+                                currentUser.role === 'admin' ? 'bg-blue-500/20 text-blue-400 site-light:bg-blue-100 site-light:text-blue-700' :
+                                'bg-green-500/20 text-green-400 site-light:bg-green-100 site-light:text-green-700'
                               }`}>
                                 {currentUser.role === 'superadmin' ? 'Super Admin' : 
                                  currentUser.role === 'admin' ? 'Admin' : 'User'}
@@ -521,7 +521,7 @@ const Navbar = () => {
                         {(currentUser.role === 'admin' || currentUser.role === 'superadmin') && (
                           <Link
                             href="/dashboard"
-                            className="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 site-dark:text-slate-300 hover:bg-slate-100 site-dark:hover:bg-white/10 transition-colors"
+                            className="flex items-center gap-3 px-4 py-2 text-sm site-text-secondary hover:site-text-primary hover:bg-white/10 site-light:hover:bg-slate-100 transition-colors"
                             onClick={() => setIsUserMenuOpen(false)}
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -532,7 +532,7 @@ const Navbar = () => {
                         )}
                         <Link
                           href="/profile"
-                          className="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 site-dark:text-slate-300 hover:bg-slate-100 site-dark:hover:bg-white/10 transition-colors"
+                          className="flex items-center gap-3 px-4 py-2 text-sm site-text-secondary hover:site-text-primary hover:bg-white/10 site-light:hover:bg-slate-100 transition-colors"
                           onClick={() => setIsUserMenuOpen(false)}
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -542,7 +542,7 @@ const Navbar = () => {
                         </Link>
                         <Link
                           href="/my-courses"
-                          className="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 site-dark:text-slate-300 hover:bg-slate-100 site-dark:hover:bg-white/10 transition-colors"
+                          className="flex items-center gap-3 px-4 py-2 text-sm site-text-secondary hover:site-text-primary hover:bg-white/10 site-light:hover:bg-slate-100 transition-colors"
                           onClick={() => setIsUserMenuOpen(false)}
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -550,10 +550,10 @@ const Navbar = () => {
                           </svg>
                           My Courses
                         </Link>
-                        <div className="border-t border-white/20 site-light:border-slate-200 my-2"></div>
+                        <div className="border-t site-border my-2"></div>
                         <button
                           onClick={handleLogout}
-                          className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 site-dark:hover:bg-red-900/20 transition-colors"
+                          className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-500 hover:text-red-400 hover:bg-red-500/10 transition-colors"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -903,7 +903,7 @@ const Navbar = () => {
                   ) : currentUser ? (
                     /* User Profile Section */
                     <>
-                      <div className="border-b border-white/20 site-light:border-slate-200 py-3">
+                      <div className="border-b site-border py-3">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] flex items-center justify-center">
                             {getUserProfileImage(currentUser) ? (
@@ -929,9 +929,9 @@ const Navbar = () => {
                               {currentUser.email}
                             </p>
                             <span className={`inline-block px-2 py-0.5 text-xs rounded-full font-medium mt-1 ${
-                              currentUser.role === 'superadmin' ? 'bg-red-100 text-red-700' :
-                              currentUser.role === 'admin' ? 'bg-blue-100 text-blue-700' :
-                              'bg-green-100 text-green-700'
+                              currentUser.role === 'superadmin' ? 'bg-red-500/20 text-red-400 site-light:bg-red-100 site-light:text-red-700' :
+                              currentUser.role === 'admin' ? 'bg-blue-500/20 text-blue-400 site-light:bg-blue-100 site-light:text-blue-700' :
+                              'bg-green-500/20 text-green-400 site-light:bg-green-100 site-light:text-green-700'
                             }`}>
                               {currentUser.role === 'superadmin' ? 'Super Admin' : 
                                currentUser.role === 'admin' ? 'Admin' : 'User'}
@@ -942,7 +942,7 @@ const Navbar = () => {
 
                       {/* User Menu Items */}
                       {(currentUser.role === 'admin' || currentUser.role === 'superadmin') && (
-                        <div className="border-b border-white/20 site-light:border-slate-200">
+                        <div className="border-b site-border">
                           <Link
                             href="/dashboard"
                             className="flex items-center justify-between py-3 site-text-primary hover:text-[#4F46E5] transition-colors"
@@ -956,7 +956,7 @@ const Navbar = () => {
                         </div>
                       )}
 
-                      <div className="border-b border-white/20 site-light:border-slate-200">
+                      <div className="border-b site-border">
                         <Link
                           href="/profile"
                           className="flex items-center justify-between py-3 site-text-primary hover:text-[#4F46E5] transition-colors"
@@ -969,7 +969,7 @@ const Navbar = () => {
                         </Link>
                       </div>
 
-                      <div className="border-b border-white/20 site-light:border-slate-200">
+                      <div className="border-b site-border">
                         <Link
                           href="/my-courses"
                           className="flex items-center justify-between py-3 site-text-primary hover:text-[#4F46E5] transition-colors"
