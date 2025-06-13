@@ -37,6 +37,7 @@ export default function CoursesPage() {
     setError("");
     try {
       const res = await courseService.getAllCourses();
+      console.log("Courses fetched:", res);
       if (res?.courses) {
         setCourses(res.courses);
       }
@@ -91,7 +92,10 @@ export default function CoursesPage() {
 
   const getCategoryName = (categoryId: string | any) => {
     // Handle both string and object types
-    const categoryIdString = typeof categoryId === 'string' ? categoryId : categoryId?._id || categoryId?.id;
+    const categoryIdString =
+      typeof categoryId === "string"
+        ? categoryId
+        : categoryId?._id || categoryId?.id;
     const category = categories.find((cat) => cat.id === categoryIdString);
     return category ? category.name : "Unknown";
   };
@@ -118,25 +122,27 @@ export default function CoursesPage() {
     try {
       console.log("=== DELETE OPERATION START ===");
       console.log("Course ID to delete:", courseToDelete);
-      
+
       // Find the course in our current list to verify it exists
-      const courseToDeleteObj = courses.find(c => c._id === courseToDelete);
+      const courseToDeleteObj = courses.find((c) => c._id === courseToDelete);
       console.log("Course object found:", courseToDeleteObj);
-      
+
       if (!courseToDeleteObj) {
         throw new Error("Course not found in current list");
       }
-      
+
       // Use the same updateCourse approach that works in the edit page
       console.log("Attempting soft delete with updateCourse...");
-      const updateResult = await courseService.updateCourse(courseToDelete, { isDeleted: true });
+      const updateResult = await courseService.updateCourse(courseToDelete, {
+        isDeleted: true,
+      });
       console.log("Soft delete successful, result:", updateResult);
-      
+
       // Refresh the courses data to get the latest state
       console.log("Refreshing courses data...");
       await fetchCourses();
       console.log("Courses data refreshed successfully");
-      
+
       setShowDeleteModal(false);
       console.log("=== DELETE OPERATION SUCCESS ===");
     } catch (err: any) {
@@ -148,7 +154,11 @@ export default function CoursesPage() {
       console.error("Error config URL:", err.config?.url);
       console.error("Error config method:", err.config?.method);
       console.error("Error config data:", err.config?.data);
-      setError(err.response?.data?.message || err.message || "Error deleting course. Please try again.");
+      setError(
+        err.response?.data?.message ||
+          err.message ||
+          "Error deleting course. Please try again."
+      );
     } finally {
       setIsDeleting(null);
     }
@@ -159,19 +169,21 @@ export default function CoursesPage() {
       console.log("=== TOGGLE OPERATION START ===");
       console.log("Course ID:", courseId);
       console.log("New isActive value:", isActive);
-      
+
       // Find the course in our current list to verify it exists
-      const courseObj = courses.find(c => c._id === courseId);
+      const courseObj = courses.find((c) => c._id === courseId);
       console.log("Course object found:", courseObj);
       console.log("Current isActive value:", courseObj?.isActive);
-      
+
       if (!courseObj) {
         throw new Error("Course not found in current list");
       }
-      
+
       // Use the same updateCourse approach that works in the edit page
       console.log("Calling updateCourse API with isActive...");
-      const response = await courseService.updateCourse(courseId, { isActive: isActive });
+      const response = await courseService.updateCourse(courseId, {
+        isActive: isActive,
+      });
       console.log("Toggle API response:", response);
 
       // Refresh the courses data to ensure we have the latest state from the server
@@ -188,7 +200,11 @@ export default function CoursesPage() {
       console.error("Toggle error config URL:", err.config?.url);
       console.error("Toggle error config method:", err.config?.method);
       console.error("Toggle error config data:", err.config?.data);
-      setError(err.response?.data?.message || err.message || "Error updating course status. Please try again.");
+      setError(
+        err.response?.data?.message ||
+          err.message ||
+          "Error updating course status. Please try again."
+      );
     }
   };
 
@@ -211,7 +227,9 @@ export default function CoursesPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--foreground)]">Courses</h1>
+          <h1 className="text-2xl font-bold text-[var(--foreground)]">
+            Courses
+          </h1>
           <p className="text-[var(--foreground-muted)]">
             Manage your course catalog
           </p>
@@ -266,25 +284,25 @@ export default function CoursesPage() {
             Deleted Courses
           </button>
         </div>
-        </div>
+      </div>
 
       {/* Filters */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
                 className="h-5 w-5 text-[var(--foreground-muted)]"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fillRule="evenodd"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
                   d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-              clipRule="evenodd"
-            />
-          </svg>
+                  clipRule="evenodd"
+                />
+              </svg>
             </div>
             <input
               type="text"
@@ -377,19 +395,19 @@ export default function CoursesPage() {
                                 unoptimized
                               />
                             ) : (
-              <Image
+                              <Image
                                 src="/placeholder.png"
-                alt={course.title}
+                                alt={course.title}
                                 width={40}
                                 height={40}
                                 className="h-full w-full object-cover"
                                 unoptimized
-              />
+                              />
                             )}
-            </div>
+                          </div>
                           <div className="ml-4">
                             <div className="text-sm font-medium text-[var(--foreground)]">
-                {course.title}
+                              {course.title}
                             </div>
                             <div className="text-xs text-[var(--foreground-muted)] truncate max-w-xs">
                               {course.shortDescription}
@@ -415,23 +433,26 @@ export default function CoursesPage() {
                               className="sr-only peer"
                               checked={course.isActive ?? false}
                               onChange={() =>
-                                handleToggleActive(course._id, !(course.isActive ?? false))
+                                handleToggleActive(
+                                  course._id,
+                                  !(course.isActive ?? false)
+                                )
                               }
                             />
                             <div className="w-11 h-6 bg-[var(--input-bg)] rounded-full peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--primary)]"></div>
                             <span className="ml-3 text-sm text-[var(--foreground)]">
-                              {(course.isActive ?? false) ? "Active" : "Inactive"}
+                              {course.isActive ?? false ? "Active" : "Inactive"}
                             </span>
                           </label>
                         ) : (
                           <span
                             className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                              (course.isActive ?? false)
+                              course.isActive ?? false
                                 ? "bg-[var(--success)]/20 text-[var(--success)]"
                                 : "bg-[var(--error)]/20 text-[var(--error)]"
                             }`}
                           >
-                            {(course.isActive ?? false) ? "Active" : "Inactive"}
+                            {course.isActive ?? false ? "Active" : "Inactive"}
                           </span>
                         )}
                       </td>
@@ -521,27 +542,27 @@ export default function CoursesPage() {
                               {isRestoring === course._id ? (
                                 <LoadingSpinner size="small" />
                               ) : (
-                <div className="flex items-center">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
+                                <div className="flex items-center">
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
                                     className="h-5 w-5 mr-1"
                                     fill="none"
                                     viewBox="0 0 24 24"
                                     stroke="currentColor"
-                  >
+                                  >
                                     <path
                                       strokeLinecap="round"
                                       strokeLinejoin="round"
                                       strokeWidth={2}
                                       d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
                                     />
-                  </svg>
+                                  </svg>
                                   Restore
                                 </div>
                               )}
                             </button>
                           )}
-                </div>
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -559,8 +580,8 @@ export default function CoursesPage() {
                 )}
               </tbody>
             </table>
-                </div>
-              </div>
+          </div>
+        </div>
       )}
 
       {/* Delete confirmation modal */}
