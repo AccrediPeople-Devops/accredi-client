@@ -659,26 +659,6 @@ const Navbar = () => {
                             Dashboard
                           </Link>
                         )}
-                        <Link
-                          href="/profile"
-                          className="flex items-center gap-3 px-4 py-2 text-sm site-text-secondary hover:site-text-primary hover:bg-white/10 site-light:hover:bg-slate-100 transition-colors"
-                          onClick={() => setIsUserMenuOpen(false)}
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                          </svg>
-                          My Profile
-                        </Link>
-                        <Link
-                          href="/my-courses"
-                          className="flex items-center gap-3 px-4 py-2 text-sm site-text-secondary hover:site-text-primary hover:bg-white/10 site-light:hover:bg-slate-100 transition-colors"
-                          onClick={() => setIsUserMenuOpen(false)}
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                          </svg>
-                          My Courses
-                        </Link>
                         <div className="border-t site-border my-2"></div>
                         <button
                           onClick={handleLogout}
@@ -1084,32 +1064,6 @@ const Navbar = () => {
                           </Link>
                         </div>
                       )}
-
-                      <div className="border-b site-border">
-                        <Link
-                          href="/profile"
-                          className="flex items-center justify-between py-3 site-text-primary hover:text-[#4F46E5] transition-colors"
-                          onClick={closeMobileMenu}
-                        >
-                          <span className="text-sm font-medium">My Profile</span>
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                          </svg>
-                        </Link>
-                      </div>
-
-                      <div className="border-b site-border">
-                        <Link
-                          href="/my-courses"
-                          className="flex items-center justify-between py-3 site-text-primary hover:text-[#4F46E5] transition-colors"
-                          onClick={closeMobileMenu}
-                        >
-                          <span className="text-sm font-medium">My Courses</span>
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                          </svg>
-                        </Link>
-                      </div>
                       
                       {/* Sign Out Link */}
                       <div>

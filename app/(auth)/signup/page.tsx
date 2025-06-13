@@ -54,7 +54,7 @@ export default function SignupPage() {
           if (role === "admin" || role === "superadmin") {
             router.replace("/dashboard");
           } else {
-            router.replace("/user-dashboard/profile");
+            router.replace("/my-courses");
           }
         } catch (error) {
           // Invalid token, remove it
@@ -245,7 +245,7 @@ export default function SignupPage() {
               type="submit" 
               fullWidth 
               disabled={isLoading} 
-              className="py-3 bg-[#10B981] hover:bg-[#059669] mt-6"
+              className="py-3 bg-[#4F46E5] hover:bg-[#4338CA] mt-6"
             >
               {isLoading ? "Creating Account..." : "Create Account"}
             </Button>
@@ -254,7 +254,7 @@ export default function SignupPage() {
           <div className="text-center mt-6">
             <p className="text-white/70">
               Already have an account?{" "}
-                <Link href="/login" className="auth-link text-[#10B981]">
+                <Link href="/login" className="auth-link text-[#4F46E5]">
                 Sign in
               </Link>
             </p>
@@ -264,7 +264,7 @@ export default function SignupPage() {
       </div>
 
       {/* Right column with design and quote */}
-      <div className="w-full md:w-1/2 bg-[#10B981] flex flex-col items-center justify-center p-8 relative">
+      <div className="w-full md:w-1/2 bg-[#4F46E5] flex flex-col items-center justify-center p-8 relative">
         <div className="max-w-md w-full flex flex-col items-center">
           <div className="relative w-96 h-40 mb-12">
             <Image
