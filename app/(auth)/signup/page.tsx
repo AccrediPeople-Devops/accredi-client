@@ -157,13 +157,13 @@ export default function SignupPage() {
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-white">Create Account</h1>
             <p className="text-secondary/80 mt-3">Join our community and start your certification journey</p>
-          </div>
+        </div>
 
-          {errors.general && (
+        {errors.general && (
             <div className="bg-error/20 border border-error/30 text-white px-4 py-3 rounded mb-6">
-              {errors.general}
-            </div>
-          )}
+            {errors.general}
+          </div>
+        )}
 
                     <form onSubmit={handleSubmit} className="space-y-5">
             {/* Basic Info */}
@@ -192,53 +192,53 @@ export default function SignupPage() {
             </div>
 
             {/* Password */}
-            <Input
-              label="Password"
-              type="password"
-              name="password"
+              <Input
+                label="Password"
+                type="password"
+                name="password"
               placeholder="Create a strong password"
-              value={formData.password}
-              onChange={handleChange}
-              error={errors.password}
-              autoComplete="new-password"
-            />
+                value={formData.password}
+                onChange={handleChange}
+                error={errors.password}
+                autoComplete="new-password"
+              />
 
             {/* Contact and Location Row */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Input
-                label="Contact Number"
-                type="tel"
-                name="contactNumber"
-                placeholder="Enter your contact number"
-                value={formData.contactNumber}
-                onChange={handleChange}
-                error={errors.contactNumber}
-                autoComplete="tel"
-              />
+            <Input
+              label="Contact Number"
+              type="tel"
+              name="contactNumber"
+              placeholder="Enter your contact number"
+              value={formData.contactNumber}
+              onChange={handleChange}
+              error={errors.contactNumber}
+              autoComplete="tel"
+            />
 
-              <Input
-                label="Country"
-                type="text"
-                name="country"
-                placeholder="Enter your country"
-                value={formData.country}
-                onChange={handleChange}
-                error={errors.country}
-                autoComplete="country"
-              />
-            </div>
+            <Input
+              label="Country"
+              type="text"
+              name="country"
+              placeholder="Enter your country"
+              value={formData.country}
+              onChange={handleChange}
+              error={errors.country}
+              autoComplete="country"
+            />
+          </div>
 
             {/* City */}
-            <Input
-              label="City"
-              type="text"
-              name="city"
-              placeholder="Enter your city"
-              value={formData.city}
-              onChange={handleChange}
-              error={errors.city}
-              autoComplete="address-level2"
-            />
+          <Input
+            label="City"
+            type="text"
+            name="city"
+            placeholder="Enter your city"
+            value={formData.city}
+            onChange={handleChange}
+            error={errors.city}
+            autoComplete="address-level2"
+          />
 
             {/* Submit Button */}
             <Button 
@@ -251,15 +251,15 @@ export default function SignupPage() {
             </Button>
 
             {/* Login Link */}
-            <div className="text-center mt-6">
-              <p className="text-white/70">
-                Already have an account?{" "}
+          <div className="text-center mt-6">
+            <p className="text-white/70">
+              Already have an account?{" "}
                 <Link href="/login" className="auth-link text-[#10B981]">
-                  Sign in
-                </Link>
-              </p>
-            </div>
-          </form>
+                Sign in
+              </Link>
+            </p>
+          </div>
+        </form>
         </div>
       </div>
 

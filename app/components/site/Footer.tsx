@@ -10,17 +10,16 @@ export default function Footer() {
   const quickLinks = [
     { name: "Home", href: "/" },
     { name: "About Us", href: "/about" },
-    { name: "Our Approach", href: "/approach" },
+    { name: "Our Approach", href: "/#our-approach" },
     { name: "Contact Us", href: "/contact" },
-    { name: "Blogs", href: "/blogs" },
+
   ];
 
   const policies = [
-    { name: "Rescheduling Policy", href: "/policies/rescheduling" },
-    { name: "Refund policy", href: "/policies/refund" },
-    { name: "Our Privacy Policy", href: "/policies/privacy" },
-    { name: "Terms & Conditions", href: "/policies/terms" },
-    { name: "100% Money Back Guarantee on PMP Training", href: "/policies/money-back-guarantee" },
+    { name: "Rescheduling Policy", href: "/rescheduling-policy" },
+    { name: "Refund policy", href: "/refund-policy" },
+    { name: "Our Privacy Policy", href: "/privacy-policy" },
+    { name: "Terms & Conditions", href: "/terms-conditions" },
   ];
 
   const discounts = [
@@ -30,8 +29,8 @@ export default function Footer() {
   ];
 
   const workWithUs = [
-    { name: "Become Instructor", href: "/careers/instructor" },
-    { name: "Blog As a Guest", href: "/careers/guest-blog" },
+    { name: "Become Instructor", href: "/become-instructor" },
+
   ];
 
   const forBusiness = [

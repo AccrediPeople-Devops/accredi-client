@@ -31,7 +31,7 @@ export default function CertificationsSection() {
           console.warn("Authentication failed, showing empty categories");
           setCategories([]);
         } else {
-          setError("Failed to load categories");
+        setError("Failed to load categories");
         }
       } finally {
         setIsLoading(false);

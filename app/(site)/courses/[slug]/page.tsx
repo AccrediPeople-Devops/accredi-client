@@ -715,10 +715,10 @@ export default function CoursePage({ params }: CoursePageProps) {
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
+                    </div>
+                      </div>
+                      </div>
+                    </div>
       </section>
 
       {/* Course Overview Section */}
@@ -727,7 +727,7 @@ export default function CoursePage({ params }: CoursePageProps) {
           <div className="absolute inset-0">
             <div className="absolute top-20 left-20 w-64 h-64 bg-[#4F46E5]/5 site-light:bg-[#4F46E5]/10 rounded-full blur-3xl"></div>
             <div className="absolute bottom-20 right-20 w-80 h-80 bg-[#10B981]/5 site-light:bg-[#10B981]/10 rounded-full blur-3xl"></div>
-          </div>
+                  </div>
 
           <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
@@ -736,22 +736,22 @@ export default function CoursePage({ params }: CoursePageProps) {
                 <span className="text-[#4F46E5] text-sm font-semibold uppercase tracking-wider">
                   About This Course
                 </span>
-              </div>
+                </div>
               <h2 className="text-4xl lg:text-5xl xl:text-6xl font-black mb-6 leading-tight">
                 <span className="bg-gradient-to-r from-[#4F46E5] to-[#10B981] bg-clip-text text-transparent">
                   Course Overview
                 </span>
               </h2>
-            </div>
+              </div>
 
             <div className="site-glass backdrop-blur-xl rounded-3xl p-8 md:p-12 shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500">
               <RichTextRenderer 
                 content={course.description}
                 className="text-lg leading-relaxed"
               />
-            </div>
           </div>
-        </section>
+        </div>
+      </section>
       )}
 
       {/* Course Components Section */}
