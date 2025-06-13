@@ -66,9 +66,21 @@ class AuthService {
   async generateTokenByRefreshToken() {
     try {
       const refreshToken = Cookies.get("refreshToken") || localStorage.getItem("refreshToken");
+      
+      // Check if refresh token exists
+      if (!refreshToken) {
+        throw new Error("No refresh token available");
+      }
+
+      // Validate refresh token format (basic JWT check)
+      if (refreshToken.split('.').length !== 3) {
+        throw new Error("Invalid refresh token format");
+      }
+
       const response = await axiosInstance.post("/auth/v1/refresh-token", {
         refreshToken,
       });
+      
       if (response.status === 200) {
         const { accessToken, refreshToken: newRefreshToken } = response.data.token;
         localStorage.setItem("token", accessToken);
@@ -77,7 +89,18 @@ class AuthService {
         Cookies.set("refreshToken", newRefreshToken, { path: "/" });
       }
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
+      // Log the specific error for debugging
+      console.error("Refresh token error:", error.response?.status, error.response?.data || error.message);
+      
+      // Clear tokens if refresh fails
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("token");
+        localStorage.removeItem("refreshToken");
+        Cookies.remove("token");
+        Cookies.remove("refreshToken");
+      }
+      
       throw error;
     }
   }

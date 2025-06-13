@@ -33,6 +33,46 @@ axiosInstance.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
+      // Check if we have a refresh token before attempting refresh
+      const refreshToken = Cookies.get("refreshToken") || localStorage.getItem("refreshToken");
+      if (!refreshToken) {
+        console.warn("No refresh token available for 401 error");
+        
+        // Clear any existing invalid tokens
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("token");
+          localStorage.removeItem("refreshToken");
+          Cookies.remove("token");
+          Cookies.remove("refreshToken");
+        }
+        
+        // Check if this is a public endpoint that should work without auth
+        const isPublicEndpoint = originalRequest.url?.includes('/courses/v1') || 
+                                originalRequest.url?.includes('/courses-categories/v1');
+        
+        if (isPublicEndpoint) {
+          // For public endpoints, try the request again without auth headers
+          delete originalRequest.headers.Authorization;
+          return axiosInstance(originalRequest);
+        }
+        
+        // For protected endpoints, redirect to login if not on public page
+        if (typeof window !== "undefined") {
+          const currentPath = window.location.pathname;
+          const publicPaths = ['/', '/landing', '/login', '/signup', '/courses'];
+          const isPublicPath = publicPaths.some(path => 
+            currentPath === path || currentPath.startsWith(path + '/')
+          );
+          
+          if (!isPublicPath) {
+            console.log("Redirecting to login due to missing refresh token");
+            window.location.href = "/login";
+          }
+        }
+        
+        return Promise.reject(new Error("Authentication required"));
+      }
+
       try {
         // Try to get new token
         await AuthService.generateTokenByRefreshToken();
@@ -41,31 +81,37 @@ axiosInstance.interceptors.response.use(
         const newToken = getToken();
         if (newToken) {
           originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          // Retry the original request
+          return axiosInstance(originalRequest);
+        } else {
+          throw new Error("Failed to get new token");
         }
-
-        // Retry the original request
-        return axiosInstance(originalRequest);
-      } catch (err) {
-        // If refresh token fails, clear tokens
-        localStorage.removeItem("token");
-        localStorage.removeItem("refreshToken");
-        Cookies.remove("token");
-        Cookies.remove("refreshToken");
+      } catch (refreshError: any) {
+        console.warn("Token refresh failed:", refreshError.message);
+        
+        // Clear tokens on refresh failure
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("token");
+          localStorage.removeItem("refreshToken");
+          Cookies.remove("token");
+          Cookies.remove("refreshToken");
+        }
         
         // Only redirect to login if we're on a protected page
         if (typeof window !== "undefined") {
           const currentPath = window.location.pathname;
-          const publicPaths = ['/', '/landing', '/login', '/signup', '/course'];
+          const publicPaths = ['/', '/landing', '/login', '/signup', '/courses'];
           const isPublicPath = publicPaths.some(path => 
             currentPath === path || currentPath.startsWith(path + '/')
           );
           
           if (!isPublicPath) {
+            console.log("Redirecting to login due to auth failure");
             window.location.href = "/login";
           }
         }
         
-        return Promise.reject(err);
+        return Promise.reject(refreshError);
       }
     }
 

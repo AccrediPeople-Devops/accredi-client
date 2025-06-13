@@ -68,6 +68,17 @@ const Navbar = () => {
 
       // Try to decode token and find user
       try {
+        // Basic validation: check if token has 3 parts (JWT format)
+        const tokenParts = token.split('.');
+        if (tokenParts.length !== 3) {
+          console.warn("Invalid token format, clearing tokens");
+          localStorage.removeItem("token");
+          localStorage.removeItem("refreshToken");
+          setCurrentUser(null);
+          setIsCheckingAuth(false);
+          return;
+        }
+
         const tokenPayload = JSON.parse(atob(token.split('.')[1]));
         const res = await UserService.getAllUsers();
         
@@ -161,8 +172,13 @@ const Navbar = () => {
         if (categoriesWithCourses.length > 0) {
           setActiveDomain(categoriesWithCourses[0]);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error fetching courses for navbar:", error);
+        // If it's an authentication error, just set empty categories
+        if (error.response?.status === 401 || error.message === "Authentication required") {
+          console.warn("Authentication failed, showing navbar without courses");
+          setCategories([]);
+        }
       } finally {
         setIsLoadingCourses(false);
       }
@@ -170,6 +186,16 @@ const Navbar = () => {
 
     fetchCoursesAndCategories();
     checkAuthStatus();
+
+    // Add global function for debugging
+    if (typeof window !== "undefined") {
+      (window as any).clearTokens = () => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("refreshToken");
+        console.log("Tokens cleared manually");
+        window.location.reload();
+      };
+    }
   }, []);
 
   // Helper function to get course image URL

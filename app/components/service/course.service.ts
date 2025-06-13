@@ -16,7 +16,12 @@ class CourseService {
     try {
       const response = await axiosInstance.get("/courses/v1");
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
+      // If it's an authentication error and we're on a public page, return empty data
+      if (error.response?.status === 401 || error.message === "Authentication required") {
+        console.warn("Authentication failed for courses, returning empty data for public access");
+        return { status: true, courses: [] };
+      }
       throw error;
     }
   }
