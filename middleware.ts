@@ -6,8 +6,7 @@ export function middleware(request: NextRequest) {
   
   // Check if the request is for the dashboard route group
   if (pathname.startsWith('/dashboard')) {
-    const token = request.cookies.get('token')?.value || 
-                  request.headers.get('authorization')?.replace('Bearer ', '');
+    const token = request.cookies.get('token')?.value || request.headers.get('authorization')?.replace('Bearer ', '') || (typeof window !== 'undefined' ? localStorage.getItem('token') : null);
     
     if (!token) {
       // No token, redirect to login
@@ -32,8 +31,7 @@ export function middleware(request: NextRequest) {
   
   // Check if regular user is trying to access admin-only pages
   if (pathname.startsWith('/profile') || pathname.startsWith('/my-courses')) {
-    const token = request.cookies.get('token')?.value || 
-                  request.headers.get('authorization')?.replace('Bearer ', '');
+    const token = request.cookies.get('token')?.value || request.headers.get('authorization')?.replace('Bearer ', '') || (typeof window !== 'undefined' ? localStorage.getItem('token') : null);
     
     if (!token) {
       // No token, redirect to login

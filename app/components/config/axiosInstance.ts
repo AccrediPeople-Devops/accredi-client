@@ -1,11 +1,12 @@
 import axios from "axios";
 import config from "./config";
 import AuthService from "../service/auth.service";
+import Cookies from 'js-cookie';
 
 // Check if we're running on client-side before accessing localStorage
 const getToken = () => {
   if (typeof window !== "undefined") {
-    return localStorage.getItem("token");
+    return Cookies.get("token") || localStorage.getItem("token");
   }
   return null;
 };
@@ -48,6 +49,8 @@ axiosInstance.interceptors.response.use(
         // If refresh token fails, clear tokens and redirect to login
         localStorage.removeItem("token");
         localStorage.removeItem("refreshToken");
+        Cookies.remove("token");
+        Cookies.remove("refreshToken");
         window.location.href = "/login";
         return Promise.reject(err);
       }

@@ -1,4 +1,5 @@
 import axiosInstance from "../config/axiosInstance";
+import Cookies from 'js-cookie';
 
 class AuthService {
   async login(email: string, password: string) {
@@ -10,8 +11,15 @@ class AuthService {
 
       // Only set token if we're on the client side
       if (typeof window !== "undefined") {
-        localStorage.setItem("token", response.data.token.accessToken);
-        localStorage.setItem("refreshToken", response.data.token.refreshToken);
+        const { accessToken, refreshToken } = response.data.token;
+        
+        // Set in localStorage
+        localStorage.setItem("token", accessToken);
+        localStorage.setItem("refreshToken", refreshToken);
+        
+        // Set in cookies
+        Cookies.set("token", accessToken, { path: "/" });
+        Cookies.set("refreshToken", refreshToken, { path: "/" });
       }
 
       return response.data;
@@ -33,14 +41,17 @@ class AuthService {
     if (typeof window !== "undefined") {
       localStorage.removeItem("token");
       localStorage.removeItem("refreshToken");
+      Cookies.remove("token");
+      Cookies.remove("refreshToken");
     }
   }
 
   async isAuthenticated() {
     try {
+      const token = Cookies.get("token") || localStorage.getItem("token");
       const response = await axiosInstance.get("/auth/v1", {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${token}`,
         },
       });
       if (response.status === 200) {
@@ -54,11 +65,16 @@ class AuthService {
 
   async generateTokenByRefreshToken() {
     try {
+      const refreshToken = Cookies.get("refreshToken") || localStorage.getItem("refreshToken");
       const response = await axiosInstance.post("/auth/v1/refresh-token", {
-        refreshToken: localStorage.getItem("refreshToken"),
+        refreshToken,
       });
       if (response.status === 200) {
-        localStorage.setItem("token", response.data.token);
+        const { accessToken, refreshToken: newRefreshToken } = response.data.token;
+        localStorage.setItem("token", accessToken);
+        localStorage.setItem("refreshToken", newRefreshToken);
+        Cookies.set("token", accessToken, { path: "/" });
+        Cookies.set("refreshToken", newRefreshToken, { path: "/" });
       }
       return response.data;
     } catch (error) {
