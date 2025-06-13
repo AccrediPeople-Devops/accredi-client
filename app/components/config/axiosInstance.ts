@@ -46,12 +46,25 @@ axiosInstance.interceptors.response.use(
         // Retry the original request
         return axiosInstance(originalRequest);
       } catch (err) {
-        // If refresh token fails, clear tokens and redirect to login
+        // If refresh token fails, clear tokens
         localStorage.removeItem("token");
         localStorage.removeItem("refreshToken");
         Cookies.remove("token");
         Cookies.remove("refreshToken");
-        window.location.href = "/login";
+        
+        // Only redirect to login if we're on a protected page
+        if (typeof window !== "undefined") {
+          const currentPath = window.location.pathname;
+          const publicPaths = ['/', '/landing', '/login', '/signup', '/course'];
+          const isPublicPath = publicPaths.some(path => 
+            currentPath === path || currentPath.startsWith(path + '/')
+          );
+          
+          if (!isPublicPath) {
+            window.location.href = "/login";
+          }
+        }
+        
         return Promise.reject(err);
       }
     }

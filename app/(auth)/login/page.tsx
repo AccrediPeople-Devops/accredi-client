@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Input from "@/app/components/Input";
 import Button from "@/app/components/Button";
 import { loginSchema, validateForm } from "@/app/utils/validation";
@@ -11,6 +11,7 @@ import AuthService from "@/app/components/service/auth.service";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -20,7 +21,43 @@ export default function LoginPage() {
     password?: string;
     general?: string;
   }>({});
+  const [successMessage, setSuccessMessage] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
+
+  // Check if user is already authenticated and handle success messages
+  useEffect(() => {
+    const checkAuthentication = async () => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        try {
+          // Decode token to check user role
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          const role = payload.role;
+          
+          // Redirect based on role
+          if (role === "admin" || role === "superadmin") {
+            router.replace("/dashboard");
+          } else {
+            router.replace("/user-dashboard/profile");
+          }
+        } catch (error) {
+          // Invalid token, remove it
+          localStorage.removeItem("token");
+          localStorage.removeItem("refreshToken");
+        }
+      }
+    };
+    
+    // Check for success message from signup
+    const message = searchParams.get('message');
+    if (message) {
+      setSuccessMessage(message);
+      // Clear the message from URL without causing a re-render loop
+      window.history.replaceState({}, '', '/login');
+    }
+    
+    checkAuthentication();
+  }, [router, searchParams]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -82,7 +119,7 @@ export default function LoginPage() {
           <div className="text-white text-center">
             <h2 className="text-2xl font-semibold mb-6">Empowering Professionals, One Certification at a Time.</h2>
             <p className="text-lg opacity-80">
-              "We’re committed to delivering world-class, instructor-led training programs that help professionals upskill, grow in their careers, and stay ahead in today’s competitive landscape."
+              "We're committed to delivering world-class, instructor-led training programs that help professionals upskill, grow in their careers, and stay ahead in today's competitive landscape."
             </p>
           </div>
         </div>
@@ -91,10 +128,29 @@ export default function LoginPage() {
       {/* Right column with login form */}
       <div className="w-full md:w-1/2 flex items-center justify-center p-8 bg-background">
         <div className="w-full max-w-md">
+          {/* Home Button */}
+          <div className="mb-6">
+            <Link 
+              href="/" 
+              className="inline-flex items-center text-secondary/80 hover:text-white transition-colors text-sm"
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Back to Home
+            </Link>
+          </div>
+
           <div className="mb-10">
             <h1 className="text-3xl font-bold text-white">Welcome Back</h1>
             <p className="text-secondary/80 mt-3">Sign in to access your certification dashboard</p>
           </div>
+
+          {successMessage && (
+            <div className="bg-green-500/20 border border-green-500/30 text-white px-4 py-3 rounded mb-6">
+              {successMessage}
+            </div>
+          )}
 
           {errors.general && (
             <div className="bg-error/20 border border-error/30 text-white px-4 py-3 rounded mb-6">
