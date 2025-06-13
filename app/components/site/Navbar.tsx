@@ -134,6 +134,7 @@ const Navbar = () => {
       try {
         console.log("Fetching courses for navbar...");
         const coursesResponse = await courseService.getAllCourses();
+        console.log("Raw courses response:", coursesResponse);
         
         let coursesData: Course[] = [];
         if (coursesResponse?.status && coursesResponse?.courses) {
@@ -144,10 +145,60 @@ const Navbar = () => {
 
         console.log("Processed courses for navbar:", coursesData.length);
 
+        if (coursesData.length === 0) {
+          console.warn("No courses found - showing fallback categories");
+          // Set some fallback categories for better UX
+          const fallbackCategories: CategoryWithCourses[] = [
+            {
+              _id: 'fallback-1',
+              name: 'Project Management',
+              description: 'Professional project management certifications',
+              courseCount: 0,
+              image: [],
+              isActive: true,
+              isDeleted: false,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+              courses: []
+            },
+            {
+              _id: 'fallback-2', 
+              name: 'Quality Management',
+              description: 'Quality and process improvement certifications',
+              courseCount: 0,
+              image: [],
+              isActive: true,
+              isDeleted: false,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+              courses: []
+            },
+            {
+              _id: 'fallback-3',
+              name: 'Agile and Scrum',
+              description: 'Agile methodology and Scrum certifications',
+              courseCount: 0,
+              image: [],
+              isActive: true,
+              isDeleted: false,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+              courses: []
+            }
+          ];
+          setCategories(fallbackCategories);
+          if (fallbackCategories.length > 0) {
+            setActiveDomain(fallbackCategories[0]);
+          }
+          setIsLoadingCourses(false);
+          return;
+        }
+
         // Extract unique categories from courses and group courses by category
         const categoriesMap = new Map<string, CategoryWithCourses>();
         
         coursesData.forEach(course => {
+          console.log("Processing course:", course.title, "Category:", course.categoryId);
           if (course.categoryId && typeof course.categoryId === 'object') {
             const category = course.categoryId as any;
             const categoryId = category._id;
@@ -174,10 +225,49 @@ const Navbar = () => {
         }
       } catch (error: any) {
         console.error("Error fetching courses for navbar:", error);
-        // If it's an authentication error, just set empty categories
-        if (error.response?.status === 401 || error.message === "Authentication required") {
-          console.warn("Authentication failed, showing navbar without courses");
-          setCategories([]);
+        // Always set fallback categories on error
+        console.warn("Setting fallback categories due to error");
+        const fallbackCategories: CategoryWithCourses[] = [
+          {
+            _id: 'fallback-1',
+            name: 'Project Management',
+            description: 'Professional project management certifications',
+            courseCount: 0,
+            image: [],
+            isActive: true,
+            isDeleted: false,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            courses: []
+          },
+          {
+            _id: 'fallback-2', 
+            name: 'Quality Management',
+            description: 'Quality and process improvement certifications',
+            courseCount: 0,
+            image: [],
+            isActive: true,
+            isDeleted: false,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            courses: []
+          },
+          {
+            _id: 'fallback-3',
+            name: 'Agile and Scrum',
+            description: 'Agile methodology and Scrum certifications',
+            courseCount: 0,
+            image: [],
+            isActive: true,
+            isDeleted: false,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            courses: []
+          }
+        ];
+        setCategories(fallbackCategories);
+        if (fallbackCategories.length > 0) {
+          setActiveDomain(fallbackCategories[0]);
         }
       } finally {
         setIsLoadingCourses(false);
@@ -194,6 +284,19 @@ const Navbar = () => {
         localStorage.removeItem("refreshToken");
         console.log("Tokens cleared manually");
         window.location.reload();
+      };
+      
+      // Add debug function to manually fetch courses
+      (window as any).debugCourses = async () => {
+        console.log("=== DEBUG: Manual course fetch ===");
+        try {
+          const response = await courseService.getAllCourses();
+          console.log("Debug courses response:", response);
+          return response;
+        } catch (error) {
+          console.error("Debug courses error:", error);
+          return error;
+        }
       };
     }
   }, []);
