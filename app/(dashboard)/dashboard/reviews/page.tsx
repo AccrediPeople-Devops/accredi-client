@@ -235,30 +235,13 @@ export default function ReviewsPage() {
         isOpen={showDeleteModal} 
         onClose={() => setShowDeleteModal(false)}
         title="Delete Review"
-      >
-        <div className="space-y-4">
-          <p className="text-[var(--foreground)]">
-            Are you sure you want to delete this review? This action cannot be undone.
-          </p>
-          
-          <div className="flex justify-end space-x-3">
-            <button
-              onClick={() => setShowDeleteModal(false)}
-              className="px-4 py-2 text-[var(--foreground)] border border-[var(--primary)]/30 rounded-[var(--radius-md)] hover:bg-[var(--primary)]/5 transition-colors"
-              disabled={isDeleting}
-            >
-              Cancel
-            </button>
-            <button
-              onClick={confirmDelete}
-              disabled={isDeleting}
-              className="px-4 py-2 bg-red-600 text-white rounded-[var(--radius-md)] hover:bg-red-700 transition-colors disabled:opacity-50"
-            >
-              {isDeleting ? "Deleting..." : "Delete"}
-            </button>
-          </div>
-        </div>
-      </Modal>
+        description="Are you sure you want to delete this review? This action cannot be undone."
+        confirmText={isDeleting ? "Deleting..." : "Delete"}
+        cancelText="Cancel"
+        onConfirm={confirmDelete}
+        isConfirming={isDeleting}
+        variant="danger"
+      />
     </div>
   );
 }

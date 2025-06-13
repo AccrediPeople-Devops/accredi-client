@@ -91,8 +91,7 @@ axiosInstance.interceptors.response.use(
     // If error is 401 and we haven't tried to refresh token yet
     if (error.response?.status === 401 && !originalRequest._retry) {
       // Check if this is a public endpoint that should work without auth
-      const isPublicEndpoint = originalRequest.url?.includes('/courses') || 
-                              originalRequest.url?.includes('/courses-categories/v1');
+      const isPublicEndpoint = originalRequest.url?.includes('/courses');
       
       if (isPublicEndpoint) {
         console.log("Retrying public endpoint without auth:", originalRequest.url);

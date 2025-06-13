@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -9,7 +9,7 @@ import Button from "@/app/components/Button";
 import { loginSchema, validateForm } from "@/app/utils/validation";
 import AuthService from "@/app/components/service/auth.service";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [formData, setFormData] = useState({
@@ -38,7 +38,7 @@ export default function LoginPage() {
           if (role === "admin" || role === "superadmin") {
             router.replace("/dashboard");
           } else {
-            router.replace("/user-dashboard/profile");
+            router.replace("/my-courses");
           }
         } catch (error) {
           // Invalid token, remove it
@@ -87,14 +87,25 @@ export default function LoginPage() {
       return;
     }
     try {
-      await AuthService.login(formData.email, formData.password);
       setIsLoading(true);
-
-      // Mock successful login
-      router.push("/dashboard");
+      const response = await AuthService.login(formData.email, formData.password);
+      
+      // Decode token to check user role
+      const token = localStorage.getItem("token");
+      if (token) {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const role = payload.role;
+        
+        // Redirect based on role
+        if (role === "admin" || role === "superadmin") {
+          router.push("/dashboard");
+        } else {
+          router.push("/my-courses");
+        }
+      }
     } catch (error: any) {
       setErrors({
-        general: error.response.data.message,
+        general: error.response?.data?.message || "Login failed. Please try again.",
       });
     } finally {
       setIsLoading(false);
@@ -203,5 +214,20 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="w-8 h-8 border-4 border-white/20 border-t-white rounded-full animate-spin"></div>
+          <p className="text-white/80">Loading...</p>
+        </div>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 }

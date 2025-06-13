@@ -31,14 +31,18 @@ export default function CourseCategoriesPage() {
         const categoriesWithCounts = await Promise.all(
           categoriesData.map(async (category: CourseCategory) => {
             try {
-              const courseCount = await courseService.countCoursesByCategory(category._id);
+              const coursesResponse = await courseService.getCoursesByCategory(category._id);
+              const courseCount = coursesResponse?.courses?.length || 0;
               return {
                 ...category,
                 courseCount: courseCount
               };
             } catch (error) {
               console.error(`Error getting course count for category ${category._id}:`, error);
-              return category;
+              return {
+                ...category,
+                courseCount: 0
+              };
             }
           })
         );
@@ -68,7 +72,8 @@ export default function CourseCategoriesPage() {
     
     try {
       // Check if category has associated courses
-      const hasAssociatedCourses = await courseService.hasCoursesByCategory(id);
+      const coursesResponse = await courseService.getCoursesByCategory(id);
+      const hasAssociatedCourses = coursesResponse?.courses?.length > 0;
       
       if (hasAssociatedCourses) {
         setDeleteError("Cannot delete category that has associated courses. Please remove all courses from this category first.");

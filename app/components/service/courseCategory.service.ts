@@ -3,12 +3,51 @@ import axiosInstance from "../config/axiosInstance";
 class CourseCategoryService {
   async getAllCourseCategories() {
     try {
-      const response = await axiosInstance.get("/courses-categories/v1");
-      return response.data;
+      const response = await axiosInstance.get("/courses");
+      
+      // Extract unique categories from courses
+      if (response.data && response.data.courses && Array.isArray(response.data.courses)) {
+        const courses = response.data.courses;
+        const categoryMap = new Map();
+        
+        courses.forEach((course: any) => {
+          if (course.categoryId && course.categoryId._id) {
+            const category = course.categoryId;
+            if (!categoryMap.has(category._id)) {
+              categoryMap.set(category._id, {
+                _id: category._id,
+                name: category.name || 'Unknown Category',
+                description: category.description || '',
+                courseCount: 1,
+                image: category.image || [],
+                isActive: category.isActive !== false,
+                isDeleted: category.isDeleted === true,
+                createdAt: category.createdAt || new Date().toISOString(),
+                updatedAt: category.updatedAt || new Date().toISOString()
+              });
+            } else {
+              // Increment course count for existing category
+              const existingCategory = categoryMap.get(category._id);
+              existingCategory.courseCount += 1;
+            }
+          }
+        });
+        
+        const categories = Array.from(categoryMap.values());
+        console.log("Extracted categories from courses:", categories);
+        
+        return { 
+          status: true, 
+          courseCategories: categories 
+        };
+      }
+      
+      return { status: true, courseCategories: [] };
     } catch (error: any) {
+      console.error("Error fetching courses for categories:", error);
       // If it's an authentication error and we're on a public page, return empty data
       if (error.response?.status === 401 || error.message === "Authentication required") {
-        console.warn("Authentication failed for course categories, returning empty data for public access");
+        console.warn("Authentication failed for courses, returning empty data for public access");
         return { status: true, courseCategories: [] };
       }
       throw error;
