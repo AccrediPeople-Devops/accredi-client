@@ -386,7 +386,7 @@ export default function SchedulesPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end space-x-2">
                         <Link
-                          href={`/dashboard/schedules/${schedule._id}/edit`}
+                          href={`/dashboard/schedules/edit/${schedule._id}`}
                           className="text-[var(--primary)] hover:text-[var(--primary-hover)] transition-colors"
                           title="Edit schedule"
                         >

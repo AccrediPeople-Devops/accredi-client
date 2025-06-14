@@ -90,7 +90,7 @@ export default function Dashboard() {
     const fetchLatestCourses = async () => {
       setIsCoursesLoading(true);
       try {
-        const response = await axios.get(`${config.apiUrl}/courses`, {
+        const response = await axios.get(`${config.apiUrl}/courses/v1`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`
           }

@@ -1,17 +1,18 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Input from "@/app/components/Input";
 import Button from "@/app/components/Button";
 import { loginSchema, validateForm } from "@/app/utils/validation";
 import AuthService from "@/app/components/service/auth.service";
+import UserService from "@/app/components/service/user.service";
+import { User } from "@/app/types/user";
 
-function LoginForm() {
+export default function LoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -21,43 +22,7 @@ function LoginForm() {
     password?: string;
     general?: string;
   }>({});
-  const [successMessage, setSuccessMessage] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
-
-  // Check if user is already authenticated and handle success messages
-  useEffect(() => {
-    const checkAuthentication = async () => {
-      const token = localStorage.getItem("token");
-      if (token) {
-        try {
-          // Decode token to check user role
-          const payload = JSON.parse(atob(token.split('.')[1]));
-          const role = payload.role;
-          
-          // Redirect based on role
-          if (role === "admin" || role === "superadmin") {
-            router.replace("/dashboard");
-          } else {
-            router.replace("/my-courses");
-          }
-        } catch (error) {
-          // Invalid token, remove it
-          localStorage.removeItem("token");
-          localStorage.removeItem("refreshToken");
-        }
-      }
-    };
-    
-    // Check for success message from signup
-    const message = searchParams.get('message');
-    if (message) {
-      setSuccessMessage(message);
-      // Clear the message from URL without causing a re-render loop
-      window.history.replaceState({}, '', '/login');
-    }
-    
-    checkAuthentication();
-  }, [router, searchParams]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -86,28 +51,97 @@ function LoginForm() {
       setErrors(validationErrors);
       return;
     }
+    
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-      const response = await AuthService.login(formData.email, formData.password);
-      
-      // Decode token to check user role
+      const loginResponse = await AuthService.login(formData.email, formData.password);
+      console.log("=== LOGIN SUCCESS ===");
+      console.log("Login response:", loginResponse);
+
+      // Store user email for use in dashboards
+      localStorage.setItem("userEmail", formData.email);
+      console.log("✅ Stored user email:", formData.email);
+
+      // Add a small delay to ensure token is set properly
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Get the token to extract user info and find the user's role
       const token = localStorage.getItem("token");
-      if (token) {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        const role = payload.role;
+      console.log("Retrieved token:", token ? "Token exists" : "No token");
+      
+      if (!token) {
+        throw new Error("No token received");
+      }
+
+      try {
+        // Decode the token to get user role directly
+        const tokenPayload = JSON.parse(atob(token.split('.')[1]));
+        console.log("=== TOKEN PAYLOAD ===");
+        console.log("Token payload:", tokenPayload);
         
-        // Redirect based on role
-        if (role === "admin" || role === "superadmin") {
-          router.push("/dashboard");
+        // Check if role exists in token payload
+        if (tokenPayload.role) {
+          console.log("=== USING ROLE FROM TOKEN ===");
+          console.log("User role from token:", tokenPayload.role);
+          
+          // Redirect based on user role from token
+          if (tokenPayload.role === 'admin' || tokenPayload.role === 'superadmin') {
+            console.log("🔗 REDIRECTING TO ADMIN DASHBOARD: /dashboard");
+            router.push("/dashboard");
+          } else {
+            console.log("🔗 REDIRECTING TO USER DASHBOARD: /user-dashboard");
+            router.push("/user-dashboard");
+          }
         } else {
-          router.push("/my-courses");
+          // Fallback: Fetch users and find the one matching the token
+          console.log("⚠️ No role in token, fetching users list as fallback...");
+          const res = await UserService.getAllUsers();
+          console.log("Users response:", res);
+          
+          if (res?.users) {
+            console.log("Total users found:", res.users.length);
+            const foundUser = res.users.find((user: User) => 
+              user.email === tokenPayload.email || 
+              user._id === tokenPayload.userId ||
+              user._id === tokenPayload.id
+            );
+            
+            if (foundUser) {
+              console.log("=== USER FOUND ===");
+              console.log("Found user:", foundUser);
+              console.log("User role:", foundUser.role);
+              console.log("User email:", foundUser.email);
+              
+              // Redirect based on user role
+              if (foundUser.role === 'admin' || foundUser.role === 'superadmin') {
+                console.log("🔗 REDIRECTING TO ADMIN DASHBOARD: /dashboard");
+                router.push("/dashboard");
+              } else {
+                console.log("🔗 REDIRECTING TO USER DASHBOARD: /user-dashboard");
+                router.push("/user-dashboard");
+              }
+            } else {
+              console.log("❌ User not found in users list");
+              console.log("Looking for email:", tokenPayload.email);
+              console.log("Available users:", res.users.map((u: User) => ({ email: u.email, role: u.role })));
+              console.log("Defaulting to admin dashboard");
+              router.push("/dashboard");
+            }
+          } else {
+            console.log("❌ No users data received");
+            console.log("Defaulting to admin dashboard");
+            router.push("/dashboard");
+          }
         }
+      } catch (tokenError) {
+        console.error("❌ Error decoding token or fetching user:", tokenError);
+        // Default to admin dashboard if there's an error
+        router.push("/dashboard");
       }
     } catch (error: any) {
       setErrors({
-        general: error.response?.data?.message || "Login failed. Please try again.",
+        general: error.response?.data?.message || "Login failed",
       });
-    } finally {
       setIsLoading(false);
     }
   };
@@ -128,9 +162,9 @@ function LoginForm() {
             />
           </div>
           <div className="text-white text-center">
-            <h2 className="text-2xl font-semibold mb-6">Empowering Professionals, One Certification at a Time.</h2>
+            <h2 className="text-2xl font-semibold mb-6">Certification Excellence</h2>
             <p className="text-lg opacity-80">
-              "We're committed to delivering world-class, instructor-led training programs that help professionals upskill, grow in their careers, and stay ahead in today's competitive landscape."
+              "Elevating professionals through industry-recognized certifications and verified credentials."
             </p>
           </div>
         </div>
@@ -139,29 +173,10 @@ function LoginForm() {
       {/* Right column with login form */}
       <div className="w-full md:w-1/2 flex items-center justify-center p-8 bg-background">
         <div className="w-full max-w-md">
-          {/* Home Button */}
-          <div className="mb-6">
-            <Link 
-              href="/" 
-              className="inline-flex items-center text-secondary/80 hover:text-white transition-colors text-sm"
-            >
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-              Back to Home
-            </Link>
-          </div>
-
           <div className="mb-10">
             <h1 className="text-3xl font-bold text-white">Welcome Back</h1>
             <p className="text-secondary/80 mt-3">Sign in to access your certification dashboard</p>
           </div>
-
-          {successMessage && (
-            <div className="bg-green-500/20 border border-green-500/30 text-white px-4 py-3 rounded mb-6">
-              {successMessage}
-            </div>
-          )}
 
           {errors.general && (
             <div className="bg-error/20 border border-error/30 text-white px-4 py-3 rounded mb-6">
@@ -202,6 +217,18 @@ function LoginForm() {
               {isLoading ? "Signing in..." : "Sign In"}
             </Button>
 
+            <div className="text-center mt-4">
+              <Link 
+                href="/landing" 
+                className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white/70 hover:text-white transition-colors duration-200"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+                Back to Home
+              </Link>
+            </div>
+
             <div className="text-center mt-6">
               <p className="text-white/70">
                 Don&apos;t have an account?{" "}
@@ -214,20 +241,5 @@ function LoginForm() {
         </div>
       </div>
     </div>
-  );
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="flex flex-col items-center space-y-4">
-          <div className="w-8 h-8 border-4 border-white/20 border-t-white rounded-full animate-spin"></div>
-          <p className="text-white/80">Loading...</p>
-        </div>
-      </div>
-    }>
-      <LoginForm />
-    </Suspense>
   );
 }

@@ -26,15 +26,48 @@ export default function AddUserPage() {
     null
   );
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingUser, setIsLoadingUser] = useState(true);
   const [error, setError] = useState("");
 
   const fetchCurrentUser = async () => {
+    setIsLoadingUser(true);
     try {
-      // Since getCurrentUser method doesn't exist, we'll skip this for now
-      // User role restrictions will be handled differently if needed
-      console.log("Current user check skipped in add user page");
+      // Get the token to extract user info
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.log("No token found");
+        setIsLoadingUser(false);
+        return;
+      }
+
+      // Try to decode the token to get user email (if it's a JWT)
+      try {
+        const tokenPayload = JSON.parse(atob(token.split('.')[1]));
+        console.log("Token payload:", tokenPayload);
+        
+        // Fetch users and find the one matching the token
+        const res = await UserService.getAllUsers();
+        if (res?.users) {
+          const foundUser = res.users.find((user: User) => 
+            user.email === tokenPayload.email || 
+            user._id === tokenPayload.userId ||
+            user._id === tokenPayload.id
+          );
+          
+          if (foundUser) {
+            setCurrentUser(foundUser);
+            console.log("Found current user:", foundUser);
+          } else {
+            console.log("User not found in users list");
+          }
+        }
+      } catch (tokenError) {
+        console.error("Error decoding token:", tokenError);
+      }
     } catch (err: any) {
-      console.error("Error in user check:", err);
+      console.error("Error fetching current user:", err);
+    } finally {
+      setIsLoadingUser(false);
     }
   };
 
@@ -43,16 +76,25 @@ export default function AddUserPage() {
   }, []);
 
   const canCreateRole = (role: string): boolean => {
-    if (!currentUser) return false;
+    console.log("canCreateRole check:", { currentUser: currentUser?.role, targetRole: role });
     
-    // Only superadmin can create other superadmins and admins
-    if (role === "superadmin" || role === "admin") {
-      return currentUser.role === "superadmin";
+    if (!currentUser) {
+      console.log("No current user, returning false");
+      return false;
+    }
+    
+    // Only superadmin can create admins (there's only one superadmin created by backend)
+    if (role === "admin") {
+      const canCreate = currentUser.role === "superadmin";
+      console.log(`Can create ${role}:`, canCreate);
+      return canCreate;
     }
     
     // Both admin and superadmin can create users
     if (role === "user") {
-      return currentUser.role === "admin" || currentUser.role === "superadmin";
+      const canCreate = currentUser.role === "admin" || currentUser.role === "superadmin";
+      console.log(`Can create ${role}:`, canCreate);
+      return canCreate;
     }
     
     return false;
@@ -159,6 +201,18 @@ export default function AddUserPage() {
     }
   };
 
+  // Show loading state while fetching current user data
+  if (isLoadingUser) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-[var(--foreground-muted)]">Loading user permissions...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -190,6 +244,13 @@ export default function AddUserPage() {
           Back to Users
         </Link>
       </div>
+
+      {/* Current user debug info */}
+      {process.env.NODE_ENV === "development" && (
+        <div className="p-4 bg-blue-100 border border-blue-400 text-blue-700 rounded-[var(--radius-md)]">
+          <p><strong>Debug:</strong> Current user role: {currentUser?.role || "Not loaded"}</p>
+        </div>
+      )}
 
       {/* Error message */}
       {error && (

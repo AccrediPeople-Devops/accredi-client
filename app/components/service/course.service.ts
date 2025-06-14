@@ -14,14 +14,9 @@ class CourseService {
    */
   async getAllCourses() {
     try {
-      const response = await axiosInstance.get("/courses");
+      const response = await axiosInstance.get("/courses/v1");
       return response.data;
-    } catch (error: any) {
-      // If it's an authentication error and we're on a public page, return empty data
-      if (error.response?.status === 401 || error.message === "Authentication required") {
-        console.warn("Authentication failed for courses, returning empty data for public access");
-        return { status: true, courses: [] };
-      }
+    } catch (error) {
       throw error;
     }
   }
@@ -34,39 +29,39 @@ class CourseService {
   async getCourseById(id: string) {
     try {
       console.log("CourseService: Fetching course with ID:", id);
-
-      // Fetch all courses from the /courses endpoint
+      
+      // Skip the direct endpoint call that was causing 404 errors
+      // and go straight to fetching all courses and finding the matching one
+      console.log("CourseService: Using fallback method - fetch all courses");
       const allResponse = await this.getAllCourses();
-
-      if (
-        allResponse &&
-        allResponse.status &&
-        allResponse.courses &&
-        Array.isArray(allResponse.courses)
-      ) {
-        const foundCourse = allResponse.courses.find(
-          (course: any) => course._id === id
-        );
-        if (foundCourse) {
-          console.log("CourseService: Found course:", foundCourse);
-          return { status: true, course: foundCourse };
-        }
+      
+      let courses = [];
+      if (allResponse && allResponse.courses && Array.isArray(allResponse.courses)) {
+        courses = allResponse.courses;
+      } else if (Array.isArray(allResponse)) {
+        courses = allResponse;
+      } else if (allResponse && allResponse.data && Array.isArray(allResponse.data)) {
+        courses = allResponse.data;
       }
-
+      
+      const foundCourse = courses.find((course: any) => course._id === id);
+      if (foundCourse) {
+        console.log("CourseService: Found course in all courses:", foundCourse);
+        return { status: true, course: foundCourse };
+      }
+      
       // Return a not found error if we couldn't find the course
-      return {
-        status: false,
-        message: `Course not found with ID: ${id}`,
+      return { 
+        status: false, 
+        message: `Course not found with ID: ${id}`
       };
     } catch (error: any) {
       console.error("CourseService: Error fetching course:", error);
-
+      
       // Return a structured error
-      return {
-        status: false,
-        message:
-          error.response?.data?.message ||
-          `Error fetching course with ID: ${id}`,
+      return { 
+        status: false, 
+        message: error.response?.data?.message || `Error fetching course with ID: ${id}`
       };
     }
   }
@@ -78,36 +73,48 @@ class CourseService {
    */
   async getCoursesByCategory(categoryId: string) {
     try {
-      // Get all courses and filter by category
-      const allResponse = await this.getAllCourses();
-
-      if (
-        allResponse &&
-        allResponse.status &&
-        allResponse.courses &&
-        Array.isArray(allResponse.courses)
-      ) {
+      try {
+        // First try the direct endpoint
+        const response = await axiosInstance.get(`/courses/v1/category/${categoryId}`);
+        return response.data;
+      } catch (directError: any) {
+        console.log("Direct category endpoint failed:", directError.message);
+        
+        // Fallback: get all courses and filter by category
+        console.log("Using fallback method - fetch all courses and filter by category");
+        const allResponse = await this.getAllCourses();
+        
+        let allCourses = [];
+        if (allResponse && allResponse.courses && Array.isArray(allResponse.courses)) {
+          allCourses = allResponse.courses;
+        } else if (Array.isArray(allResponse)) {
+          allCourses = allResponse;
+        } else if (allResponse && allResponse.data && Array.isArray(allResponse.data)) {
+          allCourses = allResponse.data;
+        }
+        
+        // Log the first course to see its structure
+        if (allCourses.length > 0) {
+          console.log("First course structure:", JSON.stringify(allCourses[0], null, 2));
+        }
+        
         // Filter courses by categoryId
-        const filteredCourses = allResponse.courses.filter((course: any) => {
+        const filteredCourses = allCourses.filter((course: any) => {
           // Check different possible field names for the category ID
           return (
-            course.categoryId === categoryId ||
+            course.categoryId === categoryId || 
             course.category === categoryId ||
-            (course.categoryId && course.categoryId._id === categoryId) ||
-            (course.category && course.category._id === categoryId)
+            (course.category && course.category._id === categoryId) ||
+            (course.categoryDetails && course.categoryDetails._id === categoryId)
           );
         });
-
-        console.log(
-          `Found ${filteredCourses.length} courses for category ${categoryId}`
-        );
-        return {
-          status: true,
-          courses: filteredCourses,
+        
+        console.log(`Found ${filteredCourses.length} courses for category ${categoryId}`);
+        return { 
+          status: true, 
+          courses: filteredCourses 
         };
       }
-
-      return { status: false, courses: [] };
     } catch (error) {
       console.error("Error getting courses by category:", error);
       return { status: false, courses: [] };
@@ -121,7 +128,7 @@ class CourseService {
    */
   async createCourse(data: any) {
     try {
-      const response = await axiosInstance.post("/courses", data);
+      const response = await axiosInstance.post("/courses/v1", data);
       return response.data;
     } catch (error) {
       throw error;
@@ -129,16 +136,51 @@ class CourseService {
   }
 
   /**
-   * Update a course
+   * Update an existing course
    * @param {string} id - Course ID
-   * @param {CourseFormData} data - Updated course data
+   * @param {Partial<CourseFormData>} data - Updated course data
    * @returns {Promise<{status: boolean, course: Course}>}
    */
   async updateCourse(id: string, data: any) {
     try {
-      const response = await axiosInstance.put(`/courses/${id}`, data);
-      return response.data;
-    } catch (error) {
+      console.log('Updating course with ID:', id);
+      console.log('Update data:', JSON.stringify(data, null, 2));
+      
+      // Try multiple endpoint formats and HTTP methods
+      try {
+        console.log('Trying PUT to /courses/v1/update/{id}');
+        const response = await axiosInstance.put(`/courses/v1/update/${id}`, data);
+        return response.data;
+      } catch (firstError) {
+        console.log('First attempt failed, trying standard PUT...');
+        try {
+          console.log('Trying PUT to /courses/v1/{id}');
+          const response = await axiosInstance.put(`/courses/v1/${id}`, data);
+          return response.data;
+        } catch (secondError) {
+          console.log('Second attempt failed, trying with course wrapper...');
+          try {
+            console.log('Trying PUT with course wrapper');
+            const response = await axiosInstance.put(`/courses/v1/${id}`, { course: data });
+            return response.data;
+          } catch (thirdError) {
+            console.log('Third attempt failed, trying POST method...');
+            // Try POST method as some APIs use POST for updates
+            const response = await axiosInstance.post(`/courses/v1/${id}/update`, data);
+            return response.data;
+          }
+        }
+      }
+    } catch (error: any) {
+      console.error('Course update error:', error);
+      
+      // Log more detailed error information
+      if (error.response) {
+        console.error('Error response data:', error.response.data);
+        console.error('Error response status:', error.response.status);
+        console.error('Error response headers:', error.response.headers);
+      }
+      
       throw error;
     }
   }
@@ -150,7 +192,7 @@ class CourseService {
    */
   async deleteCourse(id: string) {
     try {
-      const response = await axiosInstance.delete(`/courses/${id}`);
+      const response = await axiosInstance.delete(`/courses/v1/${id}`);
       return response.data;
     } catch (error) {
       throw error;
@@ -165,7 +207,7 @@ class CourseService {
    */
   async toggleCourseActive(id: string, isActive: boolean) {
     try {
-      const response = await axiosInstance.put(`/courses/${id}/active`, {
+      const response = await axiosInstance.put(`/courses/v1/${id}/active`, {
         isActive,
       });
       return response.data;
@@ -181,7 +223,7 @@ class CourseService {
    */
   async restoreCourse(id: string) {
     try {
-      const response = await axiosInstance.put(`/courses/${id}/undo-delete`);
+      const response = await axiosInstance.put(`/courses/v1/${id}/undo-delete`);
       return response.data;
     } catch (error) {
       throw error;
@@ -196,7 +238,7 @@ class CourseService {
    */
   async activeStatus(id: string, isActive: boolean) {
     try {
-      const response = await axiosInstance.put(`/courses/${id}/active`, {
+      const response = await axiosInstance.put(`/courses/v1/${id}/active`, {
         isActive,
       });
       return response.data;
@@ -206,29 +248,32 @@ class CourseService {
   }
 
   /**
-   * Get course statistics
-   * @returns {Promise<{status: boolean, stats: Object}>}
+   * Check if a category has associated courses
+   * @param {string} categoryId - Category ID
+   * @returns {Promise<boolean>}
    */
-  async getCourseStats() {
+  async hasCoursesByCategory(categoryId: string) {
     try {
-      const response = await axiosInstance.get("/courses/stats");
-      return response.data;
+      const response = await this.getCoursesByCategory(categoryId);
+      return response && response.courses && response.courses.length > 0;
     } catch (error) {
-      throw error;
+      console.error("Error checking if category has courses:", error);
+      return false;
     }
   }
 
   /**
-   * Search courses by title or description
-   * @param {string} query - Search query
-   * @returns {Promise<{status: boolean, courses: Course[]}>}
+   * Count courses by category
+   * @param {string} categoryId - Category ID
+   * @returns {Promise<number>}
    */
-  async searchCourses(query: string) {
+  async countCoursesByCategory(categoryId: string) {
     try {
-      const response = await axiosInstance.get(`/courses/search?q=${encodeURIComponent(query)}`);
-      return response.data;
+      const response = await this.getCoursesByCategory(categoryId);
+      return response && response.courses ? response.courses.length : 0;
     } catch (error) {
-      throw error;
+      console.error("Error counting courses by category:", error);
+      return 0;
     }
   }
 
@@ -241,45 +286,30 @@ class CourseService {
     try {
       // First try the dedicated endpoint for recent courses
       try {
-        const response = await axiosInstance.get(
-          `/courses/recent?limit=${limit}`
-        );
+        const response = await axiosInstance.get(`/courses/v1/recent?limit=${limit}`);
         return response.data;
       } catch (directError: any) {
-        console.log(
-          "Direct recent courses endpoint failed:",
-          directError.message
-        );
-
+        console.log("Direct recent courses endpoint failed:", directError.message);
+        
         // Fallback: get all courses and sort manually
-        console.log(
-          "Using fallback method - fetch all courses and sort by date"
-        );
+        console.log("Using fallback method - fetch all courses and sort by date");
         const allResponse = await this.getAllCourses();
-
+        
         // Extract courses from the response with flexible handling of response structure
         let allCourses = [];
-        if (
-          allResponse &&
-          allResponse.courses &&
-          Array.isArray(allResponse.courses)
-        ) {
+        if (allResponse && allResponse.courses && Array.isArray(allResponse.courses)) {
           allCourses = allResponse.courses;
         } else if (Array.isArray(allResponse)) {
           allCourses = allResponse;
-        } else if (
-          allResponse &&
-          allResponse.data &&
-          Array.isArray(allResponse.data)
-        ) {
+        } else if (allResponse && allResponse.data && Array.isArray(allResponse.data)) {
           allCourses = allResponse.data;
         }
-
+        
         // Handle empty courses array
         if (allCourses.length === 0) {
           return { status: true, courses: [] };
         }
-
+        
         // Filter out duplicates by ID (just in case)
         const uniqueCoursesMap = new Map();
         allCourses.forEach((course: any) => {
@@ -287,29 +317,25 @@ class CourseService {
             uniqueCoursesMap.set(course._id, course);
           }
         });
-
+        
         const uniqueCourses = Array.from(uniqueCoursesMap.values());
-
+        
         // Sort by creation date (newest first)
-        const sortedCourses = uniqueCourses.sort((a: any, b: any) => {
-          const dateA = new Date(a.createdAt || "0").getTime();
-          const dateB = new Date(b.createdAt || "0").getTime();
-          return dateB - dateA; // Newest first
+        const sortedCourses = uniqueCourses.sort((a, b) => {
+          const dateA = new Date(a.createdAt || a.created || 0).getTime();
+          const dateB = new Date(b.createdAt || b.created || 0).getTime();
+          return dateB - dateA;
         });
-
-        // Return the requested number of courses
+        
+        // Return only the requested number of courses
         const recentCourses = sortedCourses.slice(0, limit);
-
-        console.log(
-          `Returning ${recentCourses.length} recent courses out of ${uniqueCourses.length} total`
-        );
-
-        return {
-          status: true,
-          courses: recentCourses,
+        
+        return { 
+          status: true, 
+          courses: recentCourses 
         };
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error getting recent courses:", error);
       return { status: false, courses: [] };
     }

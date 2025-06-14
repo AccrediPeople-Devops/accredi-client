@@ -9,6 +9,10 @@ export const registrationSchema = Joi.object({
   contactNumber: Joi.string().required(),
   country: Joi.string().required(),
   city: Joi.string().required(),
+  profileImage: Joi.object({
+    url: Joi.string().required(),
+    key: Joi.string().required(),
+  }).required(),
 });
 
 export const loginSchema = Joi.object({

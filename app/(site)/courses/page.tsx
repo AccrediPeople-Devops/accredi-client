@@ -6,8 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Course } from "@/app/types/course";
 import { CourseCategory } from "@/app/types/courseCategory";
-import courseService from "@/app/components/service/course.service";
-import courseCategoryService from "@/app/components/service/courseCategory.service";
+import siteCourseService from "@/app/components/site/siteCourse.service";
 import config from "@/app/components/config/config";
 
 interface CategoryWithCourses extends CourseCategory {
@@ -35,7 +34,7 @@ export default function CoursesPage() {
         console.log("Fetching categories and courses...");
         
         // Fetch courses only - categories are embedded in course objects
-        const coursesResponse = await courseService.getAllCourses();
+        const coursesResponse = await siteCourseService.getPublicCourses();
 
         console.log("Courses response:", coursesResponse);
 

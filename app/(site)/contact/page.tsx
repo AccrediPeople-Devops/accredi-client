@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Breadcrumb from "@/app/components/site/Breadcrumb";
-import courseService from "@/app/components/service/course.service";
+import siteCourseService from "@/app/components/site/siteCourse.service";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -23,7 +23,7 @@ export default function ContactPage() {
     const fetchCourses = async () => {
       try {
         setIsLoadingCourses(true);
-        const response = await courseService.getAllCourses();
+        const response = await siteCourseService.getPublicCourses();
         
         let coursesData = [];
         if (response && response.courses && Array.isArray(response.courses)) {

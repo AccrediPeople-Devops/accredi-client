@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import React, { useState, useEffect } from "react";
-import courseCategoryService from "@/app/components/service/courseCategory.service";
+import siteCourseService from "./siteCourse.service";
 import config from "@/app/components/config/config";
 import { CourseCategory } from "@/app/types/courseCategory";
 
@@ -16,7 +16,7 @@ export default function CertificationsSection() {
       setError("");
       
       try {
-        const response = await courseCategoryService.getAllCourseCategories();
+        const response = await siteCourseService.getPublicCourseCategories();
         if (response?.courseCategories) {
           // Filter active and non-deleted categories
           const activeCategories = response.courseCategories.filter(

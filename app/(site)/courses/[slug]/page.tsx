@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Breadcrumb from "@/app/components/site/Breadcrumb";
 import RichTextRenderer from "@/app/components/RichTextRenderer";
-import courseService from "@/app/components/service/course.service";
+import siteCourseService from "@/app/components/site/siteCourse.service";
 import config from "@/app/components/config/config";
 import { Course } from "@/app/types/course";
 import paymentService from "@/app/components/service/payment.service";
@@ -86,7 +86,7 @@ export default function CoursePage({ params }: CoursePageProps) {
 
       try {
         console.log("Fetching course with ID:", courseId);
-        const response = await courseService.getCourseById(courseId);
+        const response = await siteCourseService.getPublicCourseById(courseId);
 
         if (response.status && response.course) {
           setCourse(response.course);

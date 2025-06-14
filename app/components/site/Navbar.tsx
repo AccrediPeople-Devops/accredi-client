@@ -6,9 +6,7 @@ import Image from "next/image";
 import { HiOutlineRefresh, HiOutlineDesktopComputer, HiOutlineCloud, HiOutlineCog, HiOutlineChartBar, HiOutlineCode, HiOutlineLockClosed, HiOutlineMenu } from "react-icons/hi";
 import { BiData, BiBarChartAlt2 } from "react-icons/bi";
 import SiteThemeToggle from "./SiteThemeToggle";
-import courseService from "../service/course.service";
-import UserService from "../service/user.service";
-import AuthService from "../service/auth.service";
+import siteCourseService from "./siteCourse.service";
 import { Course } from "@/app/types/course";
 import { CourseCategory } from "@/app/types/courseCategory";
 import { User } from "@/app/types/user";
@@ -66,7 +64,7 @@ const Navbar = () => {
         return;
       }
 
-      // Try to decode token and find user
+      // Try to decode token and create user object from token data
       try {
         // Basic validation: check if token has 3 parts (JWT format)
         const tokenParts = token.split('.');
@@ -80,28 +78,35 @@ const Navbar = () => {
         }
 
         const tokenPayload = JSON.parse(atob(token.split('.')[1]));
-        const res = await UserService.getAllUsers();
+        console.log("Token payload in Navbar:", tokenPayload);
         
-        if (res?.users) {
-          const foundUser = res.users.find((user: User) => 
-            user.email === tokenPayload.email || 
-            user._id === tokenPayload.userId ||
-            user._id === tokenPayload.id
-          );
-          
-          if (foundUser) {
-            setCurrentUser(foundUser);
-          } else {
-            // Token exists but user not found, clear it
-            localStorage.removeItem("token");
-            localStorage.removeItem("refreshToken");
-            setCurrentUser(null);
-          }
-        }
+        // Get stored email from localStorage (set during login)
+        const userEmail = localStorage.getItem("userEmail");
+        
+        // Create user object from token data and stored email
+        const userFromToken: User = {
+          _id: tokenPayload.userId || tokenPayload.id || 'unknown',
+          fullName: userEmail ? userEmail.split('@')[0].replace(/[._]/g, ' ') : 'User',
+          email: userEmail || tokenPayload.email || 'user@example.com',
+          contactNumber: '',
+          country: '',
+          city: '',
+          role: tokenPayload.role || 'user',
+          isActive: true,
+          isDeleted: false,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          profileImage: undefined
+        };
+        
+        console.log("Created user object from token:", userFromToken);
+        setCurrentUser(userFromToken);
+        
       } catch (tokenError) {
         console.error("Error decoding token:", tokenError);
         localStorage.removeItem("token");
         localStorage.removeItem("refreshToken");
+        localStorage.removeItem("userEmail");
         setCurrentUser(null);
       }
     } catch (err) {
@@ -112,13 +117,7 @@ const Navbar = () => {
     }
   };
 
-  const handleLogout = () => {
-    AuthService.logout();
-    setCurrentUser(null);
-    setIsUserMenuOpen(false);
-    // Optionally redirect to home page
-    window.location.href = "/";
-  };
+
 
   const getUserProfileImage = (user: User) => {
     if (user.profileImage?.path) {
@@ -127,13 +126,23 @@ const Navbar = () => {
     return null;
   };
 
+  // Get dashboard URL based on user role
+  const getDashboardUrl = (user: User) => {
+    if (user.role === 'superadmin' || user.role === 'admin') {
+      return '/dashboard';
+    } else {
+      // For regular users, redirect to user dashboard (to be implemented)
+      return '/user-dashboard'; // This will be created later
+    }
+  };
+
   // Fetch courses and categories
   useEffect(() => {
     const fetchCoursesAndCategories = async () => {
       setIsLoadingCourses(true);
       try {
         console.log("Fetching courses for navbar...");
-        const coursesResponse = await courseService.getAllCourses();
+        const coursesResponse = await siteCourseService.getPublicCourses();
         console.log("Raw courses response:", coursesResponse);
         
         let coursesData: Course[] = [];
@@ -290,7 +299,7 @@ const Navbar = () => {
       (window as any).debugCourses = async () => {
         console.log("=== DEBUG: Manual course fetch ===");
         try {
-          const response = await courseService.getAllCourses();
+          const response = await siteCourseService.getPublicCourses();
           console.log("Debug courses response:", response);
           return response;
         } catch (error) {
@@ -647,28 +656,16 @@ const Navbar = () => {
 
                       {/* Menu Items */}
                       <div className="py-2">
-                        {(currentUser.role === 'admin' || currentUser.role === 'superadmin') && (
-                          <Link
-                            href="/dashboard"
-                            className="flex items-center gap-3 px-4 py-2 text-sm site-text-secondary hover:site-text-primary hover:bg-white/10 site-light:hover:bg-slate-100 transition-colors"
-                            onClick={() => setIsUserMenuOpen(false)}
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 00-2-2z" />
-                            </svg>
-                            Dashboard
-                          </Link>
-                        )}
-                        <div className="border-t site-border my-2"></div>
-                        <button
-                          onClick={handleLogout}
-                          className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-500 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                        <Link
+                          href={getDashboardUrl(currentUser)}
+                          className="flex items-center gap-3 px-4 py-2 text-sm site-text-secondary hover:site-text-primary hover:bg-white/10 site-light:hover:bg-slate-100 transition-colors"
+                          onClick={() => setIsUserMenuOpen(false)}
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 00-2-2z" />
                           </svg>
-                          Sign Out
-                        </button>
+                          {currentUser.role === 'superadmin' || currentUser.role === 'admin' ? 'Dashboard' : 'My Dashboard'}
+                        </Link>
                       </div>
                     </div>
                   )}
@@ -1050,36 +1047,21 @@ const Navbar = () => {
                       </div>
 
                       {/* User Menu Items */}
-                      {(currentUser.role === 'admin' || currentUser.role === 'superadmin') && (
-                        <div className="border-b site-border">
-                          <Link
-                            href="/dashboard"
-                            className="flex items-center justify-between py-3 site-text-primary hover:text-[#4F46E5] transition-colors"
-                            onClick={closeMobileMenu}
-                          >
-                            <span className="text-sm font-medium">Dashboard</span>
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 00-2-2z" />
-                            </svg>
-                          </Link>
-                        </div>
-                      )}
-                      
-                      {/* Sign Out Link */}
-                      <div>
-                        <button
-                          onClick={() => {
-                            handleLogout();
-                            closeMobileMenu();
-                          }}
-                          className="w-full flex items-center justify-between py-3 text-red-600 hover:text-red-700 transition-colors"
+                      <div className="border-b site-border">
+                        <Link
+                          href={getDashboardUrl(currentUser)}
+                          className="flex items-center justify-between py-3 site-text-primary hover:text-[#4F46E5] transition-colors"
+                          onClick={closeMobileMenu}
                         >
-                          <span className="text-sm font-medium">Sign Out</span>
+                          <span className="text-sm font-medium">
+                            {currentUser.role === 'superadmin' || currentUser.role === 'admin' ? 'Dashboard' : 'My Dashboard'}
+                          </span>
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 00-2-2z" />
                           </svg>
-                        </button>
+                        </Link>
                       </div>
+
                     </>
                   ) : (
                     /* Sign In & Sign Up Links */

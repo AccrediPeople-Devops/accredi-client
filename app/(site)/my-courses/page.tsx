@@ -7,7 +7,7 @@ import Image from "next/image";
 import { Course } from "@/app/types/course";
 import { User } from "@/app/types/user";
 import UserService from "@/app/components/service/user.service";
-import courseService from "@/app/components/service/course.service";
+import siteCourseService from "@/app/components/site/siteCourse.service";
 import config from "@/app/components/config/config";
 
 export default function MyCoursesPage() {
@@ -45,7 +45,7 @@ export default function MyCoursesPage() {
             // Note: This is a placeholder implementation
             // You'll need to implement actual enrollment tracking in your backend
             try {
-              const coursesResponse = await courseService.getAllCourses();
+              const coursesResponse = await siteCourseService.getPublicCourses();
               let coursesData: Course[] = [];
               
               if (coursesResponse?.status && coursesResponse?.courses) {
