@@ -570,6 +570,13 @@ const Navbar = () => {
                 Reviews
               </Link>
 
+              {/* Theme Toggle */}
+              <div className="relative pr-2 pl-2 py-2 hover:bg-white/10 rounded-xl flex items-center gap-0.5 text-white font-normal cursor-pointer duration-300 transition-all hover:scale-105 site-light:text-slate-700 site-light:hover:text-slate-900 site-light:hover:bg-slate-100"
+                onMouseEnter={handleImmediateMenuClose}
+              >
+                <SiteThemeToggle />
+              </div>
+
               {/* Authentication Section */}
               {isCheckingAuth ? (
                 <div className="w-20 h-10 bg-white/10 rounded-xl animate-pulse"></div>
@@ -693,10 +700,6 @@ const Navbar = () => {
                 </>
               )}
 
-              {/* Site Theme Toggle - Far Right */}
-              <div className="ml-4">
-                <SiteThemeToggle />
-              </div>
             </div>
 
             {/* Mobile Navigation */}
@@ -719,9 +722,6 @@ const Navbar = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                 </svg>
               </button>
-
-              {/* Theme Toggle for Mobile - Far Right */}
-              <SiteThemeToggle />
             </div>
           </nav>
         </div>
@@ -788,6 +788,7 @@ const Navbar = () => {
               <Link
                 href="/courses"
                 className="block mt-4 text-[14px] font-bold text-[#4F46E5] hover:text-white site-light:hover:text-[#4F46E5] transition-colors pl-8 hover:underline"
+                onClick={handleImmediateMenuClose}
               >
                 Browse All Courses <span aria-hidden>→</span>
               </Link>
@@ -799,7 +800,7 @@ const Navbar = () => {
                   <div className="font-bold text-2xl text-white site-light:text-slate-900 mb-2">{activeDomain.name}</div>
                   <div className="text-sm text-gray-300 site-light:text-slate-600 mb-6">
                     {activeDomain.description || `Explore our comprehensive ${activeDomain.name.toLowerCase()} courses designed to advance your career.`}
-                    <Link href={`/courses?category=${activeDomain._id}`} className="ml-2 text-[#4F46E5] text-sm font-medium hover:underline">
+                    <Link href={`/courses?category=${activeDomain._id}`} className="ml-2 text-[#4F46E5] text-sm font-medium hover:underline" onClick={handleImmediateMenuClose}>
                       View All {activeDomain.name} Courses
                     </Link>
                   </div>
@@ -815,6 +816,7 @@ const Navbar = () => {
                           key={course._id}
                           href={`/courses/${course._id}`}
                           className="block p-4 bg-white/5 site-light:bg-white/70 backdrop-blur-sm border border-white/20 site-light:border-slate-200 rounded-2xl hover:bg-white/10 site-light:hover:bg-white/90 hover:shadow-xl transition-all duration-300 group hover:scale-105"
+                          onClick={handleImmediateMenuClose}
                         >
                           <div className="flex items-start gap-3">
                             <div className="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
@@ -858,6 +860,7 @@ const Navbar = () => {
                       <Link
                         href={`/courses?category=${activeDomain._id}`}
                         className="block mt-4 text-center py-3 text-[#4F46E5] hover:text-white site-light:hover:text-[#4F46E5] border border-[#4F46E5]/30 rounded-xl hover:bg-[#4F46E5]/10 transition-all duration-300"
+                        onClick={handleImmediateMenuClose}
                       >
                         View All {activeDomain.courses.length} Courses
                       </Link>
@@ -999,6 +1002,14 @@ const Navbar = () => {
                     >
                       <span className="text-sm font-medium">About Us</span>
                     </Link>
+                  </div>
+                  
+                  {/* Theme Toggle */}
+                  <div className="border-b border-white/20 site-light:border-slate-200">
+                    <div className="flex items-center justify-between py-3">
+                      <span className="text-sm font-medium site-text-primary">Theme</span>
+                      <SiteThemeToggle />
+                    </div>
                   </div>
                   
                   {/* Authentication Section */}

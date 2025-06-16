@@ -617,7 +617,7 @@ export default function CoursePage({ params }: CoursePageProps) {
             <Breadcrumb items={breadcrumbItems} />
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-center min-h-[600px]">
             {/* Content - Left Side */}
             <div className="lg:col-span-7 flex flex-col justify-center">
               <div className="space-y-6">
@@ -633,7 +633,7 @@ export default function CoursePage({ params }: CoursePageProps) {
                 <div>
                   <h1 className="text-4xl lg:text-5xl xl:text-6xl font-black mb-6 leading-tight">
                     <span className="site-text-primary">
-                      {courseData.title.split("®")[0]}®{" "}
+                      {courseData.title.split("®")[0]}{" "}
                     </span>
                   </h1>
                   {/* Short Description Card */}
@@ -691,34 +691,60 @@ export default function CoursePage({ params }: CoursePageProps) {
             </div>
 
             {/* Image and Badge - Right Side */}
-            <div className="lg:col-span-5 flex flex-col items-center lg:items-end">
-              <div className="relative">
+            <div className="lg:col-span-5 flex flex-col justify-center items-center lg:items-end">
+              <div className="relative w-full max-w-md lg:max-w-lg">
                 {/* Course Image */}
-                <div className="relative w-full max-w-lg site-glass backdrop-blur-xl rounded-3xl overflow-hidden mb-6 shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500">
+                <div className="relative site-glass backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500 group">
                   {/* Gradient Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent z-10"></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent z-10"></div>
 
-                  <Image
-                    src={courseData.image}
-                    alt={courseData.title}
-                    width={500}
-                    height={400}
-                    className="w-full h-auto object-contain"
-                    unoptimized
-                  />
+                  {/* Main Image */}
+                  <div className="aspect-[4/3] relative overflow-hidden">
+                    <Image
+                      src={courseData.image}
+                      alt={courseData.title}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      unoptimized
+                    />
+                  </div>
 
                   {/* Floating Badge */}
                   <div className="absolute top-4 left-4 z-20">
-                    <div className="inline-flex items-center px-3 py-2 bg-gradient-to-r from-[#10B981] to-[#059669] text-white rounded-full text-sm font-bold">
+                    <div className="inline-flex items-center px-3 py-2 bg-gradient-to-r from-[#10B981] to-[#059669] text-white rounded-full text-sm font-bold shadow-lg">
                       <div className="w-2 h-2 bg-white rounded-full mr-2 animate-pulse"></div>
                       Live Training
                     </div>
                   </div>
+
+                  {/* Course Type Badge */}
+                  <div className="absolute bottom-4 right-4 z-20">
+                    <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white rounded-2xl text-sm font-bold shadow-lg backdrop-blur-sm">
+                      <svg
+                        className="w-4 h-4 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                        />
+                      </svg>
+                      ONLINE COURSE
+                    </div>
+                  </div>
                 </div>
-                    </div>
-                      </div>
-                      </div>
-                    </div>
+
+                {/* Decorative Elements */}
+                <div className="absolute -top-4 -right-4 w-8 h-8 bg-[#4F46E5] rounded-full opacity-60 animate-pulse"></div>
+                <div className="absolute -bottom-4 -left-4 w-6 h-6 bg-[#10B981] rounded-full opacity-60 animate-pulse delay-1000"></div>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* Course Overview Section */}
@@ -753,146 +779,6 @@ export default function CoursePage({ params }: CoursePageProps) {
         </div>
       </section>
       )}
-      {/* Key Features & Certificate Section */}
-      <section className="py-16 md:py-24 site-section-bg relative overflow-hidden">
-        <div className="absolute inset-0">
-          <div className="absolute top-10 left-10 w-48 h-48 bg-[#F59E0B]/5 site-light:bg-[#F59E0B]/10 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-10 right-10 w-64 h-64 bg-[#8B5CF6]/5 site-light:bg-[#8B5CF6]/10 rounded-full blur-3xl"></div>
-        </div>
-
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            {/* Key Features - Left Side */}
-            <div className="space-y-8">
-              <div className="space-y-4">
-                <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-4 py-2 mb-6">
-                  <div className="w-2 h-2 bg-[#F59E0B] rounded-full animate-pulse"></div>
-                  <span className="text-[#F59E0B] text-sm font-semibold uppercase tracking-wider">
-                    Features
-                  </span>
-                </div>
-                <h2 className="text-4xl lg:text-5xl font-black site-text-primary mb-6">
-                  <strong>Key Features</strong>
-                </h2>
-                <p className="text-lg site-text-secondary leading-relaxed">
-                  Discover what makes our {courseData.title} stand out from the
-                  rest. Our comprehensive approach ensures you get the best
-                  learning experience.
-                </p>
-              </div>
-
-              {/* Single Key Features Card with Bullet Points */}
-              {courseData.features && courseData.features.length > 0 ? (
-                <div className="site-glass backdrop-blur-xl rounded-3xl p-6 shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500">
-                  <ul className="space-y-3">
-                    {courseData.features.map((feature, index) => (
-                      <li key={index} className="flex items-start gap-3">
-                        <div className="flex-shrink-0 w-5 h-5 mt-0.5">
-                          <svg
-                            className="w-5 h-5 text-[#10B981]"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        </div>
-                        <span className="site-text-secondary leading-relaxed">
-                          {feature}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ) : (
-                // Fallback if no keyFeatures
-                <div className="site-glass backdrop-blur-xl rounded-3xl p-6 shadow-2xl">
-                  <div className="text-center">
-                    <p className="site-text-secondary">
-                      No key features available for this course.
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Sample Certificate Image - Right Side */}
-            <div className="relative">
-              {course.upload?.courseSampleCertificate?.[0] ? (
-                <div className="site-glass backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500 hover:scale-105">
-                  <div className="relative">
-                    <Image
-                      src={
-                        course.upload.courseSampleCertificate[0].path?.startsWith(
-                          "http"
-                        )
-                          ? course.upload.courseSampleCertificate[0].path
-                          : `${config.imageUrl}${course.upload.courseSampleCertificate[0].path}`
-                      }
-                      alt="Sample Certificate"
-                      width={500}
-                      height={400}
-                      className="w-full h-auto object-contain"
-                      unoptimized
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-                    <div className="absolute bottom-4 left-4 right-4">
-                      <div className="site-glass backdrop-blur-sm rounded-2xl p-4">
-                        <h3 className="text-lg font-bold text-white mb-1">
-                          Sample Certificate
-                        </h3>
-                        <p className="text-sm text-white/80">
-                          {courseData.title}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="site-glass backdrop-blur-xl rounded-3xl p-8 h-96 flex flex-col items-center justify-center shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500">
-                  {/* Fallback when no certificate image */}
-                  <div className="text-center space-y-4">
-                    <div className="w-20 h-20 bg-gradient-to-br from-[#4F46E5] to-[#8B5CF6] rounded-full flex items-center justify-center mx-auto mb-4">
-                      <svg
-                        className="w-10 h-10 text-white"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
-                        />
-                      </svg>
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-bold site-text-primary mb-2">
-                        Sample Certificate
-                      </h3>
-                      <p className="site-text-secondary mb-3">
-                        Certificate Preview
-                      </p>
-                      <p className="text-sm site-text-muted">
-                        Certificate image not available
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Decorative Elements */}
-              <div className="absolute -top-3 -left-3 w-6 h-6 bg-[#4F46E5] rounded-full opacity-60 animate-pulse"></div>
-              <div className="absolute -bottom-3 -right-3 w-8 h-8 bg-[#8B5CF6] rounded-full opacity-60 animate-pulse delay-1000"></div>
-              <div className="absolute top-1/2 -right-6 w-4 h-4 bg-[#10B981] rounded-full opacity-60 animate-pulse delay-2000"></div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Course Components Section */}
       {course.components && course.components.length > 0 && (
@@ -930,46 +816,49 @@ export default function CoursePage({ params }: CoursePageProps) {
 
                     {/* Image - Order changes based on index */}
                     <div
-                      className={`relative ${
+                      className={`relative flex justify-center ${
                         isEven ? "lg:order-2" : "lg:order-1"
                       }`}
                     >
-                      <div className="site-glass backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500 hover:scale-105">
-                        <div className="relative">
-                          <Image
-                            src={
-                              component.image?.path?.startsWith("http")
-                                ? component.image.path
-                                : `${config.imageUrl}${component.image?.path}`
-                            }
-                            alt={`Course Component ${index + 1}`}
-                            width={500}
-                            height={400}
-                            className="w-full h-auto object-contain"
-                            unoptimized
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                      <div className="relative w-full max-w-md lg:max-w-lg">
+                        <div className="site-glass backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500 group">
+                          <div className="aspect-[4/3] relative overflow-hidden">
+                            <Image
+                              src={
+                                component.image?.path?.startsWith("http")
+                                  ? component.image.path
+                                  : `${config.imageUrl}${component.image?.path}`
+                              }
+                              alt={`Course Component ${index + 1}`}
+                              fill
+                              className="object-cover group-hover:scale-105 transition-transform duration-500"
+                              unoptimized
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
+                          </div>
+                          
+                          {/* Component Number Badge */}
                           <div className="absolute top-4 right-4">
-                            <div className="w-10 h-10 bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] rounded-xl flex items-center justify-center">
+                            <div className="w-10 h-10 bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] rounded-xl flex items-center justify-center shadow-lg">
                               <span className="text-white font-bold">
                                 {index + 1}
                               </span>
                             </div>
                           </div>
                         </div>
-                      </div>
 
-                      {/* Decorative Elements */}
-                      <div
-                        className={`absolute -top-4 ${
-                          isEven ? "-right-4" : "-left-4"
-                        } w-8 h-8 bg-[#4F46E5] rounded-full opacity-60 animate-pulse`}
-                      ></div>
-                      <div
-                        className={`absolute -bottom-4 ${
-                          isEven ? "-left-4" : "-right-4"
-                        } w-6 h-6 bg-[#10B981] rounded-full opacity-60 animate-pulse delay-1000`}
-                      ></div>
+                        {/* Decorative Elements */}
+                        <div
+                          className={`absolute -top-4 ${
+                            isEven ? "-right-4" : "-left-4"
+                          } w-8 h-8 bg-[#4F46E5] rounded-full opacity-60 animate-pulse`}
+                        ></div>
+                        <div
+                          className={`absolute -bottom-4 ${
+                            isEven ? "-left-4" : "-right-4"
+                          } w-6 h-6 bg-[#10B981] rounded-full opacity-60 animate-pulse delay-1000`}
+                        ></div>
+                      </div>
                     </div>
                   </div>
                 );
@@ -1021,9 +910,10 @@ export default function CoursePage({ params }: CoursePageProps) {
                       <h3 className="text-xl font-semibold site-text-primary mb-3">
                         {item.title}
                       </h3>
-                      <p className="site-text-secondary leading-relaxed">
-                        {item.description}
-                      </p>
+                      <RichTextRenderer
+                        content={item.description}
+                        className="site-text-secondary leading-relaxed"
+                      />
                     </div>
                   </div>
                 </div>
