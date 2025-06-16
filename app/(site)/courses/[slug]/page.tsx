@@ -753,92 +753,6 @@ export default function CoursePage({ params }: CoursePageProps) {
         </div>
       </section>
       )}
-
-      {/* Course Components Section */}
-      {course.components && course.components.length > 0 && (
-        <section className="py-16 md:py-24 site-section-bg relative overflow-hidden">
-          <div className="absolute inset-0">
-            <div className="absolute top-20 right-20 w-64 h-64 bg-[#4F46E5]/5 site-light:bg-[#4F46E5]/10 rounded-full blur-3xl"></div>
-            <div className="absolute bottom-20 left-20 w-80 h-80 bg-[#10B981]/5 site-light:bg-[#10B981]/10 rounded-full blur-3xl"></div>
-          </div>
-
-          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="space-y-16">
-              {course.components.map((component, index) => {
-                const isEven = index % 2 === 0;
-                return (
-                  <div
-                    key={component._id}
-                    className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center"
-                  >
-                    {/* Content - Order changes based on index */}
-                    <div
-                      className={`space-y-6 ${
-                        isEven ? "lg:order-1" : "lg:order-2"
-                      }`}
-                    >
-                      <div className="space-y-4">
-                        {/* Rich text content from component description */}
-                        <div
-                          className="prose prose-lg site-text-secondary leading-relaxed max-w-none prose-headings:site-text-primary prose-strong:site-text-primary prose-p:site-text-secondary"
-                          dangerouslySetInnerHTML={{
-                            __html: component.description,
-                          }}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Image - Order changes based on index */}
-                    <div
-                      className={`relative ${
-                        isEven ? "lg:order-2" : "lg:order-1"
-                      }`}
-                    >
-                      <div className="site-glass backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500 hover:scale-105">
-                        <div className="relative">
-                          <Image
-                            src={
-                              component.image?.path?.startsWith("http")
-                                ? component.image.path
-                                : `${config.imageUrl}${component.image?.path}`
-                            }
-                            alt={`Course Component ${index + 1}`}
-                            width={500}
-                            height={400}
-                            className="w-full h-auto object-contain"
-                            unoptimized
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-                          <div className="absolute top-4 right-4">
-                            <div className="w-10 h-10 bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] rounded-xl flex items-center justify-center">
-                              <span className="text-white font-bold">
-                                {index + 1}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Decorative Elements */}
-                      <div
-                        className={`absolute -top-4 ${
-                          isEven ? "-right-4" : "-left-4"
-                        } w-8 h-8 bg-[#4F46E5] rounded-full opacity-60 animate-pulse`}
-                      ></div>
-                      <div
-                        className={`absolute -bottom-4 ${
-                          isEven ? "-left-4" : "-right-4"
-                        } w-6 h-6 bg-[#10B981] rounded-full opacity-60 animate-pulse delay-1000`}
-                      ></div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-      )}
-
       {/* Key Features & Certificate Section */}
       <section className="py-16 md:py-24 site-section-bg relative overflow-hidden">
         <div className="absolute inset-0">
@@ -979,6 +893,92 @@ export default function CoursePage({ params }: CoursePageProps) {
           </div>
         </div>
       </section>
+
+      {/* Course Components Section */}
+      {course.components && course.components.length > 0 && (
+        <section className="py-16 md:py-24 site-section-bg relative overflow-hidden">
+          <div className="absolute inset-0">
+            <div className="absolute top-20 right-20 w-64 h-64 bg-[#4F46E5]/5 site-light:bg-[#4F46E5]/10 rounded-full blur-3xl"></div>
+            <div className="absolute bottom-20 left-20 w-80 h-80 bg-[#10B981]/5 site-light:bg-[#10B981]/10 rounded-full blur-3xl"></div>
+          </div>
+
+          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="space-y-16">
+              {course.components.map((component, index) => {
+                const isEven = index % 2 === 0;
+                return (
+                  <div
+                    key={component._id}
+                    className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center"
+                  >
+                    {/* Content - Order changes based on index */}
+                    <div
+                      className={`space-y-6 ${
+                        isEven ? "lg:order-1" : "lg:order-2"
+                      }`}
+                    >
+                      <div className="space-y-4">
+                        {/* Rich text content from component description */}
+                        <div
+                          className="prose prose-lg site-text-secondary leading-relaxed max-w-none prose-headings:site-text-primary prose-strong:site-text-primary prose-p:site-text-secondary"
+                          dangerouslySetInnerHTML={{
+                            __html: component.description,
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Image - Order changes based on index */}
+                    <div
+                      className={`relative ${
+                        isEven ? "lg:order-2" : "lg:order-1"
+                      }`}
+                    >
+                      <div className="site-glass backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500 hover:scale-105">
+                        <div className="relative">
+                          <Image
+                            src={
+                              component.image?.path?.startsWith("http")
+                                ? component.image.path
+                                : `${config.imageUrl}${component.image?.path}`
+                            }
+                            alt={`Course Component ${index + 1}`}
+                            width={500}
+                            height={400}
+                            className="w-full h-auto object-contain"
+                            unoptimized
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                          <div className="absolute top-4 right-4">
+                            <div className="w-10 h-10 bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] rounded-xl flex items-center justify-center">
+                              <span className="text-white font-bold">
+                                {index + 1}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Decorative Elements */}
+                      <div
+                        className={`absolute -top-4 ${
+                          isEven ? "-right-4" : "-left-4"
+                        } w-8 h-8 bg-[#4F46E5] rounded-full opacity-60 animate-pulse`}
+                      ></div>
+                      <div
+                        className={`absolute -bottom-4 ${
+                          isEven ? "-left-4" : "-right-4"
+                        } w-6 h-6 bg-[#10B981] rounded-full opacity-60 animate-pulse delay-1000`}
+                      ></div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
+
 
       {/* Curriculum Section */}
       {course.curriculum && course.curriculum.length > 0 && (

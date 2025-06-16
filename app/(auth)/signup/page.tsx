@@ -6,10 +6,8 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Input from "@/app/components/Input";
 import Button from "@/app/components/Button";
-import ImageUpload from "@/app/components/ImageUpload";
 import { registrationSchema, validateForm } from "@/app/utils/validation";
 import AuthService from "@/app/components/service/auth.service";
-import uploadService from "@/app/components/service/upload.service";
 
 type FormData = {
   fullName: string;
@@ -54,7 +52,7 @@ export default function SignupPage() {
           if (role === "admin" || role === "superadmin") {
             router.replace("/dashboard");
           } else {
-            router.replace("/my-courses");
+            router.replace("/user-dashboard");
           }
         } catch (error) {
           // Invalid token, remove it
@@ -97,12 +95,13 @@ export default function SignupPage() {
       return;
     }
 
+
+
     setIsLoading(true);
 
     try {
       // Prepare the data in the format expected by the backend
-      // Note: Profile image upload is skipped during signup to avoid auth issues
-      // Users can add profile images later in their profile settings
+      // Note: profileImage is not included in registration - it will be handled separately after account creation
       const registrationData = {
         fullName: formData.fullName,
         email: formData.email,
@@ -112,7 +111,7 @@ export default function SignupPage() {
         city: formData.city,
       };
 
-      console.log("Sending registration data:", registrationData);
+      console.log("Sending registration data:", JSON.stringify(registrationData, null, 2));
 
       // Make the actual API call
       const response = await AuthService.register(registrationData);
@@ -157,15 +156,30 @@ export default function SignupPage() {
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-white">Create Account</h1>
             <p className="text-secondary/80 mt-3">Join our community and start your certification journey</p>
-        </div>
-
-        {errors.general && (
-            <div className="bg-error/20 border border-error/30 text-white px-4 py-3 rounded mb-6">
-            {errors.general}
           </div>
-        )}
 
-                    <form onSubmit={handleSubmit} className="space-y-5">
+          {errors.general && (
+            <div className="bg-error/20 border border-error/30 text-white px-4 py-3 rounded mb-6">
+              {errors.general}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Profile Image Note */}
+            <div className="flex flex-col items-center mb-6 p-4 bg-white/5 rounded-lg border border-white/10">
+              <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mb-3">
+                <svg className="w-8 h-8 text-white/60" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                </svg>
+              </div>
+              <p className="text-sm text-white/80 text-center">
+                You can add a profile picture after creating your account
+              </p>
+              <p className="text-xs text-white/60 text-center mt-1">
+                Visit your profile settings to upload a photo
+              </p>
+            </div>
+
             {/* Basic Info */}
             <div className="space-y-4">
               <Input
@@ -192,53 +206,53 @@ export default function SignupPage() {
             </div>
 
             {/* Password */}
-              <Input
-                label="Password"
-                type="password"
-                name="password"
+            <Input
+              label="Password"
+              type="password"
+              name="password"
               placeholder="Create a strong password"
-                value={formData.password}
-                onChange={handleChange}
-                error={errors.password}
-                autoComplete="new-password"
-              />
+              value={formData.password}
+              onChange={handleChange}
+              error={errors.password}
+              autoComplete="new-password"
+            />
 
             {/* Contact and Location Row */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input
-              label="Contact Number"
-              type="tel"
-              name="contactNumber"
-              placeholder="Enter your contact number"
-              value={formData.contactNumber}
-              onChange={handleChange}
-              error={errors.contactNumber}
-              autoComplete="tel"
-            />
+              <Input
+                label="Contact Number"
+                type="tel"
+                name="contactNumber"
+                placeholder="Enter your contact number"
+                value={formData.contactNumber}
+                onChange={handleChange}
+                error={errors.contactNumber}
+                autoComplete="tel"
+              />
 
-            <Input
-              label="Country"
-              type="text"
-              name="country"
-              placeholder="Enter your country"
-              value={formData.country}
-              onChange={handleChange}
-              error={errors.country}
-              autoComplete="country"
-            />
-          </div>
+              <Input
+                label="Country"
+                type="text"
+                name="country"
+                placeholder="Enter your country"
+                value={formData.country}
+                onChange={handleChange}
+                error={errors.country}
+                autoComplete="country"
+              />
+            </div>
 
             {/* City */}
-          <Input
-            label="City"
-            type="text"
-            name="city"
-            placeholder="Enter your city"
-            value={formData.city}
-            onChange={handleChange}
-            error={errors.city}
-            autoComplete="address-level2"
-          />
+            <Input
+              label="City"
+              type="text"
+              name="city"
+              placeholder="Enter your city"
+              value={formData.city}
+              onChange={handleChange}
+              error={errors.city}
+              autoComplete="address-level2"
+            />
 
             {/* Submit Button */}
             <Button 
@@ -251,15 +265,15 @@ export default function SignupPage() {
             </Button>
 
             {/* Login Link */}
-          <div className="text-center mt-6">
-            <p className="text-white/70">
-              Already have an account?{" "}
+            <div className="text-center mt-6">
+              <p className="text-white/70">
+                Already have an account?{" "}
                 <Link href="/login" className="auth-link text-[#4F46E5]">
-                Sign in
-              </Link>
-            </p>
-          </div>
-        </form>
+                  Sign in
+                </Link>
+              </p>
+            </div>
+          </form>
         </div>
       </div>
 

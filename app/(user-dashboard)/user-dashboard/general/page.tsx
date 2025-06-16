@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { User } from "@/app/types/user";
-import UserService from "@/app/components/service/user.service";
+import UserProfileService from "@/app/components/user-dashboard/services/userProfile.service";
 import Image from "next/image";
 import config from "@/app/components/config/config";
 import { toast } from "react-hot-toast";
@@ -16,13 +16,46 @@ export default function GeneralPage() {
     email: "",
     contactNumber: "",
     address: "",
+    country: "",
+    city: "",
   });
 
   useEffect(() => {
     const fetchCurrentUser = async () => {
-      console.log("🔍 GENERAL PAGE: Loading user data from token...");
+      console.log("🔍 GENERAL PAGE: Loading user profile data...");
       setIsLoading(true);
       try {
+        // First try to get profile data from API
+        try {
+          console.log("📡 GENERAL PAGE: Making API call to get profile...");
+          const profileData = await UserProfileService.getCurrentUserProfile();
+          console.log("📡 GENERAL PAGE: API Response:", profileData);
+          
+          if (profileData && profileData._id) {
+            console.log("✅ GENERAL PAGE: Profile data loaded from API:", profileData);
+            setCurrentUser(profileData);
+            
+            const newFormData = {
+              fullName: profileData.fullName || "",
+              email: profileData.email || "",
+              contactNumber: profileData.contactNumber || "",
+              address: "", // This field doesn't exist in User type, but keeping for form
+              country: profileData.country || "",
+              city: profileData.city || "",
+            };
+            
+            console.log("📝 GENERAL PAGE: Setting form data:", newFormData);
+            setFormData(newFormData);
+            return;
+          } else {
+            console.log("⚠️ GENERAL PAGE: API response invalid:", profileData);
+          }
+        } catch (apiError) {
+          console.error("❌ GENERAL PAGE: API call failed:", apiError);
+          console.log("⚠️ GENERAL PAGE: Falling back to token data");
+        }
+
+        // Fallback to token data if API fails
         const token = localStorage.getItem("token");
         if (!token) {
           console.log("❌ GENERAL PAGE: No token found");
@@ -30,13 +63,13 @@ export default function GeneralPage() {
         }
 
         const tokenPayload = JSON.parse(atob(token.split('.')[1]));
-        console.log("🔍 GENERAL PAGE: Token payload:", tokenPayload);
+        console.log("🔍 GENERAL PAGE: Using token payload as fallback:", tokenPayload);
         
         // Get stored user email and create user object
         const storedEmail = localStorage.getItem("userEmail") || "";
         const userName = storedEmail ? storedEmail.split('@')[0] : "User"; // Use email prefix as name
         
-        // Create user object from token data (no API calls needed)
+        // Create user object from token data (fallback)
         const userFromToken: User = {
           _id: tokenPayload.userId,
           fullName: userName,
@@ -51,16 +84,21 @@ export default function GeneralPage() {
           updatedAt: ""
         };
         
-        console.log("👤 GENERAL PAGE: Created user object with name:", userName, "email:", storedEmail);
+        console.log("👤 GENERAL PAGE: Created user object from token:", userFromToken);
 
-        console.log("✅ GENERAL PAGE: User data created from token");
         setCurrentUser(userFromToken);
-        setFormData({
+        
+        const fallbackFormData = {
           fullName: userFromToken.fullName || "",
           email: userFromToken.email || "",
           contactNumber: userFromToken.contactNumber || "",
           address: "", // This field doesn't exist in User type, but keeping for form
-        });
+          country: userFromToken.country || "",
+          city: userFromToken.city || "",
+        };
+        
+        console.log("📝 GENERAL PAGE: Setting fallback form data:", fallbackFormData);
+        setFormData(fallbackFormData);
       } catch (error) {
         console.error("❌ GENERAL PAGE: Error loading user data:", error);
         toast.error("Failed to load profile data");
@@ -72,7 +110,7 @@ export default function GeneralPage() {
     fetchCurrentUser();
   }, []);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -85,12 +123,27 @@ export default function GeneralPage() {
     
     setIsSaving(true);
     try {
-      // Here you would call the update user API
-      // For now, we'll just show a success message
-      toast.success("Profile updated successfully!");
-    } catch (error) {
+      // Call the update user profile API
+      const updatedProfile = await UserProfileService.updateCurrentUserProfile({
+        fullName: formData.fullName,
+        email: formData.email,
+        contactNumber: formData.contactNumber,
+        country: formData.country,
+        city: formData.city,
+        // Note: address field is not part of the User type, so not including it in API call
+      });
+
+      if (updatedProfile && updatedProfile._id) {
+        // Update the current user state with the new data
+        setCurrentUser(updatedProfile);
+        toast.success("Profile updated successfully!");
+      } else {
+        toast.error("Failed to update profile");
+      }
+    } catch (error: any) {
       console.error("Error updating profile:", error);
-      toast.error("Failed to update profile");
+      const errorMessage = error.response?.data?.message || "Failed to update profile";
+      toast.error(errorMessage);
     } finally {
       setIsSaving(false);
     }
@@ -113,6 +166,10 @@ export default function GeneralPage() {
       </div>
     );
   }
+
+  // Debug log to see current form data
+  console.log("🎨 GENERAL PAGE: Rendering with form data:", formData);
+  console.log("👤 GENERAL PAGE: Current user:", currentUser);
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -233,7 +290,12 @@ export default function GeneralPage() {
               <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
                 Country
               </label>
-              <select className="w-full px-4 py-3 bg-[var(--input-bg)] border border-[var(--border)] rounded-[var(--radius-md)] text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent transition-colors">
+              <select 
+                name="country"
+                value={formData.country}
+                onChange={handleInputChange}
+                className="w-full px-4 py-3 bg-[var(--input-bg)] border border-[var(--border)] rounded-[var(--radius-md)] text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent transition-colors"
+              >
                 <option value="">Select Country</option>
                 <option value="US">United States</option>
                 <option value="CA">Canada</option>
@@ -250,6 +312,9 @@ export default function GeneralPage() {
               </label>
               <input
                 type="text"
+                name="city"
+                value={formData.city}
+                onChange={handleInputChange}
                 className="w-full px-4 py-3 bg-[var(--input-bg)] border border-[var(--border)] rounded-[var(--radius-md)] text-[var(--foreground)] placeholder-[var(--foreground-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent transition-colors"
                 placeholder="Enter your city"
               />
