@@ -11,6 +11,7 @@ import { Course } from "@/app/types/course";
 import { CourseCategory } from "@/app/types/courseCategory";
 import { User } from "@/app/types/user";
 import config from "../config/config";
+import RichTextRenderer from "../RichTextRenderer";
 
 const DOMAIN_ICONS: Record<string, React.ReactElement> = {
   "Project Management": <HiOutlineDesktopComputer className="w-4 h-4 mr-2" />,
@@ -147,9 +148,13 @@ const Navbar = () => {
         
         let coursesData: Course[] = [];
         if (coursesResponse?.status && coursesResponse?.courses) {
-          coursesData = coursesResponse.courses.filter((course: Course) => !course.isDeleted);
+          coursesData = coursesResponse.courses.filter((course: Course) => 
+            course.isActive !== false && !course.isDeleted
+          );
         } else if (Array.isArray(coursesResponse)) {
-          coursesData = coursesResponse.filter((course: Course) => !course.isDeleted);
+          coursesData = coursesResponse.filter((course: Course) => 
+            course.isActive !== false && !course.isDeleted
+          );
         }
 
         console.log("Processed courses for navbar:", coursesData.length);
@@ -310,10 +315,42 @@ const Navbar = () => {
     }
   }, []);
 
-  // Helper function to get course image URL
-  const getCourseImageUrl = (course: Course) => {
+  // Helper function to get course badge URL (prioritize badge over image)
+  const getCourseBadgeUrl = (course: Course) => {
+    // First try to get course badge - COMPULSORY (courseBadge is an ARRAY!)
+    if (course.upload?.courseBadge?.[0]) {
+      const badge = course.upload.courseBadge[0]; // Get first badge from array
+      
+      if (badge.path) {
+        const badgeUrl = badge.path.startsWith('http') ? badge.path : `${config.imageUrl}${badge.path}`;
+        return badgeUrl;
+      } else if (badge.url) {
+        return badge.url;
+      } else if (badge.key) {
+        return `${config.imageUrl}${badge.key}`;
+      }
+    }
+    
+    // Fallback to course image if no badge
     if (course.upload?.courseImage?.[0]) {
       const image = course.upload.courseImage[0];
+      if (image.path) {
+        const imageUrl = image.path.startsWith('http') ? image.path : `${config.imageUrl}${image.path}`;
+        return imageUrl;
+      } else if (image.url) {
+        return image.url;
+      } else if (image.key) {
+        return `${config.imageUrl}${image.key}`;
+      }
+    }
+    
+    return "/api/placeholder/300/200";
+  };
+
+  // Helper function to get category image URL
+  const getCategoryImageUrl = (category: CourseCategory) => {
+    if (category.image?.[0]) {
+      const image = category.image[0];
       if (image.path) {
         if (image.path.startsWith('http')) {
           return image.path;
@@ -326,26 +363,18 @@ const Navbar = () => {
         return `${config.imageUrl}${image.key}`;
       }
     }
-    return "/api/placeholder/300/200";
+    return "/api/placeholder/40/40";
   };
 
-  // Helper function to get category image URL
-  const getCategoryImageUrl = (category: CourseCategory) => {
-    if (category.image?.[0]) {
-      const image = category.image[0];
-      if (image.url) {
-        return `${config.apiUrl}${image.url}`;
-      } else if (image.path) {
-        if (image.path.startsWith('http')) {
-          return image.path;
-        } else {
-          return `${config.apiUrl}${image.path}`;
-        }
-      } else if (image.key) {
-        return `${config.imageUrl}${image.key}`;
-      }
-    }
-    return "/api/placeholder/40/40";
+  // Helper function to create course slug from title
+  const createCourseSlug = (title: string) => {
+    return title
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/-+/g, '-') // Replace multiple hyphens with single
+      .trim()
+      .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
   };
 
   // Helper function to get a default icon based on category name (fallback)
@@ -495,7 +524,7 @@ const Navbar = () => {
             {/* Logo and All Courses */}
             <div className="flex gap-5 items-center">
               <div className="h-11 w-[138px] relative overflow-hidden">
-                <Link href="/">
+                <Link href="/home">
                 <Image
                   src="/Logo/Only_Transperent/full_trimmed_transparent_base.png"
                   alt="Accredi Logo"
@@ -758,18 +787,18 @@ const Navbar = () => {
                         }`}
                       onClick={() => setActiveDomain(category)}
                     >
-                      <div className="w-6 h-6 rounded-full overflow-hidden mr-3 bg-white/10 flex items-center justify-center flex-shrink-0">
+                      <div className="w-6 h-6 mr-3 flex items-center justify-center flex-shrink-0">
                         {category.image?.[0] ? (
                           <Image
                             src={getCategoryImageUrl(category)}
                             alt={category.name}
                             width={24}
                             height={24}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-contain"
                             unoptimized
                           />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center">
+                          <div className="w-full h-full rounded-full bg-white/10 flex items-center justify-center">
                             {getCategoryIcon(category.name)}
                           </div>
                         )}
@@ -814,25 +843,27 @@ const Navbar = () => {
                       activeDomain.courses.slice(0, 6).map((course: Course, idx: number) => (
                         <Link
                           key={course._id}
-                          href={`/courses/${course._id}`}
+                          href={`/courses/${createCourseSlug(course.title)}`}
                           className="block p-4 bg-white/5 site-light:bg-white/70 backdrop-blur-sm border border-white/20 site-light:border-slate-200 rounded-2xl hover:bg-white/10 site-light:hover:bg-white/90 hover:shadow-xl transition-all duration-300 group hover:scale-105"
                           onClick={handleImmediateMenuClose}
                         >
                           <div className="flex items-start gap-3">
-                            <div className="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
-                              {course.upload?.courseImage?.[0] ? (
+                            <div className="w-12 h-12 flex items-center justify-center flex-shrink-0">
+                              {course.upload?.courseBadge?.[0] || course.upload?.courseImage?.[0] ? (
                                 <Image
-                                  src={getCourseImageUrl(course)}
+                                  src={getCourseBadgeUrl(course)}
                                   alt={course.title}
                                   width={48}
                                   height={48}
-                                  className="w-full h-full object-cover"
+                                  className="w-full h-full object-contain"
                                   unoptimized
                                 />
                               ) : (
-                                <span className="text-white font-bold text-lg">
-                                  {course.title.charAt(0).toUpperCase()}
-                                </span>
+                                <div className="w-full h-full rounded-full bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] flex items-center justify-center">
+                                  <span className="text-white font-bold text-lg">
+                                    {course.title.charAt(0).toUpperCase()}
+                                  </span>
+                                </div>
                               )}
                             </div>
                             <div className="flex-1 min-w-0">
@@ -840,9 +871,12 @@ const Navbar = () => {
                                 {course.title}
                               </h4>
                               {course.shortDescription && (
-                                <p className="text-xs text-gray-400 site-light:text-slate-500 line-clamp-2">
-                                  {course.shortDescription}
-                                </p>
+                                <div className="text-xs text-gray-400 site-light:text-slate-500 line-clamp-2">
+                                  <RichTextRenderer 
+                                    content={course.shortDescription} 
+                                    className="text-xs text-gray-400 site-light:text-slate-500"
+                                  />
+                                </div>
                               )}
                             </div>
                             <svg className="w-4 h-4 text-gray-400 site-light:text-slate-500 group-hover:text-[#4F46E5] transition-colors flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -1150,18 +1184,18 @@ const Navbar = () => {
                       className="w-full flex items-center justify-between px-4 py-4 border-b border-white/20 site-light:border-slate-200 hover:bg-white/10 site-light:hover:bg-slate-100"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full overflow-hidden bg-white/10 flex items-center justify-center flex-shrink-0">
+                        <div className="w-8 h-8 flex items-center justify-center flex-shrink-0">
                           {category.image?.[0] ? (
                             <Image
                               src={getCategoryImageUrl(category)}
                               alt={category.name}
                               width={32}
                               height={32}
-                              className="w-full h-full object-cover"
+                              className="w-full h-full object-contain"
                               unoptimized
                             />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center">
+                            <div className="w-full h-full rounded-full bg-white/10 flex items-center justify-center">
                               {getCategoryIcon(category.name)}
                             </div>
                           )}
@@ -1226,35 +1260,40 @@ const Navbar = () => {
                               {selectedCategory.courses.slice(0, 6).map((course: Course) => (
                                 <Link
                                   key={course._id}
-                                  href={`/courses/${course._id}`}
+                                  href={`/courses/${createCourseSlug(course.title)}`}
                                   onClick={() => {
                                     setIsMobileCoursesOpen(false);
                                     setSelectedMobileDomain(null);
                                   }}
                                   className="flex gap-3 p-3 site-border border rounded-lg hover:shadow-md transition-shadow site-glass hover:bg-white/15 site-light:hover:bg-white/70"
                                 >
-                                  <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                                    {course.upload?.courseImage?.[0] ? (
+                                  <div className="w-10 h-10 flex items-center justify-center flex-shrink-0">
+                                    {course.upload?.courseBadge?.[0] || course.upload?.courseImage?.[0] ? (
                                       <Image
-                                        src={getCourseImageUrl(course)}
+                                        src={getCourseBadgeUrl(course)}
                                         alt={course.title}
                                         width={40}
                                         height={40}
-                                        className="w-full h-full object-cover"
+                                        className="w-full h-full object-contain"
                                         unoptimized
                                       />
                                     ) : (
-                                      <span className="text-white font-bold text-sm">
-                                        {course.title.charAt(0).toUpperCase()}
-                                      </span>
+                                      <div className="w-full h-full rounded-full bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] flex items-center justify-center">
+                                        <span className="text-white font-bold text-sm">
+                                          {course.title.charAt(0).toUpperCase()}
+                                        </span>
+                                      </div>
                                     )}
                                   </div>
                                   <div className="flex-1 min-w-0">
                                     <p className="text-sm font-medium site-text-primary leading-tight mb-1">{course.title}</p>
                                     {course.shortDescription && (
-                                      <p className="text-xs site-text-muted line-clamp-2">
-                                        {course.shortDescription}
-                                      </p>
+                                      <div className="text-xs site-text-muted line-clamp-2">
+                                        <RichTextRenderer 
+                                          content={course.shortDescription} 
+                                          className="text-xs site-text-muted"
+                                        />
+                                      </div>
                                     )}
                                   </div>
                                   <svg className="w-5 h-5 site-text-muted flex-shrink-0 self-center" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">

@@ -1,64 +1,14 @@
 "use client";
 import Image from "next/image";
 import React, { useState, useEffect } from "react";
+import reviewService from "../service/review.service";
+import { Review } from "../../types/review";
+import config from "../config/config";
 
-const testimonials = [
-  {
-    id: 1,
-    name: "Sarah Chen",
-    position: "Sr. Product Manager",
-    company: "Microsoft",
-    image: "https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150&q=80",
-    content: "Accredi's approach is revolutionary. They don't just teach you frameworks—they rewire your thinking. My PMP certification opened doors I never knew existed.",
-    rating: 5,
-    profileLink: "/reviews/sarah-chen",
-    date: "2 days ago"
-  },
-  {
-    id: 2,
-    name: "Marcus Rodriguez",
-    position: "Cloud Architect",
-    company: "Amazon Web Services",
-    image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150&q=80",
-    content: "The personalized mentorship was game-changing. My instructor didn't just prepare me for AWS certification—they prepared me for career transformation.",
-    rating: 5,
-    profileLink: "/reviews/marcus-rodriguez",
-    date: "5 days ago"
-  },
-  {
-    id: 3,
-    name: "Dr. Priya Sharma",
-    position: "VP of Operations",
-    company: "Johnson & Johnson",
-    image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150&q=80",
-    content: "Six Sigma certification through Accredi didn't just improve my skills—it transformed how I approach complex problems. The ROI is immeasurable.",
-    rating: 5,
-    profileLink: "/reviews/priya-sharma",
-    date: "1 week ago"
-  },
-  {
-    id: 4,
-    name: "James Thompson",
-    position: "Scrum Master",
-    company: "Spotify",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150&q=80",
-    content: "The interactive learning environment at AccrediPeopleCertifications is unmatched. Real scenarios, expert feedback, and a supportive community made all the difference.",
-    rating: 5,
-    profileLink: "/reviews/james-thompson",
-    date: "2 weeks ago"
-  },
-  {
-    id: 5,
-    name: "Emily Zhang",
-    position: "Digital Transformation Lead",
-    company: "Goldman Sachs",
-    image: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150&q=80",
-    content: "AccrediPeopleCertifications' comprehensive approach to DevOps certification went beyond technical skills. They taught me to think strategically about transformation.",
-    rating: 5,
-    profileLink: "/reviews/emily-zhang",
-    date: "3 weeks ago"
-  }
-];
+interface ReviewsResponse {
+  status: boolean;
+  review: Review[];
+}
 
 const stats = [
   { number: "5,000+", label: "Certified Professionals", icon: "🎓" },
@@ -68,20 +18,134 @@ const stats = [
 ];
 
 export default function TestimonialsSection() {
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isAutoPlaying) return;
+    fetchReviews();
+  }, []);
+
+  const fetchReviews = async () => {
+    try {
+      setLoading(true);
+      const response: ReviewsResponse = await reviewService.getPublicReviews();
+      if (response.status && response.review && response.review.length > 0) {
+        setReviews(response.review);
+      }
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
+      setError("Failed to load reviews");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!isAutoPlaying || reviews.length === 0) return;
     
     const interval = setInterval(() => {
-      setActiveTestimonial((prev) => (prev + 1) % testimonials.length);
+      setActiveTestimonial((prev) => (prev + 1) % reviews.length);
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [isAutoPlaying]);
+  }, [isAutoPlaying, reviews.length]);
 
-  const currentTestimonial = testimonials[activeTestimonial];
+  const currentTestimonial = reviews[activeTestimonial];
+
+  // Helper function to get image URL
+  const getImageUrl = (imagePath: string) => {
+    if (imagePath.startsWith('http')) {
+      return imagePath;
+    }
+    return `${config.imageUrl}${imagePath}`;
+  };
+
+  // Helper function to format date
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - date.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 1) return "1 day ago";
+    if (diffDays < 7) return `${diffDays} days ago`;
+    if (diffDays < 30) return `${Math.ceil(diffDays / 7)} weeks ago`;
+    return `${Math.ceil(diffDays / 30)} months ago`;
+  };
+
+  if (loading) {
+    return (
+      <section className="py-24 site-section-bg relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#4F46E5] mx-auto"></div>
+            <p className="mt-4 site-text-secondary">Loading testimonials...</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (error || reviews.length === 0) {
+    return (
+      <section className="py-24 site-section-bg relative overflow-hidden">
+        {/* Background Elements */}
+        <div className="absolute inset-0">
+          <div className="absolute top-20 right-20 w-64 h-64 bg-[#4F46E5]/5 site-light:bg-[#4F46E5]/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 left-20 w-80 h-80 bg-[#10B981]/5 site-light:bg-[#10B981]/10 rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-6 py-3 mb-6">
+              <div className="w-2 h-2 bg-amber-400 site-light:bg-amber-600 rounded-full animate-pulse"></div>
+              <span className="text-amber-400 site-light:text-amber-600 text-sm font-semibold uppercase tracking-wider">Student Feedback</span>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-black site-text-primary mb-6">
+              <strong>What Our Students Say</strong>
+            </h2>
+            <div className="max-w-2xl mx-auto">
+              <p className="site-text-secondary text-lg mb-8">
+                Your feedback helps us improve and inspire future students
+              </p>
+              <div className="site-glass backdrop-blur-sm rounded-2xl p-8 site-border border">
+                <div className="text-6xl mb-4">💭</div>
+                <h3 className="text-xl font-bold site-text-primary mb-4">Share Your Success Story</h3>
+                <p className="site-text-secondary mb-6">
+                  We'd love to hear about your experience and how our certifications have impacted your career journey.
+                </p>
+                <a
+                  href="/contact"
+                  className="inline-flex items-center gap-2 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#7C3AED] hover:to-[#4F46E5] text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-[#4F46E5]/25"
+                >
+                  <span>Share Your Story</span>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* Stats Section */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+            {stats.map((stat, index) => (
+              <div key={index} className="text-center">
+                <div className="site-glass backdrop-blur-sm rounded-2xl p-6 site-border border hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-300">
+                  <div className="text-3xl mb-3">{stat.icon}</div>
+                  <div className="text-3xl font-black site-text-primary mb-2">{stat.number}</div>
+                  <div className="text-sm site-text-muted font-medium">{stat.label}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-24 site-section-bg relative overflow-hidden">
@@ -139,13 +203,13 @@ export default function TestimonialsSection() {
 
             {/* Date Badge */}
             <div className="absolute -top-3 -right-3 bg-gradient-to-r from-[#10B981] to-[#059669] rounded-full px-4 py-2 text-white text-xs font-bold shadow-lg">
-              {currentTestimonial.date}
+              {formatDate(currentTestimonial.createdAt)}
             </div>
 
             <div className="space-y-8">
                 {/* Testimonial Content */}
               <blockquote className="text-xl md:text-2xl site-text-primary leading-relaxed text-center font-medium">
-                  "{currentTestimonial.content}"
+                  "{currentTestimonial.review}"
                 </blockquote>
 
                 {/* Rating */}
@@ -163,7 +227,7 @@ export default function TestimonialsSection() {
                   <div className="relative">
                     <div className="w-20 h-20 rounded-2xl overflow-hidden ring-4 ring-white/20 site-light:ring-slate-300">
                       <Image
-                        src={currentTestimonial.image}
+                        src={getImageUrl(currentTestimonial.image.path)}
                         alt={currentTestimonial.name}
                         width={80}
                         height={80}
@@ -179,60 +243,50 @@ export default function TestimonialsSection() {
                   </div>
                   <div className="text-center md:text-left">
                     <h4 className="text-xl font-bold site-text-primary">{currentTestimonial.name}</h4>
-                    <p className="site-text-secondary font-medium">{currentTestimonial.position}</p>
-                    <p className="text-sm site-text-muted">{currentTestimonial.company}</p>
+                    <p className="site-text-secondary font-medium">{currentTestimonial.designation}</p>
               </div>
             </div>
-
-                {/* Profile Link */}
-                <a
-                  href={currentTestimonial.profileLink}
-                  className="bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#7C3AED] hover:to-[#4F46E5] text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-[#4F46E5]/25 flex items-center gap-2"
-                >
-                  <span>View Profile</span>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                  </svg>
-                </a>
               </div>
             </div>
           </div>
         </div>
 
         {/* Testimonial Navigation */}
-        <div className="flex justify-center items-center gap-8 mb-12">
-          <button
-            onClick={() => setActiveTestimonial((prev) => prev === 0 ? testimonials.length - 1 : prev - 1)}
-            className="w-12 h-12 site-glass rounded-full flex items-center justify-center site-text-primary hover:bg-white/20 site-light:hover:bg-white/60 transition-all duration-300 backdrop-blur-sm site-border border"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
+        {reviews.length > 1 && (
+          <div className="flex justify-center items-center gap-8 mb-12">
+            <button
+              onClick={() => setActiveTestimonial((prev) => prev === 0 ? reviews.length - 1 : prev - 1)}
+              className="w-12 h-12 site-glass rounded-full flex items-center justify-center site-text-primary hover:bg-white/20 site-light:hover:bg-white/60 transition-all duration-300 backdrop-blur-sm site-border border"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
 
-          <div className="flex gap-3">
-            {testimonials.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setActiveTestimonial(index)}
-                className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                  index === activeTestimonial 
-                    ? 'bg-[#4F46E5] w-8' 
-                    : 'bg-white/30 site-light:bg-slate-400/50 hover:bg-white/50 site-light:hover:bg-slate-400/70'
-                }`}
-              />
-            ))}
+            <div className="flex gap-3">
+              {reviews.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setActiveTestimonial(index)}
+                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                    index === activeTestimonial 
+                      ? 'bg-[#4F46E5] w-8' 
+                      : 'bg-white/30 site-light:bg-slate-400/50 hover:bg-white/50 site-light:hover:bg-slate-400/70'
+                  }`}
+                />
+              ))}
+            </div>
+
+            <button
+              onClick={() => setActiveTestimonial((prev) => (prev + 1) % reviews.length)}
+              className="w-12 h-12 site-glass rounded-full flex items-center justify-center site-text-primary hover:bg-white/20 site-light:hover:bg-white/60 transition-all duration-300 backdrop-blur-sm site-border border"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
           </div>
-
-          <button
-            onClick={() => setActiveTestimonial((prev) => (prev + 1) % testimonials.length)}
-            className="w-12 h-12 site-glass rounded-full flex items-center justify-center site-text-primary hover:bg-white/20 site-light:hover:bg-white/60 transition-all duration-300 backdrop-blur-sm site-border border"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-        </div>
+        )}
 
         {/* View All Reviews Link */}
         <div className="text-center">
