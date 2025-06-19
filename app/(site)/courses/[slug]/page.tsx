@@ -9,6 +9,7 @@ import config from "@/app/components/config/config";
 import { Course } from "@/app/types/course";
 import paymentService from "@/app/components/service/payment.service";
 import { useLocation } from "@/app/context/LocationContext";
+import CountrySelectionModal from "@/app/components/CountrySelectionModal";
 
 interface CoursePageProps {
   params: Promise<{ slug: string }>;
@@ -28,7 +29,8 @@ export default function CoursePage({ params }: CoursePageProps) {
     currentCountry, 
     geolocationLoading, 
     formatPrice, 
-    getCurrentCurrencyCode 
+    getCurrentCurrencyCode,
+    manuallySelectedCountry
   } = useLocation();
 
   const [showBrochureModal, setShowBrochureModal] = useState(false);
@@ -58,6 +60,9 @@ export default function CoursePage({ params }: CoursePageProps) {
   // Error dialog state
   const [showErrorDialog, setShowErrorDialog] = useState(false);
   const [errorDialogMessage, setErrorDialogMessage] = useState("");
+
+  // Country selection modal state
+  const [showCountryModal, setShowCountryModal] = useState(false);
 
   // Note: Location data is now handled by LocationContext
 
@@ -465,14 +470,27 @@ export default function CoursePage({ params }: CoursePageProps) {
   };
 
   const getFilteredSchedules = () => {
+    // Get user's current country name for filtering
+    const userCountryName = currentCountry?.name || "United States";
+    
+    // Filter schedules by country first, then by state/city for classroom
+    const countryFilteredSchedules = (scheduleData[selectedMode as keyof typeof scheduleData] || []).filter(
+      (schedule) => {
+        const scheduleCountry = schedule.country || "Global";
+        return scheduleCountry === "Global" || scheduleCountry === userCountryName;
+      }
+    );
+    
+    // For classroom schedules, apply additional state/city filtering
     if (selectedMode === "classroom") {
-      return scheduleData[selectedMode].filter(
+      return countryFilteredSchedules.filter(
         (schedule) =>
           (!selectedState || schedule.state === selectedState) &&
           (!selectedCity || schedule.city === selectedCity)
       );
     }
-    return scheduleData[selectedMode as keyof typeof scheduleData] || [];
+    
+    return countryFilteredSchedules;
   };
 
   const scrollToSchedule = () => {
@@ -712,25 +730,27 @@ export default function CoursePage({ params }: CoursePageProps) {
                   Schedules
                 </button>
 
-                <button
-                  onClick={() => setShowBrochureModal(true)}
-                  className="group flex items-center justify-center gap-2 px-6 py-4 site-glass backdrop-blur-sm site-border border hover:bg-white/20 site-light:hover:bg-white/60 site-text-primary font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 flex-1 whitespace-nowrap"
-                >
-                  <svg
-                    className="w-5 h-5 group-hover:scale-110 transition-transform duration-300"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    viewBox="0 0 24 24"
+                {course.broucher && course.broucher.length > 0 && (
+                  <button
+                    onClick={() => setShowBrochureModal(true)}
+                    className="group flex items-center justify-center gap-2 px-6 py-4 site-glass backdrop-blur-sm site-border border hover:bg-white/20 site-light:hover:bg-white/60 site-text-primary font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 flex-1 whitespace-nowrap"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2z"
-                    />
-                  </svg>
-                  Brochure
-                </button>
+                    <svg
+                      className="w-5 h-5 group-hover:scale-110 transition-transform duration-300"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2z"
+                      />
+                    </svg>
+                    Brochure
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -768,6 +788,61 @@ export default function CoursePage({ params }: CoursePageProps) {
           </div>
         </div>
       </section>
+      )}
+
+      {/* Key Features Section */}
+      {course.keyFeatures && course.keyFeatures.length > 0 && (
+        <section className="py-16 md:py-24 site-section-bg relative overflow-hidden">
+          <div className="absolute inset-0">
+            <div className="absolute top-20 right-20 w-64 h-64 bg-[#10B981]/5 site-light:bg-[#10B981]/10 rounded-full blur-3xl"></div>
+            <div className="absolute bottom-20 left-20 w-80 h-80 bg-[#F59E0B]/5 site-light:bg-[#F59E0B]/10 rounded-full blur-3xl"></div>
+          </div>
+
+          <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-4 py-2 mb-6">
+                <div className="w-2 h-2 bg-[#10B981] rounded-full animate-pulse"></div>
+                <span className="text-[#10B981] text-sm font-semibold uppercase tracking-wider">
+                  Course Highlights
+                </span>
+              </div>
+              <h2 className="text-4xl lg:text-5xl xl:text-6xl font-black mb-6 leading-tight">
+                <span className="bg-gradient-to-r from-[#10B981] to-[#F59E0B] bg-clip-text text-transparent">
+                  Key Features
+                </span>
+              </h2>
+            </div>
+
+            <div className="site-glass backdrop-blur-xl rounded-3xl p-8 md:p-12 shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500">
+              <div className="space-y-6">
+                {course.keyFeatures.map((feature, index) => (
+                  <div key={index} className="flex items-start gap-4 group">
+                    <div className="flex-shrink-0 mt-1">
+                      <div className="w-6 h-6 bg-gradient-to-br from-[#10B981] to-[#059669] rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                        <svg
+                          className="w-3 h-3 text-white"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth={3}
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                    <p className="text-lg leading-relaxed site-text-secondary group-hover:site-text-primary transition-colors duration-300">
+                      {feature}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
       )}
 
       {/* Course Components Section */}
@@ -984,6 +1059,39 @@ export default function CoursePage({ params }: CoursePageProps) {
             </div> */}
           </div>
 
+          {/* Country Filter Indicator */}
+          <div className="site-glass backdrop-blur-xl rounded-2xl p-4 shadow-xl mb-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] rounded-xl flex items-center justify-center">
+                  <span className="text-white text-sm font-bold">
+                    {currentCountry?.flag || "🌍"}
+                  </span>
+                </div>
+                <div>
+                  <p className="text-sm font-medium site-text-primary">
+                    Showing schedules for: <span className="text-[#4F46E5] font-bold">{currentCountry?.name || "United States"}</span>
+                  </p>
+                  <p className="text-xs site-text-muted">
+                    {geolocationLoading ? "Detecting your location..." : 
+                     manuallySelectedCountry ? "Manually selected" : "Auto-detected from your location"}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                                 <span className="text-xs site-text-muted">
+                   {geolocationLoading ? "Loading..." : `${getFilteredSchedules().length} schedules available`}
+                 </span>
+                <button
+                  onClick={() => setShowCountryModal(true)}
+                  className="px-3 py-1.5 text-xs font-medium text-[#4F46E5] hover:text-white hover:bg-[#4F46E5] rounded-lg transition-all duration-300 border border-[#4F46E5]/30 hover:border-[#4F46E5]"
+                >
+                  Change Country
+                </button>
+              </div>
+            </div>
+          </div>
+
           {/* Filters */}
           <div className="site-glass backdrop-blur-xl rounded-3xl p-6 shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500 mb-8">
             <div className="flex flex-wrap gap-4 items-center">
@@ -1086,8 +1194,8 @@ export default function CoursePage({ params }: CoursePageProps) {
                   </h3>
                   <p className="site-text-secondary max-w-md mx-auto leading-relaxed">
                     {selectedMode === "classroom"
-                      ? "No sessions are currently available for the selected location. Please try a different location."
-                      : "No schedules are currently available for this training mode."}
+                      ? `No classroom sessions are currently available for ${currentCountry?.name || "your location"}. Please try a different location or training mode.`
+                      : `No ${selectedMode} schedules are currently available for ${currentCountry?.name || "your location"}. Please try a different training mode or contact us for custom schedules.`}
                   </p>
                 </div>
               </div>
@@ -1136,9 +1244,14 @@ export default function CoursePage({ params }: CoursePageProps) {
                                 </svg>
                               </div>
                               <div>
-                                <h3 className="text-xl font-bold site-text-primary">
-                                  {schedule.mode}
-                                </h3>
+                                <div className="flex items-center gap-2 mb-1">
+                                  <h3 className="text-xl font-bold site-text-primary">
+                                    {schedule.mode}
+                                  </h3>
+                                  <span className="px-2 py-1 bg-[#4F46E5]/10 text-[#4F46E5] text-xs font-medium rounded-full">
+                                    {schedule.country}
+                                  </span>
+                                </div>
                                 <p className="text-sm site-text-muted">
                                   {schedule.curriculum}
                                 </p>
@@ -1230,9 +1343,14 @@ export default function CoursePage({ params }: CoursePageProps) {
                                 </svg>
                               </div>
                               <div>
-                                <h3 className="text-xl font-bold site-text-primary">
-                                  {schedule.mode}
-                                </h3>
+                                <div className="flex items-center gap-2 mb-1">
+                                  <h3 className="text-xl font-bold site-text-primary">
+                                    {schedule.mode}
+                                  </h3>
+                                  <span className="px-2 py-1 bg-[#10B981]/10 text-[#10B981] text-xs font-medium rounded-full">
+                                    {schedule.country}
+                                  </span>
+                                </div>
                                 <p className="text-sm site-text-muted">
                                   {schedule.accessDays} Days Access
                                 </p>
@@ -2061,6 +2179,174 @@ export default function CoursePage({ params }: CoursePageProps) {
           </div>
         </div>
       )}
+
+      {/* Brochure Download Modal */}
+      {showBrochureModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="site-glass backdrop-blur-xl rounded-3xl w-full max-w-md shadow-2xl border site-border">
+            {/* Modal Header */}
+            <div className="p-6 border-b site-border">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] rounded-xl flex items-center justify-center shadow-lg shadow-[#4F46E5]/25">
+                    <svg
+                      className="w-5 h-5 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2z"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold site-text-primary">
+                      Download Brochure
+                    </h3>
+                    <p className="text-sm site-text-secondary">
+                      Get detailed course information
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowBrochureModal(false)}
+                  className="w-8 h-8 rounded-full site-glass backdrop-blur-sm site-border border hover:bg-white/20 site-light:hover:bg-white/60 site-text-primary transition-all duration-300 flex items-center justify-center"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Body */}
+            <form onSubmit={handleBrochureSubmit} className="p-6 space-y-6">
+              <div>
+                <label className="block text-sm font-medium site-text-primary mb-2">
+                  Full Name *
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  value={brochureFormData.name}
+                  onChange={handleBrochureInputChange}
+                  className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary placeholder:site-text-muted focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300"
+                  placeholder="Enter your full name"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium site-text-primary mb-2">
+                  Email Address *
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={brochureFormData.email}
+                  onChange={handleBrochureInputChange}
+                  className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary placeholder:site-text-muted focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300"
+                  placeholder="Enter your email address"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium site-text-primary mb-2">
+                  Phone Number *
+                </label>
+                <input
+                  type="tel"
+                  name="phone"
+                  value={brochureFormData.phone}
+                  onChange={handleBrochureInputChange}
+                  className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary placeholder:site-text-muted focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300"
+                  placeholder="Enter your phone number"
+                  required
+                />
+              </div>
+
+              <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <svg
+                      className="w-3 h-3 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-blue-400 text-sm font-medium mb-1">
+                      Why do we need your information?
+                    </p>
+                    <p className="text-blue-300 text-xs leading-relaxed">
+                      We collect your details to send you relevant course updates, 
+                      certification information, and exclusive offers. Your privacy is important to us.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowBrochureModal(false)}
+                  className="flex-1 px-6 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary hover:bg-white/10 site-light:hover:bg-white/20 transition-all duration-300 font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:shadow-[#4F46E5]/25 flex items-center justify-center gap-2"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2z"
+                    />
+                  </svg>
+                  Download Brochure
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Country Selection Modal */}
+      <CountrySelectionModal
+        isOpen={showCountryModal}
+        onClose={() => setShowCountryModal(false)}
+      />
     </div>
   );
 }
