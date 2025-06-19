@@ -464,7 +464,7 @@ const Navbar = () => {
       title: "Company",
       items: [
         { label: "About Us", href: "/about" },
-        { label: "Our Approach", href: "/landing#our-approach" },
+        { label: "Our Approach", href: "/home#our-approach" },
         { label: "Contact Us", href: "/contact" },
       ],
     },

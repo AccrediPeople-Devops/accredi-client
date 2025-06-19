@@ -4,8 +4,11 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { DashboardInput, DashboardSelect, DashboardCheckbox } from "@/app/components/DashboardInput";
+import SearchableDropdown from "@/app/components/SearchableDropdown";
 import scheduleService from "@/app/components/service/schedule.service";
 import courseService from "@/app/components/service/course.service";
+import locationService from "@/app/components/service/location.service";
+import { WORLD_COUNTRIES } from "@/app/components/service/worldLocationData";
 import { LoadingSpinner } from "@/app/components/LoadingSpinner";
 
 interface Course {
@@ -18,6 +21,7 @@ interface Course {
 interface ScheduleFormData {
   courseId: string;
   country: string;
+  countryCode: string;
   scheduleType: string;
   startDate: string;
   endDate: string;
@@ -26,6 +30,7 @@ interface ScheduleFormData {
   instructorName: string;
   accessType: string;
   state: string;
+  stateCode: string;
   city: string;
   standardPrice: number;
   offerPrice: number;
@@ -42,6 +47,7 @@ export default function AddSchedulePage() {
   const [formData, setFormData] = useState<ScheduleFormData>({
     courseId: "",
     country: "",
+    countryCode: "",
     scheduleType: "self-paced",
     startDate: "",
     endDate: "",
@@ -50,6 +56,7 @@ export default function AddSchedulePage() {
     instructorName: "",
     accessType: "90",
     state: "",
+    stateCode: "",
     city: "",
     standardPrice: 0,
     offerPrice: 0,
@@ -164,6 +171,56 @@ export default function AddSchedulePage() {
     }
   };
 
+  // Location dropdown handlers
+  const handleCountryChange = (value: string, code?: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      country: value,
+      countryCode: code || "",
+      state: "",
+      stateCode: "",
+      city: "",
+    }));
+  };
+
+  const handleStateChange = (value: string, code?: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      state: value,
+      stateCode: code || "",
+      city: "",
+    }));
+  };
+
+  const handleCityChange = (value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      city: value,
+    }));
+  };
+
+  // Get location options - using comprehensive world database
+  const countryOptions = WORLD_COUNTRIES.map(country => ({
+    value: country.name,
+    label: country.name,
+    code: country.code
+  }));
+
+  const stateOptions = formData.countryCode 
+    ? locationService.getStatesByCountry(formData.countryCode).map(state => ({
+        value: state.name,
+        label: state.name,
+        code: state.code
+      }))
+    : [];
+
+  const cityOptions = formData.countryCode && formData.stateCode
+    ? locationService.getCitiesByState(formData.countryCode, formData.stateCode).map(city => ({
+        value: city,
+        label: city
+      }))
+    : [];
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
@@ -259,6 +316,7 @@ export default function AddSchedulePage() {
         setFormData({
           courseId: "",
           country: "",
+          countryCode: "",
           scheduleType: "self-paced",
           startDate: "",
           endDate: "",
@@ -267,6 +325,7 @@ export default function AddSchedulePage() {
           instructorName: "",
           accessType: "90",
           state: "",
+          stateCode: "",
           city: "",
           standardPrice: 0,
           offerPrice: 0,
@@ -460,12 +519,14 @@ export default function AddSchedulePage() {
         )}
 
         {/* Country field - shown for all types */}
-        <DashboardInput
+        <SearchableDropdown
           label="Country"
           name="country"
           value={formData.country}
-          onChange={handleChange}
-          placeholder="Enter country"
+          onChange={handleCountryChange}
+          options={countryOptions}
+          placeholder="Select a country"
+          searchPlaceholder="Search countries..."
           required
         />
 
@@ -473,22 +534,30 @@ export default function AddSchedulePage() {
         {formData.scheduleType === "classroom" && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* State */}
-            <DashboardInput
+            <SearchableDropdown
               label="State"
               name="state"
               value={formData.state}
-              onChange={handleChange}
-              placeholder="Enter state"
+              onChange={handleStateChange}
+              options={stateOptions}
+              placeholder="Select a state"
+              searchPlaceholder="Search states..."
+              disabled={!formData.countryCode}
+              noOptionsMessage={!formData.countryCode ? "Please select a country first" : "No states found"}
               required
             />
 
             {/* City */}
-            <DashboardInput
+            <SearchableDropdown
               label="City"
               name="city"
               value={formData.city}
-              onChange={handleChange}
-              placeholder="Enter city"
+              onChange={handleCityChange}
+              options={cityOptions}
+              placeholder="Select a city"
+              searchPlaceholder="Search cities..."
+              disabled={!formData.stateCode}
+              noOptionsMessage={!formData.stateCode ? "Please select a state first" : "No cities found"}
               required
             />
           </div>

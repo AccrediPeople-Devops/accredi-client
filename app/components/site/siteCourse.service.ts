@@ -1,6 +1,7 @@
 import axiosInstance from "../config/axiosInstance";
 import { Course } from "@/app/types/course";
 import { CourseCategory } from "@/app/types/courseCategory";
+import { createCourseSlug, isValidObjectId } from "@/app/utils/textUtils";
 
 /**
  * Site Course Service - Handles public course operations for landing pages
@@ -109,6 +110,59 @@ class SiteCourseService {
       return { 
         status: false, 
         message: error.response?.data?.message || `Error fetching course with ID: ${id}`
+      };
+    }
+  }
+
+  /**
+   * Get course by slug or ID from public courses
+   * @param {string} slugOrId - Course slug or ID
+   * @returns {Promise<{status: boolean, course: Course}>}
+   */
+  async getPublicCourseBySlug(slugOrId: string) {
+    try {
+      console.log("SiteCourseService: Fetching public course with slug/ID:", slugOrId);
+      
+      const coursesResponse = await this.getPublicCourses();
+      
+      if (!coursesResponse?.status || !coursesResponse?.courses) {
+        return { 
+          status: false, 
+          message: `No courses available`
+        };
+      }
+
+      let foundCourse = null;
+
+      // First, check if it's a valid ObjectId and try to find by ID
+      if (isValidObjectId(slugOrId)) {
+        foundCourse = coursesResponse.courses.find((course: any) => course._id === slugOrId);
+        if (foundCourse) {
+          console.log("SiteCourseService: Found course by ID:", foundCourse.title);
+          return { status: true, course: foundCourse };
+        }
+      }
+
+      // If not found by ID or not a valid ObjectId, try to find by slug
+      foundCourse = coursesResponse.courses.find((course: any) => {
+        const courseSlug = createCourseSlug(course.title);
+        return courseSlug === slugOrId;
+      });
+
+      if (foundCourse) {
+        console.log("SiteCourseService: Found course by slug:", foundCourse.title);
+        return { status: true, course: foundCourse };
+      }
+      
+      return { 
+        status: false, 
+        message: `Course not found with slug/ID: ${slugOrId}`
+      };
+    } catch (error: any) {
+      console.error("SiteCourseService: Error fetching course by slug:", error);
+      return { 
+        status: false, 
+        message: error.response?.data?.message || `Error fetching course with slug/ID: ${slugOrId}`
       };
     }
   }

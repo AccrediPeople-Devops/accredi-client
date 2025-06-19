@@ -289,7 +289,7 @@ export default function LoginPage() {
 
                 <div className="text-center mt-4">
                   <Link 
-                    href="/landing" 
+                    href="/home" 
                     className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white/70 hover:text-white transition-colors duration-200"
                   >
                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import RichTextEditor from "./components/RichTextEditor";
+import RichTextEditor from "@/app/components/RichTextEditor";
 
 export default function TestRichEditor() {
   const [content, setContent] = useState("");

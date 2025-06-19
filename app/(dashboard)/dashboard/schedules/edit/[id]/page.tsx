@@ -4,8 +4,11 @@ import React, { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { DashboardInput, DashboardSelect, DashboardCheckbox } from "@/app/components/DashboardInput";
+import SearchableDropdown from "@/app/components/SearchableDropdown";
 import scheduleService from "@/app/components/service/schedule.service";
 import courseService from "@/app/components/service/course.service";
+import locationService from "@/app/components/service/location.service";
+import { WORLD_COUNTRIES } from "@/app/components/service/worldLocationData";
 import { LoadingSpinner } from "@/app/components/LoadingSpinner";
 import { Schedule } from "@/app/types/schedule";
 
@@ -24,6 +27,7 @@ interface Course {
 interface ScheduleFormData {
   courseId: string;
   country: string;
+  countryCode: string;
   scheduleType: string;
   startDate: string;
   endDate: string;
@@ -32,6 +36,7 @@ interface ScheduleFormData {
   instructorName: string;
   accessType: string;
   state: string;
+  stateCode: string;
   city: string;
   standardPrice: number;
   offerPrice: number;
@@ -50,6 +55,7 @@ function ScheduleEditForm({ id }: { id: string }) {
   const [formData, setFormData] = useState<ScheduleFormData>({
     courseId: "",
     country: "",
+    countryCode: "",
     scheduleType: "self-paced",
     startDate: "",
     endDate: "",
@@ -58,6 +64,7 @@ function ScheduleEditForm({ id }: { id: string }) {
     instructorName: "",
     accessType: "90",
     state: "",
+    stateCode: "",
     city: "",
     standardPrice: 0,
     offerPrice: 0,
@@ -144,6 +151,7 @@ function ScheduleEditForm({ id }: { id: string }) {
         setFormData({
           courseId: scheduleData?.courseId || "",
           country: scheduleData?.country || "",
+          countryCode: scheduleData?.countryCode || "",
           scheduleType: scheduleData?.scheduleType || "self-paced",
           startDate: scheduleData ? formatDateForInput(scheduleData.startDate) : "",
           endDate: scheduleData ? formatDateForInput(scheduleData.endDate) : "",
@@ -152,6 +160,7 @@ function ScheduleEditForm({ id }: { id: string }) {
           instructorName: scheduleData?.instructorName || "",
           accessType: scheduleData?.accessType || "90",
           state: scheduleData?.state || "",
+          stateCode: scheduleData?.stateCode || "",
           city: scheduleData?.city || "",
           standardPrice: scheduleData?.standardPrice || 0,
           offerPrice: scheduleData?.offerPrice || 0,
@@ -214,6 +223,56 @@ function ScheduleEditForm({ id }: { id: string }) {
       }));
     }
   };
+
+  // Location dropdown handlers
+  const handleCountryChange = (value: string, code?: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      country: value,
+      countryCode: code || "",
+      state: "",
+      stateCode: "",
+      city: "",
+    }));
+  };
+
+  const handleStateChange = (value: string, code?: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      state: value,
+      stateCode: code || "",
+      city: "",
+    }));
+  };
+
+  const handleCityChange = (value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      city: value,
+    }));
+  };
+
+  // Get location options - using comprehensive world database
+  const countryOptions = WORLD_COUNTRIES.map(country => ({
+    value: country.name,
+    label: country.name,
+    code: country.code
+  }));
+
+  const stateOptions = formData.countryCode 
+    ? locationService.getStatesByCountry(formData.countryCode).map(state => ({
+        value: state.name,
+        label: state.name,
+        code: state.code
+      }))
+    : [];
+
+  const cityOptions = formData.countryCode && formData.stateCode
+    ? locationService.getCitiesByState(formData.countryCode, formData.stateCode).map(city => ({
+        value: city,
+        label: city
+      }))
+    : [];
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -501,12 +560,14 @@ function ScheduleEditForm({ id }: { id: string }) {
         )}
 
         {/* Country field - shown for all types */}
-        <DashboardInput
+        <SearchableDropdown
           label="Country"
           name="country"
           value={formData.country}
-          onChange={handleChange}
-          placeholder="Enter country"
+          onChange={handleCountryChange}
+          options={countryOptions}
+          placeholder="Select a country"
+          searchPlaceholder="Search countries..."
           required
         />
 
@@ -514,22 +575,30 @@ function ScheduleEditForm({ id }: { id: string }) {
         {formData.scheduleType === "classroom" && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* State */}
-            <DashboardInput
+            <SearchableDropdown
               label="State"
               name="state"
               value={formData.state}
-              onChange={handleChange}
-              placeholder="Enter state"
+              onChange={handleStateChange}
+              options={stateOptions}
+              placeholder="Select a state"
+              searchPlaceholder="Search states..."
+              disabled={!formData.countryCode}
+              noOptionsMessage={!formData.countryCode ? "Please select a country first" : "No states found"}
               required
             />
 
             {/* City */}
-            <DashboardInput
+            <SearchableDropdown
               label="City"
               name="city"
               value={formData.city}
-              onChange={handleChange}
-              placeholder="Enter city"
+              onChange={handleCityChange}
+              options={cityOptions}
+              placeholder="Select a city"
+              searchPlaceholder="Search cities..."
+              disabled={!formData.stateCode}
+              noOptionsMessage={!formData.stateCode ? "Please select a state first" : "No cities found"}
               required
             />
           </div>

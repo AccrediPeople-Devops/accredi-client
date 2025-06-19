@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import CourseCategoryForm from "./components/course-categories/CourseCategoryForm";
+import CourseCategoryForm from "@/app/components/course-categories/CourseCategoryForm";
 
 export default function TestCategoryEmoji() {
   const [submittedData, setSubmittedData] = useState<any>(null);

@@ -8,9 +8,7 @@ import siteCourseService from "@/app/components/site/siteCourse.service";
 import config from "@/app/components/config/config";
 import { Course } from "@/app/types/course";
 import paymentService from "@/app/components/service/payment.service";
-import geolocationService, {
-  GeolocationData,
-} from "@/app/components/service/geolocation.service";
+import { useLocation } from "@/app/context/LocationContext";
 
 interface CoursePageProps {
   params: Promise<{ slug: string }>;
@@ -18,17 +16,20 @@ interface CoursePageProps {
 
 export default function CoursePage({ params }: CoursePageProps) {
   const unwrappedParams = use(params);
-  const courseId = unwrappedParams.slug;
+  const courseSlug = unwrappedParams.slug;
 
   // Course data state
   const [course, setCourse] = useState<Course | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Geolocation and currency state
-  const [geolocationData, setGeolocationData] =
-    useState<GeolocationData | null>(null);
-  const [currencyLoading, setCurrencyLoading] = useState(true);
+  // Location context for currency handling
+  const { 
+    currentCountry, 
+    geolocationLoading, 
+    formatPrice, 
+    getCurrentCurrencyCode 
+  } = useLocation();
 
   const [showBrochureModal, setShowBrochureModal] = useState(false);
   const [brochureFormData, setBrochureFormData] = useState({
@@ -58,25 +59,7 @@ export default function CoursePage({ params }: CoursePageProps) {
   const [showErrorDialog, setShowErrorDialog] = useState(false);
   const [errorDialogMessage, setErrorDialogMessage] = useState("");
 
-  // Fetch geolocation data for currency conversion
-  useEffect(() => {
-    const fetchGeolocationData = async () => {
-      setCurrencyLoading(true);
-      try {
-        console.log("Fetching geolocation data for currency conversion...");
-        const geoData = await geolocationService.getCurrentUserGeolocation();
-        setGeolocationData(geoData);
-        console.log("Geolocation data loaded:", geoData);
-      } catch (err: any) {
-        console.error("Error fetching geolocation data:", err);
-        // If geolocation fails, we'll show USD by default
-      } finally {
-        setCurrencyLoading(false);
-      }
-    };
-
-    fetchGeolocationData();
-  }, []);
+  // Note: Location data is now handled by LocationContext
 
   // Fetch course data
   useEffect(() => {
@@ -85,8 +68,8 @@ export default function CoursePage({ params }: CoursePageProps) {
       setError("");
 
       try {
-        console.log("Fetching course with ID:", courseId);
-        const response = await siteCourseService.getPublicCourseById(courseId);
+        console.log("Fetching course with slug:", courseSlug);
+        const response = await siteCourseService.getPublicCourseBySlug(courseSlug);
 
         if (response.status && response.course) {
           setCourse(response.course);
@@ -104,10 +87,10 @@ export default function CoursePage({ params }: CoursePageProps) {
       }
     };
 
-    if (courseId) {
+    if (courseSlug) {
       fetchCourse();
     }
-  }, [courseId]);
+  }, [courseSlug]);
 
   // Helper function to get course image URL
   const getCourseImageUrl = (course: Course) => {
@@ -151,9 +134,9 @@ export default function CoursePage({ params }: CoursePageProps) {
         <div className="flex flex-col items-center space-y-4">
           <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin"></div>
           <p className="site-text-primary text-lg">Loading course...</p>
-          {currencyLoading && (
+          {geolocationLoading && (
             <p className="site-text-secondary text-sm">
-              Converting prices to your local currency...
+              Loading location data...
             </p>
           )}
         </div>
@@ -219,12 +202,79 @@ export default function CoursePage({ params }: CoursePageProps) {
     }
   };
 
-  const handleBrochureSubmit = (e: React.FormEvent) => {
+  const handleBrochureSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Brochure download requested:", brochureFormData);
-    // Handle brochure download logic here
-    setShowBrochureModal(false);
-    setBrochureFormData({ name: "", email: "", phone: "" });
+    
+    try {
+      // Check if course has a brochure file
+      if (course && course.broucher && course.broucher.length > 0) {
+        const brochureFile = course.broucher[0];
+        const brochureUrl = brochureFile.url || `${config.imageUrl}${brochureFile.path}`;
+        
+        try {
+          // Try to fetch with CORS handling first
+          const response = await fetch(brochureUrl, {
+            method: 'GET',
+            mode: 'cors',
+            credentials: 'same-origin',
+            headers: {
+              'Content-Type': 'application/octet-stream',
+            },
+          });
+          
+          if (response.ok) {
+            const blob = await response.blob();
+            
+            // Create a blob URL and download link
+            const blobUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = `${course.title}-Brochure.pdf`;
+            link.style.display = 'none';
+            
+            // Add to DOM, click, and remove
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Clean up the blob URL
+            window.URL.revokeObjectURL(blobUrl);
+            
+            console.log("Brochure downloaded via fetch:", brochureUrl);
+          } else {
+            throw new Error('Fetch failed');
+          }
+        } catch (fetchError) {
+          console.warn("Fetch failed, using direct download method:", fetchError);
+          
+          // Fallback: Direct download with download attribute
+          const link = document.createElement('a');
+          link.href = brochureUrl;
+          link.download = `${course.title}-Brochure.pdf`;
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          link.style.display = 'none';
+          
+          // Add to DOM, click, and remove
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          
+          console.log("Brochure downloaded via direct link:", brochureUrl);
+        }
+      } else {
+        // Fallback: Generate a dummy PDF or show message
+        alert("Brochure is currently being prepared. Please contact support for more information.");
+      }
+    } catch (error) {
+      console.error("Error downloading brochure:", error);
+      alert("Failed to download brochure. Please try again.");
+    } finally {
+      // Close modal and reset form
+      setShowBrochureModal(false);
+      setBrochureFormData({ name: "", email: "", phone: "" });
+    }
   };
 
   const handleQuantityChange = (action: "increase" | "decrease") => {
@@ -274,19 +324,16 @@ export default function CoursePage({ params }: CoursePageProps) {
 
   const handlePayment = async () => {
     try {
-      // Determine the currency to use for payment
-      const paymentCurrency =
-        geolocationData?.geoplugin_currencyCode?.toLowerCase() || "usd";
-      const localTotal = geolocationData
-        ? getLocalPrice(calculateTotal())
-        : calculateTotal();
+      // Determine the currency to use for payment - now uses same amount, different currency code
+      const paymentCurrency = getCurrentCurrencyCode().toLowerCase();
+      const totalAmount = calculateTotal(); // Same amount regardless of currency
 
       const paymentData = {
         type: "stripe",
         shedule_id: selectedSchedule.id,
         couponCode: enrollFormData.couponCode || "",
         currency: paymentCurrency,
-        amount: localTotal,
+        amount: totalAmount,
         userId: "680fc19e638ed8389d944000", // You may want to get this dynamically
         // Additional form data
         fullName: enrollFormData.fullName,
@@ -294,10 +341,10 @@ export default function CoursePage({ params }: CoursePageProps) {
         contactNumber: enrollFormData.contactNumber,
         country: enrollFormData.country,
         city: enrollFormData.city,
-        // Geolocation data for analytics
-        userCountry: geolocationData?.geoplugin_countryName || "Unknown",
-        userCity: geolocationData?.geoplugin_city || "Unknown",
-        userIP: geolocationData?.geoplugin_request || "Unknown",
+        // Location data for analytics
+        userCountry: currentCountry?.name || "Unknown",
+        userCity: "Unknown", // This would need to be handled separately if needed
+        selectedCurrency: getCurrentCurrencyCode(),
       };
 
       console.log("Processing payment:", paymentData);
@@ -399,34 +446,7 @@ export default function CoursePage({ params }: CoursePageProps) {
     }
   };
 
-  // Helper functions for currency conversion
-  const formatPrice = (usdPrice: number): string => {
-    if (!geolocationData || currencyLoading) {
-      return `USD $${usdPrice}`;
-    }
-
-    const localPrice = geolocationService.convertUSDToLocalCurrency(
-      usdPrice,
-      geolocationData.geoplugin_currencyConverter
-    );
-
-    return geolocationService.formatCurrency(
-      localPrice,
-      geolocationData.geoplugin_currencySymbol_UTF8,
-      geolocationData.geoplugin_currencyCode
-    );
-  };
-
-  const getLocalPrice = (usdPrice: number): number => {
-    if (!geolocationData) {
-      return usdPrice;
-    }
-
-    return geolocationService.convertUSDToLocalCurrency(
-      usdPrice,
-      geolocationData.geoplugin_currencyConverter
-    );
-  };
+  // Currency formatting is now handled by LocationContext
 
   const calculateTotal = () => {
     if (!selectedSchedule) return 0;
@@ -617,130 +637,100 @@ export default function CoursePage({ params }: CoursePageProps) {
             <Breadcrumb items={breadcrumbItems} />
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-center min-h-[600px]">
-            {/* Content - Left Side */}
-            <div className="lg:col-span-7 flex flex-col justify-center">
-              <div className="space-y-6">
-                {/* Category */}
+          {/* Course Hero Section - Redesigned Structure */}
+          <div className="space-y-12">
+            
+            {/* Section 1: Course Title - Centered */}
+            <div className="text-center space-y-6">
+              {/* Category Badge */}
+              <div className="flex justify-center">
                 <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-4 py-2">
                   <div className="w-2 h-2 bg-[#4F46E5] rounded-full animate-pulse"></div>
                   <span className="text-[#4F46E5] text-sm font-semibold uppercase tracking-wider">
                     {courseData.category}
                   </span>
                 </div>
+              </div>
 
-                {/* Title */}
-                <div>
-                  <h1 className="text-4xl lg:text-5xl xl:text-6xl font-black mb-6 leading-tight">
-                    <span className="site-text-primary">
-                      {courseData.title.split("®")[0]}{" "}
-                    </span>
-                  </h1>
-                  {/* Short Description Card */}
-                  <div className="site-glass backdrop-blur-xl rounded-2xl p-6 shadow-xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-300 mt-6">
-                    <RichTextRenderer 
-                      content={courseData.description}
-                      className="text-lg leading-relaxed"
-                    />
-                  </div>
+              {/* Course Title */}
+              <h1 className="text-4xl lg:text-5xl xl:text-6xl font-black leading-tight">
+                <span className="site-text-primary">
+                  {courseData.title}
+                </span>
+              </h1>
+            </div>
+
+            {/* Section 2: Description and Image - Side by Side */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+              
+              {/* Left: Short Description */}
+              <div className="order-2 lg:order-1">
+                <div className="site-glass backdrop-blur-xl rounded-2xl p-6 lg:p-8 shadow-xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-300">
+                  <RichTextRenderer 
+                    content={courseData.description}
+                    className="text-lg leading-relaxed"
+                  />
                 </div>
+              </div>
 
-                {/* Action Buttons */}
-                <div className="flex flex-col md:flex-row gap-4 pt-6">
-                  <button
-                    onClick={scrollToSchedule}
-                    className="group flex items-center justify-center px-8 py-4 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#7C3AED] hover:to-[#6D28D9] text-white font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:shadow-[#4F46E5]/25 min-w-[200px]"
-                  >
-                    <svg
-                      className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform duration-300"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      />
-                    </svg>
-                    View Schedules
-                  </button>
-
-                  <button
-                    onClick={() => setShowBrochureModal(true)}
-                    className="group flex items-center justify-center gap-3 px-8 py-4 site-glass backdrop-blur-sm site-border border hover:bg-white/20 site-light:hover:bg-white/60 site-text-primary font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 min-w-[200px]"
-                  >
-                    <svg
-                      className="w-5 h-5 group-hover:scale-110 transition-transform duration-300"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2z"
-                      />
-                    </svg>
-                    Download Brochure
-                  </button>
+              {/* Right: Course Image */}
+              <div className="order-1 lg:order-2 flex justify-center lg:justify-end">
+                <div className="relative">
+                  <Image
+                    src={courseData.image}
+                    alt={courseData.title}
+                    width={0}
+                    height={0}
+                    sizes="100vw"
+                    className="w-auto h-auto max-w-full rounded-lg shadow-lg"
+                    unoptimized
+                  />
                 </div>
               </div>
             </div>
 
-            {/* Image and Badge - Right Side */}
-            <div className="lg:col-span-5 flex flex-col justify-center items-center lg:items-end">
-              <div className="relative w-full max-w-md lg:max-w-lg">
-                {/* Course Image */}
-                <div className="relative site-glass backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500 group">
-                  {/* Gradient Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent z-10"></div>
-
-                  {/* Main Image */}
-                  <div className="aspect-[4/3] relative overflow-hidden">
-                    <Image
-                      src={courseData.image}
-                      alt={courseData.title}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
-                      unoptimized
+            {/* Section 3: Action Buttons - Centered */}
+            <div className="flex justify-center pb-16">
+              <div className="flex flex-col sm:flex-row gap-4 w-full max-w-lg">
+                <button
+                  onClick={scrollToSchedule}
+                  className="group flex items-center justify-center px-6 py-4 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#7C3AED] hover:to-[#6D28D9] text-white font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:shadow-[#4F46E5]/25 flex-1 whitespace-nowrap"
+                >
+                  <svg
+                    className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform duration-300"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                     />
-                  </div>
+                  </svg>
+                  Schedules
+                </button>
 
-                  {/* Floating Badge */}
-                  <div className="absolute top-4 left-4 z-20">
-                    <div className="inline-flex items-center px-3 py-2 bg-gradient-to-r from-[#10B981] to-[#059669] text-white rounded-full text-sm font-bold shadow-lg">
-                      <div className="w-2 h-2 bg-white rounded-full mr-2 animate-pulse"></div>
-                      Live Training
-                    </div>
-                  </div>
-
-                  {/* Course Type Badge */}
-                  <div className="absolute bottom-4 right-4 z-20">
-                    <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white rounded-2xl text-sm font-bold shadow-lg backdrop-blur-sm">
-                      <svg
-                        className="w-4 h-4 mr-2"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                        />
-                      </svg>
-                      ONLINE COURSE
-                    </div>
-                  </div>
-                </div>
-
-                {/* Decorative Elements */}
-                <div className="absolute -top-4 -right-4 w-8 h-8 bg-[#4F46E5] rounded-full opacity-60 animate-pulse"></div>
-                <div className="absolute -bottom-4 -left-4 w-6 h-6 bg-[#10B981] rounded-full opacity-60 animate-pulse delay-1000"></div>
+                <button
+                  onClick={() => setShowBrochureModal(true)}
+                  className="group flex items-center justify-center gap-2 px-6 py-4 site-glass backdrop-blur-sm site-border border hover:bg-white/20 site-light:hover:bg-white/60 site-text-primary font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 flex-1 whitespace-nowrap"
+                >
+                  <svg
+                    className="w-5 h-5 group-hover:scale-110 transition-transform duration-300"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2z"
+                    />
+                  </svg>
+                  Brochure
+                </button>
               </div>
             </div>
           </div>
@@ -974,38 +964,9 @@ export default function CoursePage({ params }: CoursePageProps) {
             </p>
 
             {/* Currency Conversion Banner */}
-            {geolocationData &&
-              !currencyLoading &&
-              geolocationData.geoplugin_currencyCode !== "USD" && (
-                <div className="inline-flex items-center gap-3 site-glass backdrop-blur-xl rounded-2xl px-6 py-3 mt-4 mb-4 shadow-lg hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-300">
-                  <div className="w-8 h-8 bg-gradient-to-br from-[#10B981] to-[#059669] rounded-full flex items-center justify-center">
-                    <svg
-                      className="w-4 h-4 text-white"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
-                      />
-                    </svg>
-                  </div>
-                  <div className="text-left">
-                    <div className="text-sm font-bold site-text-primary">
-                      Prices shown in {geolocationData.geoplugin_currencyCode}
-                    </div>
-                    <div className="text-xs site-text-muted">
-                      📍 {geolocationData.geoplugin_city},{" "}
-                      {geolocationData.geoplugin_countryName}
-                    </div>
-                  </div>
-                </div>
-              )}
 
-            <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-4 py-2 mt-4">
+
+            {/* <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-4 py-2 mt-4">
               <svg
                 className="w-4 h-4 text-[#10B981]"
                 fill="currentColor"
@@ -1020,7 +981,7 @@ export default function CoursePage({ params }: CoursePageProps) {
               <span className="text-sm font-medium site-text-primary">
                 {getFilteredSchedules().length} Results Found
               </span>
-            </div>
+            </div> */}
           </div>
 
           {/* Filters */}
@@ -1364,18 +1325,16 @@ export default function CoursePage({ params }: CoursePageProps) {
                               ⚡ Limited Time Offer
                             </div>
                           )}
-                          {currencyLoading && (
+                          {geolocationLoading && (
                             <div className="text-xs site-text-muted mt-2">
-                              Converting to local currency...
+                              Loading location...
                             </div>
                           )}
-                          {geolocationData &&
-                            !currencyLoading &&
-                            geolocationData.geoplugin_currencyCode !==
-                              "USD" && (
+                          {currentCountry &&
+                            !geolocationLoading &&
+                            currentCountry.currencyCode !== "USD" && (
                               <div className="text-xs site-text-muted mt-2">
-                                📍 {geolocationData.geoplugin_city},{" "}
-                                {geolocationData.geoplugin_countryName}
+                                📍 {currentCountry.name}
                               </div>
                             )}
                         </div>
@@ -1535,116 +1494,18 @@ export default function CoursePage({ params }: CoursePageProps) {
         </section>
       )}
 
-      {/* Brochure Download Modal */}
+      {/* Brochure Download Modal - Redesigned */}
       {showBrochureModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-8 max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-gray-900">
-                Download Brochure
-              </h3>
-              <button
-                onClick={() => setShowBrochureModal(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </div>
-
-            <form onSubmit={handleBrochureSubmit} className="space-y-4">
-              <div>
-                <label
-                  htmlFor="brochure-name"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Full Name *
-                </label>
-                <input
-                  type="text"
-                  id="brochure-name"
-                  name="name"
-                  value={brochureFormData.name}
-                  onChange={handleBrochureInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300"
-                  placeholder="Enter your full name"
-                  required
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="brochure-email"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Email Address *
-                </label>
-                <input
-                  type="email"
-                  id="brochure-email"
-                  name="email"
-                  value={brochureFormData.email}
-                  onChange={handleBrochureInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300"
-                  placeholder="Enter your email address"
-                  required
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="brochure-phone"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Contact Number *
-                </label>
-                <input
-                  type="tel"
-                  id="brochure-phone"
-                  name="phone"
-                  value={brochureFormData.phone}
-                  onChange={handleBrochureInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300"
-                  placeholder="Enter your contact number"
-                  required
-                />
-              </div>
-
-              <div className="flex gap-4 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowBrochureModal(false)}
-                  className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 px-6 py-3 bg-[#4F46E5] text-white font-bold rounded-lg hover:bg-[#3730A3] transition-colors"
-                >
-                  Download
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Enrollment Modal - Simplified */}
-      {showEnrollModal && selectedSchedule && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="site-glass backdrop-blur-xl rounded-3xl w-full max-w-2xl my-8 shadow-2xl border site-border">
+        <div 
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowBrochureModal(false);
+              setBrochureFormData({ name: "", email: "", phone: "" });
+            }
+          }}
+        >
+          <div className="site-glass backdrop-blur-xl rounded-3xl w-full max-w-md shadow-2xl border site-border">
             {/* Modal Header */}
             <div className="flex items-center justify-between p-6 border-b site-border">
               <div className="flex items-center gap-3">
@@ -1659,11 +1520,173 @@ export default function CoursePage({ params }: CoursePageProps) {
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
+                      d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold site-text-primary">
+                    Download Brochure
+                  </h3>
+                  <p className="text-sm site-text-muted">
+                    Get detailed course information
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setShowBrochureModal(false);
+                  setBrochureFormData({ name: "", email: "", phone: "" });
+                }}
+                className="w-8 h-8 site-glass backdrop-blur-sm rounded-xl flex items-center justify-center site-text-secondary hover:site-text-primary hover:bg-white/20 site-light:hover:bg-white/60 transition-all duration-300"
+                aria-label="Close modal"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            {/* Background Elements */}
+            <div className="absolute inset-0 overflow-hidden rounded-3xl pointer-events-none">
+              <div className="absolute top-10 right-10 w-32 h-32 bg-[#4F46E5]/5 site-light:bg-[#4F46E5]/10 rounded-full blur-2xl"></div>
+              <div className="absolute bottom-10 left-10 w-40 h-40 bg-[#10B981]/5 site-light:bg-[#10B981]/10 rounded-full blur-2xl"></div>
+            </div>
+
+            {/* Modal Content */}
+            <div className="relative z-10 p-6">
+              <form onSubmit={handleBrochureSubmit} className="space-y-6">
+                <div>
+                  <label
+                    htmlFor="brochure-name"
+                    className="block text-sm font-medium site-text-primary mb-2"
+                  >
+                    Full Name *
+                  </label>
+                  <input
+                    type="text"
+                    id="brochure-name"
+                    name="name"
+                    value={brochureFormData.name}
+                    onChange={handleBrochureInputChange}
+                    className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary placeholder:site-text-muted focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300"
+                    placeholder="Enter your full name"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="brochure-email"
+                    className="block text-sm font-medium site-text-primary mb-2"
+                  >
+                    Email Address *
+                  </label>
+                  <input
+                    type="email"
+                    id="brochure-email"
+                    name="email"
+                    value={brochureFormData.email}
+                    onChange={handleBrochureInputChange}
+                    className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary placeholder:site-text-muted focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300"
+                    placeholder="Enter your email address"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="brochure-phone"
+                    className="block text-sm font-medium site-text-primary mb-2"
+                  >
+                    Contact Number *
+                  </label>
+                  <input
+                    type="tel"
+                    id="brochure-phone"
+                    name="phone"
+                    value={brochureFormData.phone}
+                    onChange={handleBrochureInputChange}
+                    className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary placeholder:site-text-muted focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300"
+                    placeholder="Enter your contact number"
+                    required
+                  />
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowBrochureModal(false);
+                      setBrochureFormData({ name: "", email: "", phone: "" });
+                    }}
+                    className="flex-1 px-6 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-secondary hover:site-text-primary hover:bg-white/20 site-light:hover:bg-white/60 font-medium transition-all duration-300"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 px-6 py-3 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#7C3AED] hover:to-[#6D28D9] text-white font-bold rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:shadow-[#4F46E5]/25"
+                  >
+                    Download
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Enrollment Modal - Optimized */}
+      {showEnrollModal && selectedSchedule && (
+        <div 
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-start justify-center z-50 p-4 overflow-y-auto"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowEnrollModal(false);
+              setSelectedSchedule(null);
+              setAppliedCoupon(null);
+              setEnrollFormData({
+                fullName: "",
+                email: "",
+                contactNumber: "",
+                country: "United States",
+                city: "",
+                couponCode: "",
+              });
+            }
+          }}
+        >
+          <div className="site-glass backdrop-blur-xl rounded-3xl w-full max-w-4xl my-4 shadow-2xl border site-border min-h-fit">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-4 sm:p-6 border-b site-border sticky top-0 bg-inherit rounded-t-3xl z-20">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] rounded-xl flex items-center justify-center">
+                  <svg
+                    className="w-4 h-4 sm:w-6 sm:h-6 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                       d="M12 6v6m0 0v6m0-6h6m-6 0H6"
                     />
                   </svg>
                 </div>
-                <h3 className="text-2xl font-bold site-text-primary">
+                <h3 className="text-lg sm:text-2xl font-bold site-text-primary">
                   Enrollment Details
                 </h3>
               </div>
@@ -1681,10 +1704,11 @@ export default function CoursePage({ params }: CoursePageProps) {
                     couponCode: "",
                   });
                 }}
-                className="w-10 h-10 site-glass backdrop-blur-sm rounded-xl flex items-center justify-center site-text-secondary hover:site-text-primary hover:bg-white/20 site-light:hover:bg-white/60 transition-all duration-300"
+                className="w-8 h-8 sm:w-10 sm:h-10 site-glass backdrop-blur-sm rounded-xl flex items-center justify-center site-text-secondary hover:site-text-primary hover:bg-white/20 site-light:hover:bg-white/60 transition-all duration-300 shrink-0"
+                aria-label="Close modal"
               >
                 <svg
-                  className="w-6 h-6"
+                  className="w-5 h-5 sm:w-6 sm:h-6"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth={2}
@@ -1700,256 +1724,269 @@ export default function CoursePage({ params }: CoursePageProps) {
             </div>
 
             {/* Background Elements */}
-            <div className="absolute inset-0 overflow-hidden rounded-3xl">
+            <div className="absolute inset-0 overflow-hidden rounded-3xl pointer-events-none">
               <div className="absolute top-20 right-20 w-64 h-64 bg-[#4F46E5]/5 site-light:bg-[#4F46E5]/10 rounded-full blur-3xl"></div>
               <div className="absolute bottom-20 left-20 w-80 h-80 bg-[#10B981]/5 site-light:bg-[#10B981]/10 rounded-full blur-3xl"></div>
             </div>
 
-            <div className="relative z-10 p-6">
-              {/* Course Summary */}
-              <div className="site-glass backdrop-blur-xl rounded-3xl p-6 shadow-xl border site-border mb-6">
-                <h4 className="text-lg font-semibold site-text-primary mb-4">
-                  Course Summary
-                </h4>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="site-text-secondary">Course:</span>
-                    <span className="site-text-primary font-medium">
-                      {courseData.title}
-                    </span>
+            {/* Modal Content */}
+            <div className="relative z-10 p-4 sm:p-6 space-y-6">
+              {/* Two Column Layout */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                
+                {/* Left Column - Course Summary */}
+                <div className="space-y-6">
+                  <div className="site-glass backdrop-blur-xl rounded-3xl p-4 sm:p-6 shadow-xl border site-border">
+                    <h4 className="text-lg font-semibold site-text-primary mb-4">
+                      Course Summary
+                    </h4>
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-start">
+                        <span className="site-text-secondary text-sm">Course:</span>
+                        <span className="site-text-primary font-medium text-sm text-right flex-1 ml-2">
+                          {courseData.title}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="site-text-secondary text-sm">Mode:</span>
+                        <span className="site-text-primary font-medium text-sm">
+                          {selectedSchedule.mode}
+                        </span>
+                      </div>
+                      {selectedMode === "live-online" ||
+                      selectedMode === "classroom" ? (
+                        <>
+                          <div className="flex justify-between items-start">
+                            <span className="site-text-secondary text-sm">Dates:</span>
+                            <span className="site-text-primary font-medium text-sm text-right flex-1 ml-2">
+                              {selectedSchedule.dates?.join(", ")}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="site-text-secondary text-sm">Duration:</span>
+                            <span className="site-text-primary font-medium text-sm">
+                              {selectedSchedule.duration}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="site-text-secondary text-sm">
+                              Participants:
+                            </span>
+                            <span className="site-text-primary font-medium text-sm">
+                              {quantity}
+                            </span>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="flex justify-between">
+                          <span className="site-text-secondary text-sm">Access:</span>
+                          <span className="site-text-primary font-medium text-sm">
+                            {selectedSchedule.accessDays} Days
+                          </span>
+                        </div>
+                      )}
+                      <div className="flex justify-between font-bold text-lg border-t site-border pt-3 mt-4">
+                        <span className="site-text-primary">Total:</span>
+                        <span className="bg-gradient-to-r from-[#4F46E5] to-[#10B981] bg-clip-text text-transparent">
+                          {formatPrice(calculateTotal())}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="site-text-secondary">Mode:</span>
-                    <span className="site-text-primary font-medium">
-                      {selectedSchedule.mode}
-                    </span>
+                </div>
+
+                {/* Right Column - Enrollment Form */}
+                <div className="space-y-6">
+                  {/* Personal Information */}
+                  <div className="site-glass backdrop-blur-xl rounded-3xl p-4 sm:p-6 shadow-xl border site-border">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="w-8 h-8 bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] rounded-xl flex items-center justify-center text-white font-bold shadow-lg shadow-[#4F46E5]/25">
+                        1
+                      </div>
+                      <h4 className="text-lg font-semibold site-text-primary">
+                        Personal Information
+                      </h4>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium site-text-primary mb-2">
+                          Full Name *
+                        </label>
+                        <input
+                          type="text"
+                          name="fullName"
+                          value={enrollFormData.fullName}
+                          onChange={handleEnrollInputChange}
+                          className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary placeholder:site-text-muted focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300"
+                          placeholder="Enter your full name"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium site-text-primary mb-2">
+                          Email Address *
+                        </label>
+                        <input
+                          type="email"
+                          name="email"
+                          value={enrollFormData.email}
+                          onChange={handleEnrollInputChange}
+                          className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary placeholder:site-text-muted focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300"
+                          placeholder="Enter your email"
+                          required
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium site-text-primary mb-2">
+                            Contact Number *
+                          </label>
+                          <input
+                            type="tel"
+                            name="contactNumber"
+                            value={enrollFormData.contactNumber}
+                            onChange={handleEnrollInputChange}
+                            className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary placeholder:site-text-muted focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300"
+                            placeholder="Enter your contact number"
+                            required
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium site-text-primary mb-2">
+                            Country *
+                          </label>
+                          <select
+                            name="country"
+                            value={enrollFormData.country}
+                            onChange={handleEnrollInputChange}
+                            className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300"
+                            required
+                          >
+                            {countries.map((country) => (
+                              <option key={country} value={country}>
+                                {country}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium site-text-primary mb-2">
+                          City *
+                        </label>
+                        <input
+                          type="text"
+                          name="city"
+                          value={enrollFormData.city}
+                          onChange={handleEnrollInputChange}
+                          className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary placeholder:site-text-muted focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300"
+                          placeholder="Enter your city"
+                          required
+                        />
+                      </div>
+                    </div>
                   </div>
-                  {selectedMode === "live-online" ||
-                  selectedMode === "classroom" ? (
-                    <>
-                      <div className="flex justify-between">
-                        <span className="site-text-secondary">Dates:</span>
-                        <span className="site-text-primary font-medium">
-                          {selectedSchedule.dates?.join(", ")}
-                        </span>
+
+                  {/* Coupon Code Section */}
+                  <div className="site-glass backdrop-blur-xl rounded-3xl p-4 sm:p-6 shadow-xl border site-border">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-8 h-8 bg-gradient-to-br from-[#10B981] to-[#059669] rounded-xl flex items-center justify-center text-white font-bold shadow-lg shadow-[#10B981]/25">
+                        2
                       </div>
-                      <div className="flex justify-between">
-                        <span className="site-text-secondary">Duration:</span>
-                        <span className="site-text-primary font-medium">
-                          {selectedSchedule.duration}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="site-text-secondary">
-                          Participants:
-                        </span>
-                        <span className="site-text-primary font-medium">
-                          {quantity}
-                        </span>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="flex justify-between">
-                      <span className="site-text-secondary">Access:</span>
-                      <span className="site-text-primary font-medium">
-                        {selectedSchedule.accessDays} Days
+                      <h4 className="text-lg font-semibold site-text-primary">
+                        Coupon Code
+                      </h4>
+                      <span className="text-sm text-blue-400 font-medium">
+                        (Optional)
                       </span>
                     </div>
-                  )}
-                  <div className="flex justify-between font-bold text-lg border-t site-border pt-2">
-                    <span className="site-text-primary">Total:</span>
-                    <span className="bg-gradient-to-r from-[#4F46E5] to-[#10B981] bg-clip-text text-transparent">
-                      {formatPrice(calculateTotal())}
-                    </span>
-                  </div>
-                </div>
-              </div>
 
-              {/* Enrollment Form */}
-              <div className="site-glass backdrop-blur-xl rounded-3xl p-6 shadow-xl border site-border mb-6">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] rounded-xl flex items-center justify-center text-white font-bold shadow-lg shadow-[#4F46E5]/25">
-                    1
-                  </div>
-                  <h4 className="text-xl font-semibold site-text-primary">
-                    Personal Information
-                  </h4>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium site-text-primary mb-3">
-                      Full Name *
-                    </label>
-                    <input
-                      type="text"
-                      name="fullName"
-                      value={enrollFormData.fullName}
-                      onChange={handleEnrollInputChange}
-                      className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary placeholder:site-text-muted focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300"
-                      placeholder="Enter your full name"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium site-text-primary mb-3">
-                      Email Address *
-                    </label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={enrollFormData.email}
-                      onChange={handleEnrollInputChange}
-                      className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary placeholder:site-text-muted focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300"
-                      placeholder="Enter your email"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium site-text-primary mb-3">
-                      Contact Number *
-                    </label>
-                    <input
-                      type="tel"
-                      name="contactNumber"
-                      value={enrollFormData.contactNumber}
-                      onChange={handleEnrollInputChange}
-                      className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary placeholder:site-text-muted focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300"
-                      placeholder="Enter your contact number"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium site-text-primary mb-3">
-                      Country *
-                    </label>
-                    <select
-                      name="country"
-                      value={enrollFormData.country}
-                      onChange={handleEnrollInputChange}
-                      className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300"
-                      required
-                    >
-                      {countries.map((country) => (
-                        <option key={country} value={country}>
-                          {country}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium site-text-primary mb-3">
-                      City *
-                    </label>
-                    <input
-                      type="text"
-                      name="city"
-                      value={enrollFormData.city}
-                      onChange={handleEnrollInputChange}
-                      className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary placeholder:site-text-muted focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300"
-                      placeholder="Enter your city"
-                      required
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Coupon Code Section */}
-              <div className="site-glass backdrop-blur-xl rounded-3xl p-6 shadow-xl border site-border mb-6">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 bg-gradient-to-br from-[#10B981] to-[#059669] rounded-xl flex items-center justify-center text-white font-bold shadow-lg shadow-[#10B981]/25">
-                    2
-                  </div>
-                  <h4 className="text-xl font-semibold site-text-primary">
-                    Coupon Code
-                  </h4>
-                  <span className="text-sm text-blue-400 font-medium">
-                    (Optional)
-                  </span>
-                </div>
-
-                <div className="flex gap-3">
-                  <input
-                    type="text"
-                    name="couponCode"
-                    value={enrollFormData.couponCode}
-                    onChange={handleEnrollInputChange}
-                    className="flex-1 px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary placeholder:site-text-muted focus:ring-2 focus:ring-[#10B981] focus:border-transparent transition-all duration-300"
-                    placeholder="Enter coupon code"
-                  />
-                  <button
-                    onClick={handleApplyCoupon}
-                    className="px-6 py-3 bg-gradient-to-br from-[#10B981] to-[#059669] text-white font-medium rounded-xl hover:shadow-lg hover:shadow-[#10B981]/25 transition-all duration-300"
-                  >
-                    Apply
-                  </button>
-                </div>
-
-                {appliedCoupon && (
-                  <div className="mt-4 p-4 bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-xl">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                          <svg
-                            className="w-4 h-4 text-white"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth={2}
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M5 13l4 4L19 7"
-                            />
-                          </svg>
-                        </div>
-                        <span className="text-green-400 font-medium">
-                          Coupon "{appliedCoupon.code}" applied successfully!
-                        </span>
-                      </div>
+                    <div className="flex gap-3">
+                      <input
+                        type="text"
+                        name="couponCode"
+                        value={enrollFormData.couponCode}
+                        onChange={handleEnrollInputChange}
+                        className="flex-1 px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary placeholder:site-text-muted focus:ring-2 focus:ring-[#10B981] focus:border-transparent transition-all duration-300"
+                        placeholder="Enter coupon code"
+                      />
                       <button
-                        onClick={() => setAppliedCoupon(null)}
-                        className="text-green-400 hover:text-green-300 font-medium"
+                        onClick={handleApplyCoupon}
+                        className="px-6 py-3 bg-gradient-to-br from-[#10B981] to-[#059669] text-white font-medium rounded-xl hover:shadow-lg hover:shadow-[#10B981]/25 transition-all duration-300 whitespace-nowrap"
                       >
-                        Remove
+                        Apply
                       </button>
                     </div>
+
+                    {appliedCoupon && (
+                      <div className="mt-4 p-4 bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-xl">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                              <svg
+                                className="w-4 h-4 text-white"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth={2}
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M5 13l4 4L19 7"
+                                />
+                              </svg>
+                            </div>
+                            <span className="text-green-400 font-medium text-sm">
+                              Coupon "{appliedCoupon.code}" applied!
+                            </span>
+                          </div>
+                          <button
+                            onClick={() => setAppliedCoupon(null)}
+                            className="text-green-400 hover:text-green-300 font-medium text-sm"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
               </div>
 
-              {/* Enroll Button */}
-              <button
-                onClick={handlePayment}
-                className="w-full group px-8 py-4 bg-gradient-to-r from-[#FF6B35] to-[#E55A2B] hover:from-[#E55A2B] hover:to-[#CC4A1D] text-white font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:shadow-[#FF6B35]/25"
-              >
-                <span className="flex items-center justify-center gap-2">
-                  <svg
-                    className="w-6 h-6 group-hover:scale-110 transition-transform duration-300"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-                    />
-                  </svg>
-                  ENROLL NOW - {formatPrice(calculateTotal())}
-                </span>
-              </button>
+              {/* Enroll Button - Full Width */}
+              <div className="border-t site-border pt-6">
+                <button
+                  onClick={handlePayment}
+                  className="w-full group px-8 py-4 bg-gradient-to-r from-[#FF6B35] to-[#E55A2B] hover:from-[#E55A2B] hover:to-[#CC4A1D] text-white font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:shadow-[#FF6B35]/25"
+                >
+                  <span className="flex items-center justify-center gap-2">
+                    <svg
+                      className="w-6 h-6 group-hover:scale-110 transition-transform duration-300"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                      />
+                    </svg>
+                    ENROLL NOW - {formatPrice(calculateTotal())}
+                  </span>
+                </button>
 
-              <p className="text-xs site-text-muted text-center mt-4">
-                By enrolling, you agree to our Terms of Service and Privacy
-                Policy
-              </p>
+                <p className="text-xs site-text-muted text-center mt-4">
+                  By enrolling, you agree to our Terms of Service and Privacy Policy
+                </p>
+              </div>
             </div>
           </div>
         </div>

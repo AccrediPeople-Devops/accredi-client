@@ -9,6 +9,7 @@ import { User } from "@/app/types/user";
 import UserService from "@/app/components/service/user.service";
 import siteCourseService from "@/app/components/site/siteCourse.service";
 import config from "@/app/components/config/config";
+import { createCourseSlug } from "@/app/utils/textUtils";
 
 export default function MyCoursesPage() {
   const router = useRouter();
@@ -257,7 +258,7 @@ export default function MyCoursesPage() {
                   {/* Action Buttons */}
                   <div className="flex gap-3">
                     <Link
-                      href={`/courses/${course._id}`}
+                      href={`/courses/${createCourseSlug(course.title)}`}
                       className="flex-1 text-center px-4 py-2 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white rounded-xl hover:shadow-xl hover:shadow-[#4F46E5]/25 transition-all duration-300 font-medium hover:scale-105 text-sm"
                     >
                       Continue Learning

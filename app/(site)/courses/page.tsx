@@ -8,6 +8,7 @@ import { Course } from "@/app/types/course";
 import { CourseCategory } from "@/app/types/courseCategory";
 import siteCourseService from "@/app/components/site/siteCourse.service";
 import config from "@/app/components/config/config";
+import { createCourseSlug } from "@/app/utils/textUtils";
 
 interface CategoryWithCourses extends CourseCategory {
   courses: Course[];
@@ -348,7 +349,7 @@ export default function CoursesPage() {
                   {filteredCourses.map(course => (
                     <Link
                       key={course._id}
-                      href={`/courses/${course._id}`}
+                      href={`/courses/${createCourseSlug(course.title)}`}
                       className="group block"
                     >
                       {viewMode === "grid" ? (

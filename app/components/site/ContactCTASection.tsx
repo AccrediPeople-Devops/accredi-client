@@ -15,10 +15,9 @@ export default function ContactCTASection() {
 
   const paymentMethods = [
     { name: "PayPal", src: "https://www.paypalobjects.com/webstatic/mktg/Logo/pp-logo-100px.png" },
-    { name: "American Express", src: "https://logos-world.net/wp-content/uploads/2020/09/American-Express-Logo.png" },
-    { name: "Mastercard", src: "https://logoeps.com/wp-content/uploads/2013/03/mastercard-vector-logo.png" },
+    { name: "American Express", src: "https://www.aexp-static.com/cdaas/one/statics/axp-static-assets/1.8.0/package/dist/img/logos/dls-logo-bluebox-solid.svg" },
+    { name: "Mastercard", src: "https://www.mastercard.co.in/content/dam/public/mastercardcom/in/en/logos/mc-logo-52.svg" },
     { name: "Visa", src: "https://logos-world.net/wp-content/uploads/2020/04/Visa-Logo.png" },
-    { name: "Afterpay", src: "https://logos-world.net/wp-content/uploads/2021/03/Afterpay-Logo.png" },
   ];
 
   const globalContacts = [

@@ -6,6 +6,7 @@ import Link from "next/link";
 import Input from "@/app/components/Input";
 import RichTextEditor from "@/app/components/RichTextEditor";
 import ImageUpload from "@/app/components/ImageUpload";
+import FileUpload from "@/app/components/FileUpload";
 import EnhancedImageUpload from "@/app/components/EnhancedImageUpload";
 import KeyFeaturesInput from "@/app/components/KeyFeaturesInput";
 import ComponentsInput from "@/app/components/ComponentsInput";
@@ -22,6 +23,16 @@ interface FileUpload {
   _id?: string;
   path?: string;
   isEmoji?: boolean;
+}
+
+interface FileData {
+  url: string;
+  key: string;
+  path?: string;
+  _id?: string;
+  name?: string;
+  type?: string;
+  size?: number;
 }
 
 interface ComponentItem {
@@ -44,7 +55,7 @@ interface CourseFormData {
     courseBadge: FileUpload;
   };
   keyFeatures: string[];
-  broucher: FileUpload[];
+  broucher: FileData[];
   components: ComponentItem[];
 }
 
@@ -622,16 +633,15 @@ export default function AddCoursePage() {
                 <label 
                   className="block text-sm font-medium text-[var(--foreground-muted)] mb-2"
                 >
-                  Course Brochure
+                  Course Brochure (PDF/DOC)
                 </label>
-                <ImageUpload
-                  value={formData.broucher.length > 0
-                    ? formData.broucher[0]
-                    : { url: "", key: "" }}
-                  onChange={(file) =>
-                    handleSingleImageUpload("broucher", file)
-                  }
+                <FileUpload
+                  files={formData.broucher}
+                  onChange={(files) => setFormData(prev => ({ ...prev, broucher: files }))}
                   isLoading={isUploadingImage}
+                  multiple={false}
+                  maxFiles={1}
+                  allowedFileTypes=".pdf,.doc,.docx,.txt"
                 />
               </div>
             </div>
