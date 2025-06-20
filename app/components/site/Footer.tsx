@@ -153,7 +153,7 @@ export default function Footer() {
             <h3 className="text-[#4F46E5] font-bold text-sm uppercase tracking-wider mb-6">
               CHOOSE COUNTRY
             </h3>
-            <button
+              <button
               onClick={() => setShowCountryModal(true)}
               disabled={geolocationLoading}
               className="flex items-center gap-2 bg-white/10 backdrop-blur-sm hover:bg-white/20 px-4 py-3 rounded-lg border border-white/20 transition-colors duration-300 w-full disabled:opacity-50 disabled:cursor-not-allowed"

@@ -12,6 +12,7 @@ import { CourseCategory } from "@/app/types/courseCategory";
 import { User } from "@/app/types/user";
 import config from "../config/config";
 import RichTextRenderer from "../RichTextRenderer";
+import { stripHtml } from "@/app/utils/textUtils";
 
 const DOMAIN_ICONS: Record<string, React.ReactElement> = {
   "Project Management": <HiOutlineDesktopComputer className="w-4 h-4 mr-2" />,
@@ -872,10 +873,7 @@ const Navbar = () => {
                               </h4>
                               {course.shortDescription && (
                                 <div className="text-xs text-gray-400 site-light:text-slate-500 line-clamp-2">
-                                  <RichTextRenderer 
-                                    content={course.shortDescription} 
-                                    className="text-xs text-gray-400 site-light:text-slate-500"
-                                  />
+                                  {stripHtml(course.shortDescription)}
                                 </div>
                               )}
                             </div>
@@ -1289,10 +1287,7 @@ const Navbar = () => {
                                     <p className="text-sm font-medium site-text-primary leading-tight mb-1">{course.title}</p>
                                     {course.shortDescription && (
                                       <div className="text-xs site-text-muted line-clamp-2">
-                                        <RichTextRenderer 
-                                          content={course.shortDescription} 
-                                          className="text-xs site-text-muted"
-                                        />
+                                        {stripHtml(course.shortDescription)}
                                       </div>
                                     )}
                                   </div>

@@ -1,6 +1,6 @@
 const config = {
-  apiUrl: "http://api.accredipeoplecertifications.com/api",
-  imageUrl: "http://api.accredipeoplecertifications.com/",
+  apiUrl: "https://api.accredipeoplecertifications.com/api",
+  imageUrl: "https://api.accredipeoplecertifications.com/",
 };
 
 export default config;

@@ -8,7 +8,7 @@ import { Course } from "@/app/types/course";
 import { CourseCategory } from "@/app/types/courseCategory";
 import siteCourseService from "@/app/components/site/siteCourse.service";
 import config from "@/app/components/config/config";
-import { createCourseSlug } from "@/app/utils/textUtils";
+import { createCourseSlug, stripHtml } from "@/app/utils/textUtils";
 import RichTextRenderer from "@/app/components/RichTextRenderer";
 
 interface CategoryWithCourses extends CourseCategory {
@@ -383,10 +383,7 @@ export default function CoursesPage() {
                             </h3>
                             {course.shortDescription && (
                               <div className="text-gray-300 text-sm mb-4 line-clamp-3">
-                                <RichTextRenderer 
-                                  content={course.shortDescription} 
-                                  className="text-gray-300 text-sm"
-                                />
+                                {stripHtml(course.shortDescription)}
                               </div>
                             )}
                             <div className="flex items-center justify-between">
@@ -426,10 +423,7 @@ export default function CoursesPage() {
                               </div>
                               {course.shortDescription && (
                                 <div className="text-gray-300 text-sm mb-4 line-clamp-2">
-                                  <RichTextRenderer 
-                                    content={course.shortDescription} 
-                                    className="text-gray-300 text-sm"
-                                  />
+                                  {stripHtml(course.shortDescription)}
                                 </div>
                               )}
                               <div className="flex items-center justify-between">

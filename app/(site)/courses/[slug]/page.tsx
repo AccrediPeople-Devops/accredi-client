@@ -277,8 +277,8 @@ export default function CoursePage({ params }: CoursePageProps) {
       alert("Failed to download brochure. Please try again.");
     } finally {
       // Close modal and reset form
-      setShowBrochureModal(false);
-      setBrochureFormData({ name: "", email: "", phone: "" });
+    setShowBrochureModal(false);
+    setBrochureFormData({ name: "", email: "", phone: "" });
     }
   };
 
@@ -658,31 +658,29 @@ export default function CoursePage({ params }: CoursePageProps) {
           {/* Course Hero Section - Redesigned Structure */}
           <div className="space-y-12">
             
-            {/* Section 1: Course Title - Centered */}
-            <div className="text-center space-y-6">
-              {/* Category Badge */}
-              <div className="flex justify-center">
-                <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-4 py-2">
-                  <div className="w-2 h-2 bg-[#4F46E5] rounded-full animate-pulse"></div>
-                  <span className="text-[#4F46E5] text-sm font-semibold uppercase tracking-wider">
-                    {courseData.category}
-                  </span>
-                </div>
-              </div>
-
-              {/* Course Title */}
-              <h1 className="text-4xl lg:text-5xl xl:text-6xl font-black leading-tight">
-                <span className="site-text-primary">
-                  {courseData.title}
-                </span>
-              </h1>
-            </div>
-
-            {/* Section 2: Description and Image - Side by Side */}
+            {/* Section 1: Title, Description and Image - Side by Side */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
               
-              {/* Left: Short Description */}
-              <div className="order-2 lg:order-1">
+              {/* Left: Category Badge, Course Title and Short Description */}
+              <div className="order-2 lg:order-1 space-y-6">
+                {/* Category Badge */}
+                <div className="flex justify-start">
+                  <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-4 py-2">
+                    <div className="w-2 h-2 bg-[#4F46E5] rounded-full animate-pulse"></div>
+                    <span className="text-[#4F46E5] text-sm font-semibold uppercase tracking-wider">
+                      {courseData.category}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Course Title */}
+                <h1 className="text-4xl lg:text-5xl xl:text-6xl font-black leading-tight text-left">
+                  <span className="site-text-primary">
+                    {courseData.title}
+                  </span>
+                </h1>
+
+                {/* Short Description */}
                 <div className="site-glass backdrop-blur-xl rounded-2xl p-6 lg:p-8 shadow-xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-300">
                   <RichTextRenderer 
                     content={courseData.description}
@@ -710,25 +708,25 @@ export default function CoursePage({ params }: CoursePageProps) {
             {/* Section 3: Action Buttons - Centered */}
             <div className="flex justify-center pb-16">
               <div className="flex flex-col sm:flex-row gap-4 w-full max-w-lg">
-                <button
-                  onClick={scrollToSchedule}
+                  <button
+                    onClick={scrollToSchedule}
                   className="group flex items-center justify-center px-6 py-4 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#7C3AED] hover:to-[#6D28D9] text-white font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:shadow-[#4F46E5]/25 flex-1 whitespace-nowrap"
-                >
-                  <svg
-                    className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform duration-300"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    viewBox="0 0 24 24"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    />
-                  </svg>
+                    <svg
+                      className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform duration-300"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
                   Schedules
-                </button>
+                  </button>
 
                 {course.broucher && course.broucher.length > 0 && (
                   <button
@@ -840,9 +838,9 @@ export default function CoursePage({ params }: CoursePageProps) {
                   </div>
                 ))}
               </div>
-            </div>
           </div>
-        </section>
+        </div>
+      </section>
       )}
 
       {/* Course Components Section */}
@@ -870,11 +868,9 @@ export default function CoursePage({ params }: CoursePageProps) {
                     >
                       <div className="space-y-4">
                         {/* Rich text content from component description */}
-                        <div
+                        <RichTextRenderer
+                          content={component.description}
                           className="prose prose-lg site-text-secondary leading-relaxed max-w-none prose-headings:site-text-primary prose-strong:site-text-primary prose-p:site-text-secondary"
-                          dangerouslySetInnerHTML={{
-                            __html: component.description,
-                          }}
                         />
                       </div>
                     </div>
@@ -1245,9 +1241,9 @@ export default function CoursePage({ params }: CoursePageProps) {
                               </div>
                               <div>
                                 <div className="flex items-center gap-2 mb-1">
-                                  <h3 className="text-xl font-bold site-text-primary">
-                                    {schedule.mode}
-                                  </h3>
+                                <h3 className="text-xl font-bold site-text-primary">
+                                  {schedule.mode}
+                                </h3>
                                   <span className="px-2 py-1 bg-[#4F46E5]/10 text-[#4F46E5] text-xs font-medium rounded-full">
                                     {schedule.country}
                                   </span>
@@ -1344,9 +1340,9 @@ export default function CoursePage({ params }: CoursePageProps) {
                               </div>
                               <div>
                                 <div className="flex items-center gap-2 mb-1">
-                                  <h3 className="text-xl font-bold site-text-primary">
-                                    {schedule.mode}
-                                  </h3>
+                                <h3 className="text-xl font-bold site-text-primary">
+                                  {schedule.mode}
+                                </h3>
                                   <span className="px-2 py-1 bg-[#10B981]/10 text-[#10B981] text-xs font-medium rounded-full">
                                     {schedule.country}
                                   </span>
@@ -1644,8 +1640,8 @@ export default function CoursePage({ params }: CoursePageProps) {
                 </div>
                 <div>
                   <h3 className="text-xl font-bold site-text-primary">
-                    Download Brochure
-                  </h3>
+                Download Brochure
+              </h3>
                   <p className="text-sm site-text-muted">
                     Get detailed course information
                   </p>
@@ -1684,82 +1680,82 @@ export default function CoursePage({ params }: CoursePageProps) {
             {/* Modal Content */}
             <div className="relative z-10 p-6">
               <form onSubmit={handleBrochureSubmit} className="space-y-6">
-                <div>
-                  <label
-                    htmlFor="brochure-name"
+              <div>
+                <label
+                  htmlFor="brochure-name"
                     className="block text-sm font-medium site-text-primary mb-2"
-                  >
-                    Full Name *
-                  </label>
-                  <input
-                    type="text"
-                    id="brochure-name"
-                    name="name"
-                    value={brochureFormData.name}
-                    onChange={handleBrochureInputChange}
+                >
+                  Full Name *
+                </label>
+                <input
+                  type="text"
+                  id="brochure-name"
+                  name="name"
+                  value={brochureFormData.name}
+                  onChange={handleBrochureInputChange}
                     className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary placeholder:site-text-muted focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300"
-                    placeholder="Enter your full name"
-                    required
-                  />
-                </div>
+                  placeholder="Enter your full name"
+                  required
+                />
+              </div>
 
-                <div>
-                  <label
-                    htmlFor="brochure-email"
+              <div>
+                <label
+                  htmlFor="brochure-email"
                     className="block text-sm font-medium site-text-primary mb-2"
-                  >
-                    Email Address *
-                  </label>
-                  <input
-                    type="email"
-                    id="brochure-email"
-                    name="email"
-                    value={brochureFormData.email}
-                    onChange={handleBrochureInputChange}
+                >
+                  Email Address *
+                </label>
+                <input
+                  type="email"
+                  id="brochure-email"
+                  name="email"
+                  value={brochureFormData.email}
+                  onChange={handleBrochureInputChange}
                     className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary placeholder:site-text-muted focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300"
-                    placeholder="Enter your email address"
-                    required
-                  />
-                </div>
+                  placeholder="Enter your email address"
+                  required
+                />
+              </div>
 
-                <div>
-                  <label
-                    htmlFor="brochure-phone"
+              <div>
+                <label
+                  htmlFor="brochure-phone"
                     className="block text-sm font-medium site-text-primary mb-2"
-                  >
-                    Contact Number *
-                  </label>
-                  <input
-                    type="tel"
-                    id="brochure-phone"
-                    name="phone"
-                    value={brochureFormData.phone}
-                    onChange={handleBrochureInputChange}
+                >
+                  Contact Number *
+                </label>
+                <input
+                  type="tel"
+                  id="brochure-phone"
+                  name="phone"
+                  value={brochureFormData.phone}
+                  onChange={handleBrochureInputChange}
                     className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary placeholder:site-text-muted focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300"
-                    placeholder="Enter your contact number"
-                    required
-                  />
-                </div>
+                  placeholder="Enter your contact number"
+                  required
+                />
+              </div>
 
                 <div className="flex gap-3 pt-2">
-                  <button
-                    type="button"
+                <button
+                  type="button"
                     onClick={() => {
                       setShowBrochureModal(false);
                       setBrochureFormData({ name: "", email: "", phone: "" });
                     }}
                     className="flex-1 px-6 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-secondary hover:site-text-primary hover:bg-white/20 site-light:hover:bg-white/60 font-medium transition-all duration-300"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
                     className="flex-1 px-6 py-3 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#7C3AED] hover:to-[#6D28D9] text-white font-bold rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:shadow-[#4F46E5]/25"
-                  >
-                    Download
-                  </button>
-                </div>
-              </form>
+                >
+                  Download
+                </button>
+              </div>
+            </form>
             </div>
           </div>
         </div>
@@ -1855,255 +1851,255 @@ export default function CoursePage({ params }: CoursePageProps) {
                 {/* Left Column - Course Summary */}
                 <div className="space-y-6">
                   <div className="site-glass backdrop-blur-xl rounded-3xl p-4 sm:p-6 shadow-xl border site-border">
-                    <h4 className="text-lg font-semibold site-text-primary mb-4">
-                      Course Summary
-                    </h4>
+                <h4 className="text-lg font-semibold site-text-primary mb-4">
+                  Course Summary
+                </h4>
                     <div className="space-y-3">
                       <div className="flex justify-between items-start">
                         <span className="site-text-secondary text-sm">Course:</span>
                         <span className="site-text-primary font-medium text-sm text-right flex-1 ml-2">
-                          {courseData.title}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
+                      {courseData.title}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
                         <span className="site-text-secondary text-sm">Mode:</span>
                         <span className="site-text-primary font-medium text-sm">
-                          {selectedSchedule.mode}
-                        </span>
-                      </div>
-                      {selectedMode === "live-online" ||
-                      selectedMode === "classroom" ? (
-                        <>
+                      {selectedSchedule.mode}
+                    </span>
+                  </div>
+                  {selectedMode === "live-online" ||
+                  selectedMode === "classroom" ? (
+                    <>
                           <div className="flex justify-between items-start">
                             <span className="site-text-secondary text-sm">Dates:</span>
                             <span className="site-text-primary font-medium text-sm text-right flex-1 ml-2">
-                              {selectedSchedule.dates?.join(", ")}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="site-text-secondary text-sm">Duration:</span>
-                            <span className="site-text-primary font-medium text-sm">
-                              {selectedSchedule.duration}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="site-text-secondary text-sm">
-                              Participants:
-                            </span>
-                            <span className="site-text-primary font-medium text-sm">
-                              {quantity}
-                            </span>
-                          </div>
-                        </>
-                      ) : (
-                        <div className="flex justify-between">
-                          <span className="site-text-secondary text-sm">Access:</span>
-                          <span className="site-text-primary font-medium text-sm">
-                            {selectedSchedule.accessDays} Days
-                          </span>
-                        </div>
-                      )}
-                      <div className="flex justify-between font-bold text-lg border-t site-border pt-3 mt-4">
-                        <span className="site-text-primary">Total:</span>
-                        <span className="bg-gradient-to-r from-[#4F46E5] to-[#10B981] bg-clip-text text-transparent">
-                          {formatPrice(calculateTotal())}
+                          {selectedSchedule.dates?.join(", ")}
                         </span>
                       </div>
+                      <div className="flex justify-between">
+                            <span className="site-text-secondary text-sm">Duration:</span>
+                            <span className="site-text-primary font-medium text-sm">
+                          {selectedSchedule.duration}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                            <span className="site-text-secondary text-sm">
+                          Participants:
+                        </span>
+                            <span className="site-text-primary font-medium text-sm">
+                          {quantity}
+                        </span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex justify-between">
+                          <span className="site-text-secondary text-sm">Access:</span>
+                          <span className="site-text-primary font-medium text-sm">
+                        {selectedSchedule.accessDays} Days
+                      </span>
                     </div>
+                  )}
+                      <div className="flex justify-between font-bold text-lg border-t site-border pt-3 mt-4">
+                    <span className="site-text-primary">Total:</span>
+                    <span className="bg-gradient-to-r from-[#4F46E5] to-[#10B981] bg-clip-text text-transparent">
+                      {formatPrice(calculateTotal())}
+                    </span>
+                      </div>
                   </div>
                 </div>
+              </div>
 
                 {/* Right Column - Enrollment Form */}
                 <div className="space-y-6">
                   {/* Personal Information */}
                   <div className="site-glass backdrop-blur-xl rounded-3xl p-4 sm:p-6 shadow-xl border site-border">
-                    <div className="flex items-center gap-3 mb-6">
+                <div className="flex items-center gap-3 mb-6">
                       <div className="w-8 h-8 bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] rounded-xl flex items-center justify-center text-white font-bold shadow-lg shadow-[#4F46E5]/25">
-                        1
-                      </div>
+                    1
+                  </div>
                       <h4 className="text-lg font-semibold site-text-primary">
-                        Personal Information
-                      </h4>
-                    </div>
+                    Personal Information
+                  </h4>
+                </div>
 
                     <div className="space-y-4">
-                      <div>
+                  <div>
                         <label className="block text-sm font-medium site-text-primary mb-2">
-                          Full Name *
-                        </label>
-                        <input
-                          type="text"
-                          name="fullName"
-                          value={enrollFormData.fullName}
-                          onChange={handleEnrollInputChange}
-                          className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary placeholder:site-text-muted focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300"
-                          placeholder="Enter your full name"
-                          required
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium site-text-primary mb-2">
-                          Email Address *
-                        </label>
-                        <input
-                          type="email"
-                          name="email"
-                          value={enrollFormData.email}
-                          onChange={handleEnrollInputChange}
-                          className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary placeholder:site-text-muted focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300"
-                          placeholder="Enter your email"
-                          required
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium site-text-primary mb-2">
-                            Contact Number *
-                          </label>
-                          <input
-                            type="tel"
-                            name="contactNumber"
-                            value={enrollFormData.contactNumber}
-                            onChange={handleEnrollInputChange}
-                            className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary placeholder:site-text-muted focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300"
-                            placeholder="Enter your contact number"
-                            required
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium site-text-primary mb-2">
-                            Country *
-                          </label>
-                          <select
-                            name="country"
-                            value={enrollFormData.country}
-                            onChange={handleEnrollInputChange}
-                            className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300"
-                            required
-                          >
-                            {countries.map((country) => (
-                              <option key={country} value={country}>
-                                {country}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium site-text-primary mb-2">
-                          City *
-                        </label>
-                        <input
-                          type="text"
-                          name="city"
-                          value={enrollFormData.city}
-                          onChange={handleEnrollInputChange}
-                          className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary placeholder:site-text-muted focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300"
-                          placeholder="Enter your city"
-                          required
-                        />
-                      </div>
-                    </div>
+                      Full Name *
+                    </label>
+                    <input
+                      type="text"
+                      name="fullName"
+                      value={enrollFormData.fullName}
+                      onChange={handleEnrollInputChange}
+                      className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary placeholder:site-text-muted focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300"
+                      placeholder="Enter your full name"
+                      required
+                    />
                   </div>
 
-                  {/* Coupon Code Section */}
+                  <div>
+                        <label className="block text-sm font-medium site-text-primary mb-2">
+                      Email Address *
+                    </label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={enrollFormData.email}
+                      onChange={handleEnrollInputChange}
+                      className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary placeholder:site-text-muted focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300"
+                      placeholder="Enter your email"
+                      required
+                    />
+                  </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                          <label className="block text-sm font-medium site-text-primary mb-2">
+                      Contact Number *
+                    </label>
+                    <input
+                      type="tel"
+                      name="contactNumber"
+                      value={enrollFormData.contactNumber}
+                      onChange={handleEnrollInputChange}
+                      className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary placeholder:site-text-muted focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300"
+                      placeholder="Enter your contact number"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                          <label className="block text-sm font-medium site-text-primary mb-2">
+                      Country *
+                    </label>
+                    <select
+                      name="country"
+                      value={enrollFormData.country}
+                      onChange={handleEnrollInputChange}
+                      className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300"
+                      required
+                    >
+                      {countries.map((country) => (
+                        <option key={country} value={country}>
+                          {country}
+                        </option>
+                      ))}
+                    </select>
+                        </div>
+                  </div>
+
+                      <div>
+                        <label className="block text-sm font-medium site-text-primary mb-2">
+                      City *
+                    </label>
+                    <input
+                      type="text"
+                      name="city"
+                      value={enrollFormData.city}
+                      onChange={handleEnrollInputChange}
+                      className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary placeholder:site-text-muted focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300"
+                      placeholder="Enter your city"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Coupon Code Section */}
                   <div className="site-glass backdrop-blur-xl rounded-3xl p-4 sm:p-6 shadow-xl border site-border">
                     <div className="flex items-center gap-3 mb-4">
                       <div className="w-8 h-8 bg-gradient-to-br from-[#10B981] to-[#059669] rounded-xl flex items-center justify-center text-white font-bold shadow-lg shadow-[#10B981]/25">
-                        2
-                      </div>
+                    2
+                  </div>
                       <h4 className="text-lg font-semibold site-text-primary">
-                        Coupon Code
-                      </h4>
-                      <span className="text-sm text-blue-400 font-medium">
-                        (Optional)
-                      </span>
-                    </div>
+                    Coupon Code
+                  </h4>
+                  <span className="text-sm text-blue-400 font-medium">
+                    (Optional)
+                  </span>
+                </div>
 
-                    <div className="flex gap-3">
-                      <input
-                        type="text"
-                        name="couponCode"
-                        value={enrollFormData.couponCode}
-                        onChange={handleEnrollInputChange}
-                        className="flex-1 px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary placeholder:site-text-muted focus:ring-2 focus:ring-[#10B981] focus:border-transparent transition-all duration-300"
-                        placeholder="Enter coupon code"
-                      />
-                      <button
-                        onClick={handleApplyCoupon}
+                <div className="flex gap-3">
+                  <input
+                    type="text"
+                    name="couponCode"
+                    value={enrollFormData.couponCode}
+                    onChange={handleEnrollInputChange}
+                    className="flex-1 px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary placeholder:site-text-muted focus:ring-2 focus:ring-[#10B981] focus:border-transparent transition-all duration-300"
+                    placeholder="Enter coupon code"
+                  />
+                  <button
+                    onClick={handleApplyCoupon}
                         className="px-6 py-3 bg-gradient-to-br from-[#10B981] to-[#059669] text-white font-medium rounded-xl hover:shadow-lg hover:shadow-[#10B981]/25 transition-all duration-300 whitespace-nowrap"
-                      >
-                        Apply
-                      </button>
-                    </div>
+                  >
+                    Apply
+                  </button>
+                </div>
 
-                    {appliedCoupon && (
-                      <div className="mt-4 p-4 bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-xl">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                              <svg
-                                className="w-4 h-4 text-white"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth={2}
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  d="M5 13l4 4L19 7"
-                                />
-                              </svg>
-                            </div>
+                {appliedCoupon && (
+                  <div className="mt-4 p-4 bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-xl">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                          <svg
+                            className="w-4 h-4 text-white"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                        </div>
                             <span className="text-green-400 font-medium text-sm">
                               Coupon "{appliedCoupon.code}" applied!
-                            </span>
-                          </div>
-                          <button
-                            onClick={() => setAppliedCoupon(null)}
-                            className="text-green-400 hover:text-green-300 font-medium text-sm"
-                          >
-                            Remove
-                          </button>
-                        </div>
+                        </span>
                       </div>
-                    )}
+                      <button
+                        onClick={() => setAppliedCoupon(null)}
+                            className="text-green-400 hover:text-green-300 font-medium text-sm"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                )}
                   </div>
                 </div>
               </div>
 
               {/* Enroll Button - Full Width */}
               <div className="border-t site-border pt-6">
-                <button
-                  onClick={handlePayment}
-                  className="w-full group px-8 py-4 bg-gradient-to-r from-[#FF6B35] to-[#E55A2B] hover:from-[#E55A2B] hover:to-[#CC4A1D] text-white font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:shadow-[#FF6B35]/25"
-                >
-                  <span className="flex items-center justify-center gap-2">
-                    <svg
-                      className="w-6 h-6 group-hover:scale-110 transition-transform duration-300"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-                      />
-                    </svg>
-                    ENROLL NOW - {formatPrice(calculateTotal())}
-                  </span>
-                </button>
+              <button
+                onClick={handlePayment}
+                className="w-full group px-8 py-4 bg-gradient-to-r from-[#FF6B35] to-[#E55A2B] hover:from-[#E55A2B] hover:to-[#CC4A1D] text-white font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:shadow-[#FF6B35]/25"
+              >
+                <span className="flex items-center justify-center gap-2">
+                  <svg
+                    className="w-6 h-6 group-hover:scale-110 transition-transform duration-300"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                    />
+                  </svg>
+                  ENROLL NOW - {formatPrice(calculateTotal())}
+                </span>
+              </button>
 
-                <p className="text-xs site-text-muted text-center mt-4">
+              <p className="text-xs site-text-muted text-center mt-4">
                   By enrolling, you agree to our Terms of Service and Privacy Policy
-                </p>
+              </p>
               </div>
             </div>
           </div>

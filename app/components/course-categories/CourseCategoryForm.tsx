@@ -102,25 +102,25 @@ export default function CourseCategoryForm({
   const handleImageChange = (imageData: { url: string; key: string; path?: string; isEmoji?: boolean }) => {
     // Update current image data
     setCurrentImageData(imageData);
-    
+
     // Update form data according to ImageItem interface
     if (imageData.url && imageData.key) {
-      setFormData((prev) => ({
-        ...prev,
-        image: [
-          {
+          setFormData((prev) => ({
+            ...prev,
+            image: [
+              {
             path: imageData.path || imageData.key,
             key: imageData.key,
-            _id: undefined,
-          },
-        ],
-      }));
-    } else {
+                _id: undefined,
+              },
+            ],
+          }));
+        } else {
       // Clear image from form data
-      setFormData((prev) => ({
-        ...prev,
-        image: [],
-      }));
+    setFormData((prev) => ({
+      ...prev,
+      image: [],
+    }));
       setCurrentImageData(null);
     }
 
@@ -254,7 +254,7 @@ export default function CourseCategoryForm({
           </label>
           <EnhancedImageUpload
             value={currentImageData || { url: "", key: "" }}
-            onChange={handleImageChange}
+              onChange={handleImageChange}
             isLoading={isUploadingImage}
             allowEmoji={true}
             error={getError("image") || undefined}

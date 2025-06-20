@@ -761,21 +761,21 @@ function CourseEditor({ courseId }: { courseId: string }) {
               />
             </div>
 
-                          <div>
-                <label 
-                  className="block text-sm font-medium text-[var(--foreground-muted)] mb-2"
-                >
+            <div>
+              <label 
+                className="block text-sm font-medium text-[var(--foreground-muted)] mb-2"
+              >
                   Course Brochure (PDF/DOC)
-                </label>
+              </label>
                 <FileUpload
                   files={formData.broucher}
                   onChange={(files) => setFormData(prev => ({ ...prev, broucher: files }))}
-                  isLoading={isUploadingImage}
+                isLoading={isUploadingImage}
                   multiple={false}
                   maxFiles={1}
                   allowedFileTypes=".pdf,.doc,.docx,.txt"
-                />
-              </div>
+              />
+            </div>
           </div>
         </div>
 
