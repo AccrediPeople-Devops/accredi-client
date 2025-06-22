@@ -107,7 +107,8 @@ export default function BecomeInstructorPage() {
               </span>
             </h1>
             <p className="text-xl site-text-secondary font-medium leading-relaxed max-w-2xl mx-auto">
-              Fill up this form to join with us and start making a difference in professionals' careers worldwide
+              <span className="font-bold">Ready to Share Your Expertise? Join Our Team!</span><br/>
+              <span>Fill out the form below to get started.</span>
             </p>
           </div>
         </div>

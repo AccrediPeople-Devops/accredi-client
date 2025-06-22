@@ -4,15 +4,13 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Breadcrumb from "@/app/components/site/Breadcrumb";
 import OurApproachSection from "@/app/components/site/OurApproachSection";
+import Link from "next/link";
 
 export default function AboutPage() {
   const [activeValue, setActiveValue] = useState(0);
 
   const aboutImages = [
-    "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
-    "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
-    "https://images.unsplash.com/photo-1531482615713-2afd69097998?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
-    "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80"
+    "/Website Images/AboutUs/AdobeStock_603966594.jpeg",
   ];
 
   const coreValues = [
@@ -97,21 +95,25 @@ export default function AboutPage() {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4">
-                <button className="bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-[#4F46E5]/25">
-                  Our Programs
-                </button>
-                <button className="site-text-primary px-8 py-4 rounded-2xl font-bold text-lg site-border border site-glass backdrop-blur-sm transition-all duration-300 hover:bg-white/20 site-light:hover:bg-white/60 hover:scale-105">
-                  Contact Us
-                </button>
+                <Link href="/courses">
+                  <button className="bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-[#4F46E5]/25">
+                    Our Programs
+                  </button>
+                </Link>
+                <Link href="/contact">
+                  <button className="site-text-primary px-8 py-4 rounded-2xl font-bold text-lg site-border border site-glass backdrop-blur-sm transition-all duration-300 hover:bg-white/20 site-light:hover:bg-white/60 hover:scale-105">
+                    Contact Us
+                  </button>
+                </Link>
               </div>
             </div>
 
             {/* Right Image */}
             <div className="flex justify-center lg:justify-end">
               <div className="relative">
-                <div className="w-80 h-80 site-glass backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl hover:scale-105 transition-all duration-500">
+                <div className="w-320 h-320 site-glass backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl hover:scale-105 transition-all duration-500">
                   <Image
-                    src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                    src="/Website Images/AboutUs/AdobeStock_603966594.jpeg"
                     alt="Learning and Growth"
                     width={320}
                     height={320}
@@ -122,14 +124,14 @@ export default function AboutPage() {
                 
                 {/* Floating Stats */}
                 <div className="absolute -top-4 -right-4 w-20 h-20 bg-gradient-to-br from-[#4F46E5]/90 to-[#7C3AED]/90 backdrop-blur-sm rounded-2xl border border-white/20 flex flex-col items-center justify-center animate-pulse">
-                  <span className="text-lg font-bold text-white">100K+</span>
-                  <span className="text-xs text-white/80">Learners</span>
-                </div>
-                
-                <div className="absolute -bottom-4 -left-4 w-20 h-20 bg-gradient-to-br from-[#10B981]/90 to-[#059669]/90 backdrop-blur-sm rounded-2xl border border-white/20 flex flex-col items-center justify-center animate-pulse delay-500">
                   <span className="text-lg font-bold text-white">98%</span>
                   <span className="text-xs text-white/80">Success</span>
                 </div>
+                
+                {/* <div className="absolute -bottom-4 -left-4 w-20 h-20 bg-gradient-to-br from-[#10B981]/90 to-[#059669]/90 backdrop-blur-sm rounded-2xl border border-white/20 flex flex-col items-center justify-center animate-pulse delay-500">
+                  <span className="text-lg font-bold text-white">100K+</span>
+                  <span className="text-xs text-white/80">Learners</span>
+                </div> */}
               </div>
             </div>
           </div>
@@ -257,12 +259,11 @@ export default function AboutPage() {
                   Our commitment extends beyond delivering courses—we foster long-term professional growth.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <button className="bg-gradient-to-r from-[#F59E0B] to-[#EF4444] text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-[#F59E0B]/25">
-                    Learn More
-                  </button>
-                  <button className="site-text-primary px-8 py-4 rounded-2xl font-bold text-lg site-border border site-glass backdrop-blur-sm transition-all duration-300 hover:bg-white/20 site-light:hover:bg-white/60 hover:scale-105">
-                    Contact Us
-                  </button>
+                  <Link href="/contact">
+                    <button className="bg-gradient-to-r from-[#F59E0B] to-[#EF4444] text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-[#F59E0B]/25">
+                      Learn More
+                    </button> 
+                  </Link>
                 </div>
               </div>
               
@@ -276,9 +277,9 @@ export default function AboutPage() {
                     </div>
                   </div>
                   
-                  <div className="absolute -top-4 -right-4 w-16 h-16 bg-gradient-to-br from-[#4F46E5]/30 to-[#7C3AED]/30 backdrop-blur-sm rounded-full border border-[#4F46E5]/30 site-light:border-[#4F46E5]/50 flex items-center justify-center animate-pulse">
+                  {/* <div className="absolute -top-4 -right-4 w-16 h-16 bg-gradient-to-br from-[#4F46E5]/30 to-[#7C3AED]/30 backdrop-blur-sm rounded-full border border-[#4F46E5]/30 site-light:border-[#4F46E5]/50 flex items-center justify-center animate-pulse">
                     <span className="text-sm font-bold text-[#4F46E5]">100K+</span>
-                  </div>
+                  </div> */}
                   
                   <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-gradient-to-br from-[#10B981]/30 to-[#059669]/30 backdrop-blur-sm rounded-full border border-[#10B981]/30 site-light:border-[#10B981]/50 flex items-center justify-center animate-pulse delay-500">
                     <span className="text-sm font-bold text-[#10B981]">98%</span>

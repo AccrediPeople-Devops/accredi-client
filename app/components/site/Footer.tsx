@@ -5,6 +5,7 @@ import Image from "next/image";
 import { HiChevronDown } from "react-icons/hi";
 import { useLocation } from "@/app/context/LocationContext";
 import CountrySelectionModal from "@/app/components/CountrySelectionModal";
+import SiteThemeToggle from "./SiteThemeToggle";
 
 export default function Footer() {
   const [showCountryModal, setShowCountryModal] = useState(false);
@@ -181,11 +182,15 @@ export default function Footer() {
       {/* Bottom Section */}
       <div className="border-t border-white/20 relative z-10">
         <div className="px-5 md:px-16 w-full 2xl:max-w-7xl mx-auto py-8">
-          {/* Copyright */}
-          <div className="text-center mb-6">
+          {/* Copyright and Theme Toggle */}
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
             <p className="text-white font-medium text-sm">
               © 2025 AccrediPeople Certifications. All Rights Reserved.
             </p>
+            <div className="flex items-center gap-2">
+              <span className="text-gray-300 text-sm">Theme:</span>
+              <SiteThemeToggle />
+            </div>
           </div>
 
           {/* Disclaimer */}

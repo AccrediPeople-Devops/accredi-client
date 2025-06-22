@@ -13,7 +13,7 @@ interface ReviewsResponse {
 }
 
 const stats = [
-  { number: "5,000+", label: "Certified Professionals", icon: "🎓", description: "Successfully trained and certified" },
+  // { number: "5,000+", label: "Certified Professionals", icon: "🎓", description: "Successfully trained and certified" },
   { number: "98%", label: "Pass Rate", icon: "✅", description: "First-attempt certification success" },
   { number: "4.9/5", label: "Average Rating", icon: "⭐", description: "Based on student feedback" },
   { number: "200%", label: "Average Salary Increase", icon: "📈", description: "Post-certification career growth" }

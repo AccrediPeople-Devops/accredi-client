@@ -16,22 +16,22 @@
 
 /* Light theme */
 .site-light {
-  --site-bg-primary: #f8fafc;
+  --site-bg-primary: #f1f5f9;
   --site-bg-secondary: #ffffff;
   --site-bg-tertiary: #e2e8f0;
-  --site-text-primary: #0f172a;
-  --site-text-secondary: #475569;
-  --site-text-muted: #64748b;
+  --site-text-primary: #1e293b;
+  --site-text-secondary: #334155;
+  --site-text-muted: #475569;
   --site-text-accent: #10B981;
-  --site-glass-bg: rgba(255, 255, 255, 0.8);
-  --site-glass-border: rgba(0, 0, 0, 0.1);
-  --site-border: rgba(0, 0, 0, 0.1);
+  --site-glass-bg: rgba(255, 255, 255, 0.25);
+  --site-glass-border: rgba(255, 255, 255, 0.4);
+  --site-border: rgba(0, 0, 0, 0.15);
 }
 
 /* Background utilities - High specificity */
 [data-site-theme-container].site-light .site-bg-primary,
 [data-site-theme-container].site-light {
-  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #dbeafe 100%) !important;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 15%, #e2e8f0 30%, #ddd6fe 60%, #c4b5fd 85%, #a78bfa 100%) !important;
 }
 
 [data-site-theme-container].site-dark .site-bg-primary,
@@ -40,7 +40,7 @@
 }
 
 [data-site-theme-container].site-light .site-section-bg {
-  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #f1f5f9 100%) !important;
+  background: linear-gradient(135deg, rgba(248, 250, 252, 0.6) 0%, rgba(241, 245, 249, 0.6) 40%, rgba(221, 214, 254, 0.4) 70%, rgba(196, 181, 253, 0.3) 100%) !important;
 }
 
 [data-site-theme-container].site-dark .site-section-bg {
@@ -93,11 +93,15 @@
 [data-site-theme-container].site-light .site-glass {
   background: var(--site-glass-bg) !important;
   border: 1px solid var(--site-glass-border) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
 }
 
 [data-site-theme-container].site-dark .site-glass {
   background: var(--site-glass-bg) !important;
   border: 1px solid var(--site-glass-border) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
 }
 
 /* Border utilities */
@@ -111,9 +115,10 @@
 
 /* Light theme navbar styles */
 [data-site-theme-container].site-light .site-navbar {
-  background: linear-gradient(90deg, rgba(248, 250, 252, 0.95) 0%, rgba(255, 255, 255, 0.95) 50%, rgba(226, 232, 240, 0.95) 100%) !important;
-  backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.25) 50%, rgba(255, 255, 255, 0.15) 100%) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3) !important;
 }
 
 [data-site-theme-container].site-dark .site-navbar {
@@ -133,59 +138,75 @@
 
 /* Mega menu specific theming */
 [data-site-theme-container].site-light .bg-gradient-to-br {
-  background: linear-gradient(to bottom right, rgba(255, 255, 255, 0.98), rgba(249, 250, 251, 0.98), rgba(226, 232, 240, 0.98)) !important;
+  background: linear-gradient(to bottom right, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.25)) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
 }
 
 /* Additional component-specific utilities */
 /* Stats sections */
 [data-site-theme-container].site-light .site-stats-card {
-  background: rgba(255, 255, 255, 0.7) !important;
-  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  background: rgba(255, 255, 255, 0.25) !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  backdrop-filter: blur(16px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
   color: var(--site-text-primary) !important;
 }
 
 [data-site-theme-container].site-dark .site-stats-card {
   background: rgba(255, 255, 255, 0.05) !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(16px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
   color: var(--site-text-primary) !important;
 }
 
 /* Hover states for glass elements */
 [data-site-theme-container].site-light .site-glass:hover {
-  background: rgba(255, 255, 255, 0.9) !important;
-  border-color: rgba(0, 0, 0, 0.15) !important;
+  background: rgba(255, 255, 255, 0.35) !important;
+  border-color: rgba(255, 255, 255, 0.5) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
 }
 
 [data-site-theme-container].site-dark .site-glass:hover {
   background: rgba(255, 255, 255, 0.15) !important;
   border-color: rgba(255, 255, 255, 0.25) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
 }
 
 /* Mobile menu specific styling */
 [data-site-theme-container].site-light .site-mobile-menu {
-  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #e2e8f0 100%) !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.3) 50%, rgba(255, 255, 255, 0.2) 100%) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
   color: var(--site-text-primary) !important;
 }
 
 [data-site-theme-container].site-dark .site-mobile-menu {
   background: linear-gradient(135deg, #0F0F23 0%, #1A1A3E 50%, #2D1B69 100%) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
   color: var(--site-text-primary) !important;
 }
 
 /* Testimonials section specific */
 [data-site-theme-container].site-light .site-testimonial-bg {
-  background: rgba(255, 255, 255, 0.7) !important;
-  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  background: rgba(255, 255, 255, 0.25) !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  backdrop-filter: blur(16px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
 }
 
 [data-site-theme-container].site-dark .site-testimonial-bg {
   background: rgba(255, 255, 255, 0.1) !important;
   border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  backdrop-filter: blur(16px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
 }
 
 /* Gradient overlays for carousels */
 [data-site-theme-container].site-light .site-gradient-left {
-  background: linear-gradient(to right, rgba(248, 250, 252, 0.8), transparent) !important;
+  background: linear-gradient(to right, rgba(240, 244, 255, 0.9), transparent) !important;
 }
 
 [data-site-theme-container].site-dark .site-gradient-left {
@@ -193,7 +214,7 @@
 }
 
 [data-site-theme-container].site-light .site-gradient-right {
-  background: linear-gradient(to left, rgba(248, 250, 252, 0.8), transparent) !important;
+  background: linear-gradient(to left, rgba(240, 244, 255, 0.9), transparent) !important;
 }
 
 [data-site-theme-container].site-dark .site-gradient-right {
@@ -211,4 +232,141 @@
 
 [data-site-theme-container].site-light .text-gray-400 {
   color: var(--site-text-muted) !important;
+}
+
+/* Footer specific text visibility fixes */
+[data-site-theme-container].site-light footer .text-gray-400,
+[data-site-theme-container].site-light footer .text-gray-500,
+[data-site-theme-container].site-light footer .text-gray-600 {
+  color: #1e293b !important; /* Dark text for footer */
+}
+
+[data-site-theme-container].site-light footer .text-white {
+  color: #0f172a !important; /* Very dark text for footer titles */
+}
+
+[data-site-theme-container].site-light footer .text-gray-300 {
+  color: #334155 !important; /* Medium dark text for footer */
+}
+
+[data-site-theme-container].site-light footer h3,
+[data-site-theme-container].site-light footer h4,
+[data-site-theme-container].site-light footer h5,
+[data-site-theme-container].site-light footer .font-bold,
+[data-site-theme-container].site-light footer .font-semibold {
+  color: #0f172a !important; /* Ensure all footer headings are dark */
+}
+
+/* Card borders visibility for light mode */
+[data-site-theme-container].site-light .border,
+[data-site-theme-container].site-light .border-gray-200,
+[data-site-theme-container].site-light .border-gray-300,
+[data-site-theme-container].site-light .border-white {
+  border-color: rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Enhanced card styling for approach section */
+[data-site-theme-container].site-light .site-glass.border {
+  border: 2px solid rgba(0, 0, 0, 0.2) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Pill-style badges for card titles (Align, Acquire, Achieve) */
+[data-site-theme-container] .approach-card-title {
+  display: inline-block !important;
+  background: rgba(255, 255, 255, 0.8) !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  border-radius: 50px !important;
+  padding: 8px 24px !important;
+  font-weight: 600 !important;
+  font-size: 18px !important;
+  color: #1e293b !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  margin-bottom: 16px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+}
+
+[data-site-theme-container].site-dark .approach-card-title {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Smooth scrolling enhancements for site theme */
+[data-site-theme-container] {
+  scroll-behavior: smooth !important;
+}
+
+[data-site-theme-container] * {
+  scroll-behavior: smooth !important;
+}
+
+/* Custom scrollbar for site theme - Light mode */
+[data-site-theme-container].site-light ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+[data-site-theme-container].site-light ::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  backdrop-filter: blur(8px);
+}
+
+[data-site-theme-container].site-light ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+[data-site-theme-container].site-light ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.6);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: scale(1.1);
+}
+
+/* Custom scrollbar for site theme - Dark mode */
+[data-site-theme-container].site-dark ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+[data-site-theme-container].site-dark ::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  backdrop-filter: blur(8px);
+}
+
+[data-site-theme-container].site-dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+[data-site-theme-container].site-dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+/* Smooth scroll offset for anchor links */
+[data-site-theme-container] {
+  scroll-padding-top: 100px !important;
+}
+
+/* Enhanced scroll animations */
+@media (prefers-reduced-motion: no-preference) {
+  [data-site-theme-container] {
+    scroll-behavior: smooth !important;
+  }
+  
+  [data-site-theme-container] * {
+    scroll-behavior: smooth !important;
+  }
 } 

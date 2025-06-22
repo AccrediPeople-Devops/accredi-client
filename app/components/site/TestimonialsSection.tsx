@@ -11,7 +11,7 @@ interface ReviewsResponse {
 }
 
 const stats = [
-  { number: "5,000+", label: "Certified Professionals", icon: "🎓" },
+  // { number: "5,000+", label: "Certified Professionals", icon: "🎓" },
   { number: "98%", label: "Pass Rate", icon: "✅" },
   { number: "4.9/5", label: "Average Rating", icon: "⭐" },
   { number: "200%", label: "Average Salary Increase", icon: "📈" }
@@ -131,16 +131,18 @@ export default function TestimonialsSection() {
           </div>
 
           {/* Stats Section */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center">
-                <div className="site-glass backdrop-blur-sm rounded-2xl p-6 site-border border hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-300">
-                  <div className="text-3xl mb-3">{stat.icon}</div>
-                  <div className="text-3xl font-black site-text-primary mb-2">{stat.number}</div>
-                  <div className="text-sm site-text-muted font-medium">{stat.label}</div>
+          <div className="flex justify-center">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl w-full">
+              {stats.map((stat, index) => (
+                <div key={index} className="text-center">
+                  <div className="site-glass backdrop-blur-sm rounded-2xl p-6 site-border border hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-300">
+                    <div className="text-3xl mb-3">{stat.icon}</div>
+                    <div className="text-3xl font-black site-text-primary mb-2">{stat.number}</div>
+                    <div className="text-sm site-text-muted font-medium">{stat.label}</div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -179,7 +181,8 @@ export default function TestimonialsSection() {
         </div>
 
         {/* Stats Section */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-20">
+        <div className="flex justify-center mb-20">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl w-full">
           {stats.map((stat, index) => (
             <div key={index} className="text-center">
               <div className="site-glass backdrop-blur-sm rounded-2xl p-6 site-border border hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-300">
@@ -189,6 +192,7 @@ export default function TestimonialsSection() {
               </div>
             </div>
           ))}
+          </div>
         </div>
 
         {/* Main Testimonial Display */}
@@ -253,39 +257,39 @@ export default function TestimonialsSection() {
 
         {/* Testimonial Navigation */}
         {reviews.length > 1 && (
-          <div className="flex justify-center items-center gap-8 mb-12">
-            <button
+        <div className="flex justify-center items-center gap-8 mb-12">
+          <button
               onClick={() => setActiveTestimonial((prev) => prev === 0 ? reviews.length - 1 : prev - 1)}
-              className="w-12 h-12 site-glass rounded-full flex items-center justify-center site-text-primary hover:bg-white/20 site-light:hover:bg-white/60 transition-all duration-300 backdrop-blur-sm site-border border"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
+            className="w-12 h-12 site-glass rounded-full flex items-center justify-center site-text-primary hover:bg-white/20 site-light:hover:bg-white/60 transition-all duration-300 backdrop-blur-sm site-border border"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
 
-            <div className="flex gap-3">
+          <div className="flex gap-3">
               {reviews.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setActiveTestimonial(index)}
-                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                    index === activeTestimonial 
-                      ? 'bg-[#4F46E5] w-8' 
-                      : 'bg-white/30 site-light:bg-slate-400/50 hover:bg-white/50 site-light:hover:bg-slate-400/70'
-                  }`}
-                />
-              ))}
-            </div>
-
-            <button
-              onClick={() => setActiveTestimonial((prev) => (prev + 1) % reviews.length)}
-              className="w-12 h-12 site-glass rounded-full flex items-center justify-center site-text-primary hover:bg-white/20 site-light:hover:bg-white/60 transition-all duration-300 backdrop-blur-sm site-border border"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
+              <button
+                key={index}
+                onClick={() => setActiveTestimonial(index)}
+                className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                  index === activeTestimonial 
+                    ? 'bg-[#4F46E5] w-8' 
+                    : 'bg-white/30 site-light:bg-slate-400/50 hover:bg-white/50 site-light:hover:bg-slate-400/70'
+                }`}
+              />
+            ))}
           </div>
+
+          <button
+              onClick={() => setActiveTestimonial((prev) => (prev + 1) % reviews.length)}
+            className="w-12 h-12 site-glass rounded-full flex items-center justify-center site-text-primary hover:bg-white/20 site-light:hover:bg-white/60 transition-all duration-300 backdrop-blur-sm site-border border"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
         )}
 
         {/* View All Reviews Link */}

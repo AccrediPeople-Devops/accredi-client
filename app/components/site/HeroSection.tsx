@@ -3,32 +3,15 @@ import Image from "next/image";
 import React, { useState, useEffect } from "react";
 import CertificationsSection from "./CertificationsSection";
 
-const trustedLogos = [
-  {
-    alt: "HP Enterprise",
-    src: "https://d2o2utebsixu4k.cloudfront.net/Transform workflow logos_HP-2860f6848ad5400ba9b52db0077bb097.svg",
-  },
-  // {
-  //   alt: "Tiger",
-  //   src: "https://d2o2utebsixu4k.cloudfront.net/Transform workflow logos_Tiger-4ff6b27ed592481881edf61e4d019df1.svg",
-  // },
-  {
-    alt: "Welspun",
-    src: "https://d2o2utebsixu4k.cloudfront.net/Transform workflow logos_Welspun-4e17b025b5a8445395b02df62d9fd1f3.svg",
-  },
-  {
-    alt: "Terrapay",
-    src: "https://d2o2utebsixu4k.cloudfront.net/Transform workflow logos_terrapay-12651a4aa23148108427a29818c0dc52.svg",
-  },
-  // {
-  //   alt: "Reliance Retail",
-  //   src: "https://d2o2utebsixu4k.cloudfront.net/Transform workflow logos_Reliance-8d98162977754c8b9583c132028cd967.svg",
-  // },
-  {
-    alt: "Infosys BPM",
-    src: "https://d2o2utebsixu4k.cloudfront.net/Transform workflow logos_Infosys-69007f6080d94039b856ddd607aca191.svg",
-  },
-];
+// Create array of client logos - all are PNG files
+const trustedLogos = Array.from({ length: 24 }, (_, i) => {
+  const num = i + 1;
+  return {
+    alt: `Client ${num}`,
+    src: `/ClientTale/${num}.png`,
+    id: num,
+  };
+});
 
 const skillsAnimation = [
   "Project Management",
@@ -120,7 +103,7 @@ export default function HeroSection() {
               
               </p>
               <p className="text-xl site-text-secondary leading-relaxed max-w-lg">
-              We’re committed to delivering world-class, instructor-led training programs that help professionals upskill, grow in their careers, and stay ahead in today’s competitive landscape
+              We're committed to delivering world-class, instructor-led training programs that help professionals upskill, grow in their careers, and stay ahead in today's competitive landscape
               </p>
 
               {/* Interactive CTA Buttons */}
@@ -146,12 +129,12 @@ export default function HeroSection() {
                   </div>
                   <div className="text-sm site-text-muted font-medium">Pass Rate</div>
                 </div>
-                <div className="text-center">
+                {/* <div className="text-center">
                   <div className="text-3xl font-black bg-gradient-to-r from-[#F59E0B] to-[#D97706] bg-clip-text text-transparent">
                     5K+
                   </div>
                   <div className="text-sm site-text-muted font-medium">Certified</div>
-                </div>
+                </div> */}
                 <div className="text-center">
                   <div className="text-3xl font-black bg-gradient-to-r from-[#EF4444] to-[#DC2626] bg-clip-text text-transparent">
                     4.9★
@@ -161,57 +144,21 @@ export default function HeroSection() {
               </div>
             </div>
 
-            {/* Right Visual */}
+            {/* Right Visual - Clean Image Only */}
             <div className="relative">
               {/* Main Visual Container */}
               <div className="relative">
-                {/* Central Floating Card */}
-                <div className="relative z-20 bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 shadow-2xl">
-                  <div className="text-center space-y-6">
-                    <div className="w-20 h-20 bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] rounded-2xl mx-auto flex items-center justify-center">
-                      <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <h3 className="text-2xl font-bold text-white mb-2">Premium Certification</h3>
-                      <p className="text-gray-300">Industry-recognized credentials</p>
-                    </div>
-                    <div className="flex justify-center gap-2">
-                      <div className="w-3 h-3 bg-[#10B981] rounded-full animate-pulse"></div>
-                      <div className="w-3 h-3 bg-[#F59E0B] rounded-full animate-pulse delay-300"></div>
-                      <div className="w-3 h-3 bg-[#EF4444] rounded-full animate-pulse delay-700"></div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Floating Success Cards */}
-                <div className="absolute -top-8 -left-8 bg-[#10B981]/20 backdrop-blur-sm rounded-2xl p-4 border border-[#10B981]/30 transform -rotate-6 hover:rotate-0 transition-transform duration-300">
-                  <div className="text-white text-center">
-                    <div className="text-2xl font-bold">200%</div>
-                    <div className="text-xs opacity-80">Salary Increase</div>
-                  </div>
-                </div>
-
-                <div className="absolute -top-4 -right-12 bg-[#F59E0B]/20 backdrop-blur-sm rounded-2xl p-4 border border-[#F59E0B]/30 transform rotate-12 hover:rotate-0 transition-transform duration-300">
-                  <div className="text-white text-center">
-                    <div className="text-2xl font-bold">5 Weeks</div>
-                    <div className="text-xs opacity-80">To Certified</div>
-                  </div>
-                </div>
-
-                <div className="absolute -bottom-8 -right-8 bg-[#EF4444]/20 backdrop-blur-sm rounded-2xl p-4 border border-[#EF4444]/30 transform rotate-6 hover:rotate-0 transition-transform duration-300">
-                  <div className="text-white text-center">
-                    <div className="text-2xl font-bold">24/7</div>
-                    <div className="text-xs opacity-80">Support</div>
-                  </div>
-                </div>
-
-                <div className="absolute -bottom-4 -left-12 bg-[#B39DDB]/20 backdrop-blur-sm rounded-2xl p-4 border border-[#B39DDB]/30 transform -rotate-12 hover:rotate-0 transition-transform duration-300">
-                  <div className="text-white text-center">
-                    <div className="text-2xl font-bold">Global</div>
-                    <div className="text-xs opacity-80">Recognition</div>
-                  </div>
+                {/* Hero Image - Clean without any overlay content or floating cards */}
+                <div className="relative z-20 rounded-3xl overflow-hidden shadow-2xl">
+                  <Image
+                    src="/Website Images/HeroSectionHomePage/AdobeStock_258949460.jpeg"
+                    alt="Professional Training and Certification"
+                    width={600}
+                    height={400}
+                    className="w-full h-auto object-cover"
+                    priority
+                    unoptimized
+                  />
                 </div>
               </div>
             </div>
@@ -226,15 +173,28 @@ export default function HeroSection() {
             <p className="site-text-secondary font-medium">Trusted by professionals at</p>
           </div>
           <div className="relative overflow-hidden">
-            <div className="flex items-center justify-center gap-8 animate-scroll-x">
+            <div className="flex items-center justify-center gap-12 animate-scroll-x">
               {[...trustedLogos, ...trustedLogos].map((logo, i) => (
-                <div key={logo.alt + i} className="flex-shrink-0 w-24 h-12 relative opacity-60 hover:opacity-100 transition-opacity duration-300">
+                <div key={`${logo.id}-${i}`} className="flex-shrink-0 w-28 h-14 relative opacity-70 hover:opacity-100 transition-all duration-300 hover:scale-110">
                   <Image 
                     src={logo.src} 
                     alt={logo.alt} 
                     fill 
-                    className="object-contain filter brightness-0 invert site-light:brightness-100 site-light:invert-0" 
+                    className="object-contain logo-filter" 
                     unoptimized 
+                    onError={(e) => {
+                      const target = e.currentTarget as HTMLImageElement;
+                      target.style.display = 'none';
+                      console.warn(`Failed to load client logo: ${logo.src}`);
+                    }}
+                    onLoad={(e) => {
+                      const target = e.currentTarget as HTMLImageElement;
+                      target.style.opacity = '1';
+                    }}
+                    style={{ 
+                      opacity: 0, 
+                      transition: 'opacity 0.3s ease',
+                    }}
                   />
                 </div>
               ))}
@@ -265,6 +225,12 @@ export default function HeroSection() {
         }
         .animate-spin-slow {
           animation: spin-slow 20s linear infinite;
+        }
+        .logo-filter {
+          filter: brightness(0) invert(1); /* White in dark mode */
+        }
+        :global(.site-light) .logo-filter {
+          filter: brightness(0); /* Black in light mode */
         }
       `}</style>
     </div>

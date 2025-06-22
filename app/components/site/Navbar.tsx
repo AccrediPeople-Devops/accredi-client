@@ -576,14 +576,14 @@ const Navbar = () => {
                   </div>
                   {/* Hover bridge - invisible area to prevent dropdown closing */}
                   <div className="absolute top-full left-0 right-0 h-2 z-40 hidden group-hover:block"></div>
-                  <div className="absolute z-50 flex-col hidden bg-white/10 backdrop-blur-xl border border-white/20 py-2 min-w-[220px] rounded-2xl shadow-2xl group-hover:flex duration-300 transition-all opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 mt-2 site-light:bg-white/90 site-light:border-slate-200">
+                  <div className="absolute z-50 flex-col hidden bg-black/80 backdrop-blur-xl border border-white/20 py-2 min-w-[220px] rounded-2xl shadow-2xl group-hover:flex duration-300 transition-all opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 mt-2 site-light:bg-white site-light:border-slate-300 site-light:shadow-lg">
                     {menu.items.map((item, idx) => (
                       <Link
                         key={idx}
                         href={item.href}
-                        className="pr-4 pl-4 border-b border-white/10 last:border-b-0 hover:bg-white/10 duration-300 block site-light:border-slate-200 site-light:hover:bg-slate-50"
+                        className="pr-4 pl-4 border-b border-white/20 last:border-b-0 hover:bg-white/20 duration-300 block site-light:border-slate-300 site-light:hover:bg-slate-100"
                       >
-                        <div className="py-3 text-sm cursor-pointer whitespace-nowrap text-white hover:text-[#4F46E5] transition-colors site-light:text-slate-700 site-light:hover:text-[#4F46E5]">
+                        <div className="py-3 text-sm cursor-pointer whitespace-nowrap text-white hover:text-[#4F46E5] transition-colors site-light:text-slate-900 site-light:hover:text-[#4F46E5]">
                           {item.label}
                         </div>
                       </Link>
@@ -600,12 +600,7 @@ const Navbar = () => {
                 Reviews
               </Link>
 
-              {/* Theme Toggle */}
-              <div className="relative pr-2 pl-2 py-2 hover:bg-white/10 rounded-xl flex items-center gap-0.5 text-white font-normal cursor-pointer duration-300 transition-all hover:scale-105 site-light:text-slate-700 site-light:hover:text-slate-900 site-light:hover:bg-slate-100"
-                onMouseEnter={handleImmediateMenuClose}
-              >
-                <SiteThemeToggle />
-              </div>
+
 
               {/* Authentication Section */}
               {isCheckingAuth ? (
@@ -650,33 +645,33 @@ const Navbar = () => {
 
                   {/* User Dropdown Menu */}
                   {isUserMenuOpen && (
-                    <div className="absolute right-0 top-full mt-2 w-64 site-glass backdrop-blur-xl rounded-xl shadow-2xl border site-border overflow-hidden z-50">
-                      {/* User Info */}
-                      <div className="px-4 py-3 border-b site-border">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] flex items-center justify-center">
-                            {getUserProfileImage(currentUser) ? (
-                              <Image
-                                src={getUserProfileImage(currentUser)!}
-                                alt={currentUser.fullName}
-                                width={40}
-                                height={40}
-                                className="w-full h-full object-cover"
-                                unoptimized
-                              />
-                            ) : (
-                              <span className="text-white font-medium">
-                                {currentUser.fullName.charAt(0).toUpperCase()}
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium site-text-primary truncate">
-                              {currentUser.fullName}
-                            </p>
-                            <p className="text-xs site-text-secondary truncate">
-                              {currentUser.email}
-                            </p>
+                    <div className="absolute right-0 top-full mt-2 w-64 bg-black/85 backdrop-blur-xl rounded-xl shadow-2xl border border-white/20 overflow-hidden z-50 site-light:bg-white site-light:border-slate-300 site-light:shadow-lg">
+                                              {/* User Info */}
+                        <div className="px-4 py-3 border-b border-white/20 site-light:border-slate-300">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] flex items-center justify-center">
+                              {getUserProfileImage(currentUser) ? (
+                                <Image
+                                  src={getUserProfileImage(currentUser)!}
+                                  alt={currentUser.fullName}
+                                  width={40}
+                                  height={40}
+                                  className="w-full h-full object-cover"
+                                  unoptimized
+                                />
+                              ) : (
+                                <span className="text-white font-medium">
+                                  {currentUser.fullName.charAt(0).toUpperCase()}
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-white site-light:text-slate-900 truncate">
+                                {currentUser.fullName}
+                              </p>
+                              <p className="text-xs text-white/70 site-light:text-slate-600 truncate">
+                                {currentUser.email}
+                              </p>
                             <div className="flex items-center gap-1 mt-1">
                               <span className={`px-2 py-0.5 text-xs rounded-full font-medium ${
                                 currentUser.role === 'superadmin' ? 'bg-red-500/20 text-red-400 site-light:bg-red-100 site-light:text-red-700' :
@@ -695,7 +690,7 @@ const Navbar = () => {
                       <div className="py-2">
                           <Link
                           href={getDashboardUrl(currentUser)}
-                            className="flex items-center gap-3 px-4 py-2 text-sm site-text-secondary hover:site-text-primary hover:bg-white/10 site-light:hover:bg-slate-100 transition-colors"
+                            className="flex items-center gap-3 px-4 py-2 text-sm text-white/80 hover:text-white hover:bg-white/20 site-light:text-slate-600 site-light:hover:text-slate-900 site-light:hover:bg-slate-100 transition-colors"
                             onClick={() => setIsUserMenuOpen(false)}
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">

@@ -213,8 +213,7 @@ export default function ContactPage() {
                   <div className="text-center">
                     <h5 className="font-bold site-text-primary mb-2">Business Hours</h5>
                     <p className="site-text-secondary text-sm">Monday - Friday: 9:00 AM - 6:00 PM EST</p>
-                    <p className="site-text-secondary text-sm">Saturday: 10:00 AM - 4:00 PM EST</p>
-                    <p className="site-text-secondary text-sm">Sunday: Closed</p>
+                    <p className="site-text-secondary text-sm">Saturday: Closed | Sunday: Closed</p>
                   </div>
                 </div>
               </div>
@@ -374,12 +373,6 @@ export default function ContactPage() {
           referrerPolicy="no-referrer-when-downgrade"
           className="absolute inset-0 site-light:grayscale-0 grayscale"
         ></iframe>
-        
-        <div className="absolute top-8 left-8 site-glass backdrop-blur-xl rounded-2xl p-4 shadow-xl">
-          <h4 className="font-bold site-text-primary mb-2">AccrediPeople Certifications</h4>
-          <p className="site-text-secondary text-sm">1309 Coffeen Avenue STE 1200</p>
-          <p className="site-text-secondary text-sm">Sheridan, Wyoming 82801</p>
-        </div>
       </section>
     </div>
   );
