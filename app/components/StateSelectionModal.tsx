@@ -2,57 +2,43 @@
 import React, { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { HiSearch, HiX, HiCheck } from "react-icons/hi";
-import { useLocation, COUNTRIES_DATA, CountryData } from "@/app/context/LocationContext";
+import { useLocation } from "@/app/context/LocationContext";
+import { EnhancedLocationService, StateData } from "@/app/components/service/enhancedLocationData";
 
-interface CountrySelectionModalProps {
+interface StateSelectionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  // New props for form field mode
-  mode?: 'currency' | 'form';
   selectedCountryCode?: string;
-  onCountrySelect?: (country: CountryData) => void;
+  selectedStateCode?: string;
+  onStateSelect?: (state: StateData) => void;
   title?: string;
   subtitle?: string;
 }
 
-export default function CountrySelectionModal({ 
+export default function StateSelectionModal({ 
   isOpen, 
   onClose,
-  mode = 'currency',
   selectedCountryCode,
-  onCountrySelect,
+  selectedStateCode,
+  onStateSelect,
   title,
   subtitle
-}: CountrySelectionModalProps) {
+}: StateSelectionModalProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
   
-  const { currentCountry, setManualCountry, geolocationLoading } = useLocation();
+  const { currentCountry } = useLocation();
 
-  // Determine which country is currently selected based on mode
-  const getSelectedCountry = () => {
-    if (mode === 'form') {
-      return selectedCountryCode ? COUNTRIES_DATA.find(c => c.code === selectedCountryCode) : null;
-    }
-    return currentCountry;
-  };
+  // Get states for the selected country (or current country as fallback)
+  const countryCode = selectedCountryCode || currentCountry?.code || 'US';
+  const states = EnhancedLocationService.getStatesByCountry(countryCode);
+  const selectedState = selectedStateCode ? states.find(s => s.code === selectedStateCode) : null;
 
-  const selectedCountry = getSelectedCountry();
-
-  // Filter countries based on search term
-  const filteredCountries = COUNTRIES_DATA.filter(country =>
-    country.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    country.currencyCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    country.code.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  // Separate popular countries for better UX
-  const popularCountryCodes = ['US', 'CA', 'GB', 'IN', 'AU', 'DE', 'FR', 'SG', 'MY', 'JP', 'BR', 'MX', 'NL', 'ZA', 'AE'];
-  const popularCountries = filteredCountries.filter(country => 
-    popularCountryCodes.includes(country.code)
-  );
-  const otherCountries = filteredCountries.filter(country => 
-    !popularCountryCodes.includes(country.code)
+  // Filter states based on search term
+  const filteredStates = states.filter(state =>
+    state.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    state.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (state.type && state.type.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   // Focus search input when modal opens
@@ -89,21 +75,8 @@ export default function CountrySelectionModal({
     };
   }, [isOpen]);
 
-  const handleCountrySelect = (country: CountryData) => {
-    if (mode === 'currency') {
-      // Original currency selection behavior
-      setManualCountry(country);
-    } else {
-      // Form field selection behavior
-      onCountrySelect?.(country);
-    }
-    handleClose();
-  };
-
-  const handleAutoDetect = () => {
-    if (mode === 'currency') {
-      setManualCountry(null);
-    }
+  const handleStateSelect = (state: StateData) => {
+    onStateSelect?.(state);
     handleClose();
   };
 
@@ -114,12 +87,14 @@ export default function CountrySelectionModal({
 
   if (!isOpen) return null;
 
-  // Default titles based on mode
-  const modalTitle = title || (mode === 'currency' ? 'Choose Your Country' : 'Select Country');
-  const modalSubtitle = subtitle || (mode === 'currency' 
-    ? 'Select your country to display prices in your local currency'
-    : 'Choose a country from the list below'
-  );
+  // Get country name for display
+  const countryName = selectedCountryCode 
+    ? EnhancedLocationService.getAllCountries().find(c => c.code === selectedCountryCode)?.name
+    : currentCountry?.name || 'Unknown';
+
+  // Default titles
+  const modalTitle = title || 'Select State/Province';
+  const modalSubtitle = subtitle || `Choose a state or province in ${countryName}`;
 
   const modalContent = (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center">
@@ -148,17 +123,18 @@ export default function CountrySelectionModal({
         </div>
 
         {/* Current Selection */}
-        {selectedCountry && !geolocationLoading && (
+        {selectedState && (
           <div className="p-4 bg-white/5 border-b border-white/10">
             <div className="flex items-center gap-3">
-              <span className="text-2xl">{selectedCountry.flag}</span>
+              <div className="w-8 h-8 bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] rounded-lg flex items-center justify-center">
+                <span className="text-white text-sm font-bold">
+                  {selectedState.code}
+                </span>
+              </div>
               <div>
-                <div className="text-white font-semibold">{selectedCountry.name}</div>
+                <div className="text-white font-semibold">{selectedState.name}</div>
                 <div className="text-gray-400 text-sm">
-                  {mode === 'currency' 
-                    ? `Currently showing prices in ${selectedCountry.currencyCode}`
-                    : `Currently selected: ${selectedCountry.code}`
-                  }
+                  Currently selected {selectedState.type || 'region'}
                 </div>
               </div>
             </div>
@@ -174,56 +150,38 @@ export default function CountrySelectionModal({
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search countries or currencies..."
+              placeholder="Search states, provinces, or codes..."
               className="w-full pl-12 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-[#4F46E5] focus:ring-2 focus:ring-[#4F46E5]/20 transition-all"
             />
           </div>
         </div>
 
-        {/* Countries List */}
+        {/* States List */}
         <div className="flex-1 overflow-y-auto max-h-96">
-          {filteredCountries.length === 0 ? (
+          {states.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <div className="text-6xl mb-4">🗺️</div>
+              <div className="text-gray-400 text-center">
+                <div className="font-semibold mb-1">No states available</div>
+                <div className="text-sm">This country doesn't have detailed state data</div>
+              </div>
+            </div>
+          ) : filteredStates.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12">
               <div className="text-6xl mb-4">🔍</div>
               <div className="text-gray-400 text-center">
-                <div className="font-semibold mb-1">No countries found</div>
+                <div className="font-semibold mb-1">No states found</div>
                 <div className="text-sm">Try searching for "{searchTerm}"</div>
               </div>
             </div>
           ) : (
             <div className="p-4 space-y-2">
-              {/* Popular Countries */}
-              {popularCountries.length > 0 && !searchTerm && (
-                <>
-                  <div className="text-gray-400 text-sm font-medium mb-3 px-2">
-                    🌟 Popular Countries
-                  </div>
-                  {popularCountries.map((country) => (
-                    <CountryOption
-                      key={country.code}
-                      country={country}
-                      isSelected={selectedCountry?.code === country.code}
-                      onClick={() => handleCountrySelect(country)}
-                      mode={mode}
-                    />
-                  ))}
-                  
-                  {otherCountries.length > 0 && (
-                    <div className="text-gray-400 text-sm font-medium mb-3 px-2 mt-6">
-                      🌍 All Countries
-                    </div>
-                  )}
-                </>
-              )}
-              
-              {/* Other Countries */}
-              {(searchTerm ? filteredCountries : otherCountries).map((country) => (
-                <CountryOption
-                  key={country.code}
-                  country={country}
-                  isSelected={selectedCountry?.code === country.code}
-                  onClick={() => handleCountrySelect(country)}
-                  mode={mode}
+              {filteredStates.map((state) => (
+                <StateOption
+                  key={state.code}
+                  state={state}
+                  isSelected={selectedState?.code === state.code}
+                  onClick={() => handleStateSelect(state)}
                 />
               ))}
             </div>
@@ -233,17 +191,11 @@ export default function CountrySelectionModal({
         {/* Footer */}
         <div className="p-4 border-t border-white/20 bg-white/5">
           <div className="flex items-center justify-between">
-            {mode === 'currency' && (
-              <button
-                onClick={handleAutoDetect}
-                className="flex items-center gap-2 px-4 py-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
-              >
-                <span className="text-lg">🌐</span>
-                <span className="text-sm">Auto-detect my location</span>
-              </button>
-            )}
+            <div className="text-gray-400 text-sm">
+              {filteredStates.length} of {states.length} states shown
+            </div>
             
-            <div className="flex gap-3 ml-auto">
+            <div className="flex gap-3">
               <button
                 onClick={handleClose}
                 className="px-6 py-2 text-gray-400 hover:text-white border border-white/20 rounded-lg hover:bg-white/10 transition-colors"
@@ -260,15 +212,14 @@ export default function CountrySelectionModal({
   return createPortal(modalContent, document.body);
 }
 
-// Country Option Component
-interface CountryOptionProps {
-  country: CountryData;
+// State Option Component
+interface StateOptionProps {
+  state: StateData;
   isSelected: boolean;
   onClick: () => void;
-  mode: 'currency' | 'form';
 }
 
-function CountryOption({ country, isSelected, onClick, mode }: CountryOptionProps) {
+function StateOption({ state, isSelected, onClick }: StateOptionProps) {
   return (
     <button
       onClick={onClick}
@@ -278,14 +229,15 @@ function CountryOption({ country, isSelected, onClick, mode }: CountryOptionProp
           : 'hover:bg-white/10 border border-transparent text-gray-300'
       }`}
     >
-      <span className="text-3xl">{country.flag}</span>
+      <div className="w-10 h-10 bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] rounded-lg flex items-center justify-center">
+        <span className="text-white text-sm font-bold">
+          {state.code}
+        </span>
+      </div>
       <div className="flex-1 text-left">
-        <div className="font-semibold text-lg">{country.name}</div>
+        <div className="font-semibold text-lg">{state.name}</div>
         <div className="text-sm opacity-75">
-          {mode === 'currency' 
-            ? `${country.currencyCode} (${country.currencySymbol})`
-            : country.code
-          }
+          {state.type || 'State'} • {state.countryCode}
         </div>
       </div>
       {isSelected && (

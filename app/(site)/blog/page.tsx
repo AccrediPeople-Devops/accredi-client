@@ -31,7 +31,7 @@ export default function BlogPage() {
               <div className="w-3 h-3 bg-[#10B981] rounded-full animate-pulse"></div>
               <span className="site-text-accent font-bold text-sm uppercase tracking-wider">Coming Soon</span>
               <div className="w-3 h-3 bg-[#4F46E5] rounded-full animate-pulse delay-500"></div>
-            </div>
+        </div>
 
             <h1 className="text-5xl lg:text-7xl font-black mb-8 leading-tight">
               <span className="site-text-primary">Knowledge Hub </span>
@@ -47,18 +47,18 @@ export default function BlogPage() {
                 <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-br from-[#10B981] to-[#059669] rounded-full blur-2xl"></div>
                 <div className="absolute top-1/2 right-1/3 w-20 h-20 bg-gradient-to-br from-[#F59E0B] to-[#EF4444] rounded-full blur-2xl"></div>
               </div>
-
+              
               <div className="relative z-10">
                 {/* Large Icon */}
                 <div className="w-24 h-24 bg-gradient-to-br from-[#4F46E5] to-[#10B981] rounded-3xl mx-auto mb-8 flex items-center justify-center shadow-xl">
                   <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
                   </svg>
-                </div>
+              </div>
 
                 <h2 className="text-3xl md:text-4xl font-black site-text-primary mb-6">
                   Exciting Content Coming Soon!
-                </h2>
+            </h2>
 
                 <p className="text-lg site-text-secondary leading-relaxed mb-8">
                   We're crafting insightful articles, expert guides, and industry insights to help you advance your career. 
@@ -76,12 +76,12 @@ export default function BlogPage() {
                     <h4 className="font-bold site-text-primary mb-2">Certification Guides</h4>
                     <p className="site-text-secondary text-sm">Comprehensive guides for PMP, Agile, Cloud, and more</p>
                   </div>
-
+                  
                   <div className="text-center">
                     <div className="w-16 h-16 bg-[#10B981] rounded-full mx-auto mb-4 flex items-center justify-center">
                       <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                      </svg>
+                        </svg>
                     </div>
                     <h4 className="font-bold site-text-primary mb-2">Career Insights</h4>
                     <p className="site-text-secondary text-sm">Expert advice on professional growth and development</p>
@@ -91,8 +91,8 @@ export default function BlogPage() {
                     <div className="w-16 h-16 bg-[#F59E0B] rounded-full mx-auto mb-4 flex items-center justify-center">
                       <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                      </svg>
-                    </div>
+                  </svg>
+                </div>
                     <h4 className="font-bold site-text-primary mb-2">Industry Trends</h4>
                     <p className="site-text-secondary text-sm">Latest developments in technology and business</p>
                   </div>
@@ -115,10 +115,10 @@ export default function BlogPage() {
                     <button className="bg-gradient-to-r from-[#4F46E5] to-[#10B981] hover:from-[#10B981] hover:to-[#4F46E5] text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-[#4F46E5]/25">
                       Notify Me
                     </button>
-                  </div>
+                      </div>
                 </div>
               </div>
-            </div>
+          </div>
 
             {/* Back to Home */}
             <div className="text-center">
@@ -126,7 +126,7 @@ export default function BlogPage() {
                 href="/"
                 className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-8 py-4 site-border border hover:bg-white/20 site-light:hover:bg-white/60 transition-all duration-300 site-text-primary font-semibold"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
                 <span>Back to Home</span>

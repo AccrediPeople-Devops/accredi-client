@@ -10,6 +10,9 @@ import { Course } from "@/app/types/course";
 import paymentService from "@/app/components/service/payment.service";
 import { useLocation } from "@/app/context/LocationContext";
 import CountrySelectionModal from "@/app/components/CountrySelectionModal";
+import StateButton from "@/app/components/StateButton";
+import { StateData } from "@/app/components/service/enhancedLocationData";
+import ScheduleCalendarModal from "@/app/components/ScheduleCalendarModal";
 
 interface CoursePageProps {
   params: Promise<{ slug: string }>;
@@ -66,6 +69,16 @@ export default function CoursePage({ params }: CoursePageProps) {
 
   // Validation state - only show validation after first attempt
   const [showValidation, setShowValidation] = useState(false);
+
+  // Schedule calendar modal state
+  const [showCalendarModal, setShowCalendarModal] = useState(false);
+  const [calendarSchedule, setCalendarSchedule] = useState<any>(null);
+
+  // Handler to open calendar modal
+  const handleViewCalendar = (schedule: any) => {
+    setCalendarSchedule(schedule);
+    setShowCalendarModal(true);
+  };
 
   // Note: Location data is now handled by LocationContext
 
@@ -320,6 +333,12 @@ export default function CoursePage({ params }: CoursePageProps) {
     } else if (action === "decrease" && quantity > 1) {
       setQuantity((prev) => prev - 1);
     }
+  };
+
+  // State selection handler for the modal
+  const handleStateSelect = (state: StateData) => {
+    setSelectedState(state.name);
+    setSelectedCity(""); // Reset city when state changes
   };
 
   const handleEnrollInputChange = (
@@ -662,7 +681,6 @@ export default function CoursePage({ params }: CoursePageProps) {
               : "TBD",
           time: "9:00 AM - 5:00 PM CST",
           seatsLeft: Math.floor(Math.random() * 10) + 1, // Mock seats for now
-          curriculum: "32-hours curriculum",
         });
       }
     });
@@ -1246,38 +1264,15 @@ export default function CoursePage({ params }: CoursePageProps) {
               {/* Location Filters for Classroom */}
               {selectedMode === "classroom" && (
                 <div className="flex items-center gap-3 ml-4">
-                  <select
-                    value={selectedState}
-                    onChange={(e) => {
-                      setSelectedState(e.target.value);
-                      setSelectedCity("");
-                    }}
-                    className="px-4 py-3 site-glass backdrop-blur-sm rounded-2xl site-border border focus:ring-2 focus:ring-[#F59E0B] focus:border-transparent transition-all duration-300 site-text-primary text-sm font-medium"
-                  >
-                    <option value="">Any State</option>
-                    {states.map((state) => (
-                      <option key={state} value={state}>
-                        {state}
-                      </option>
-                    ))}
-                  </select>
-
-                  <select
-                    value={selectedCity}
-                    onChange={(e) => setSelectedCity(e.target.value)}
-                    className="px-4 py-3 site-glass backdrop-blur-sm rounded-2xl site-border border focus:ring-2 focus:ring-[#F59E0B] focus:border-transparent transition-all duration-300 site-text-primary text-sm font-medium"
-                    disabled={!selectedState}
-                  >
-                    <option value="">Any Location</option>
-                    {selectedState &&
-                      cities[selectedState as keyof typeof cities]?.map(
-                        (city) => (
-                          <option key={city} value={city}>
-                            {city}
-                          </option>
-                        )
-                      )}
-                  </select>
+                  <StateButton
+                    selectedCountryCode={currentCountry?.code}
+                    selectedStateCode={selectedState ? selectedState : undefined}
+                    onStateSelect={handleStateSelect}
+                    placeholder="Any State"
+                    variant="minimal"
+                    size="sm"
+                    className="text-sm font-medium"
+                  />
                 </div>
               )}
             </div>
@@ -1379,7 +1374,7 @@ export default function CoursePage({ params }: CoursePageProps) {
                             <div className="space-y-4">
                               <div className="flex items-center gap-2">
                                 <span className="text-2xl font-black site-text-primary">
-                                  {schedule.dates.join(", ")}
+                                  {schedule.dates.join(" - ")}
                                 </span>
                               </div>
                               <div className="flex items-center gap-4 text-sm">
@@ -1601,6 +1596,33 @@ export default function CoursePage({ params }: CoursePageProps) {
                             ENROLL NOW
                           </span>
                         </button>
+                        
+                        {/* View Dates Button - Only for live-online and classroom with dates */}
+                        {(selectedMode === "live-online" || selectedMode === "classroom") && 
+                         schedule.startDate && schedule.endDate && schedule.days && (
+                          <button
+                            onClick={() => handleViewCalendar(schedule)}
+                            className="w-full mt-3 group px-6 py-3 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white font-semibold rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:shadow-[#4F46E5]/25"
+                          >
+                            <span className="flex items-center justify-center gap-2">
+                              <svg
+                                className="w-5 h-5 group-hover:scale-110 transition-transform duration-300"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth={2}
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                />
+                              </svg>
+                              VIEW DATES
+                            </span>
+                          </button>
+                        )}
+                        
                         {selectedMode === "live-online" && (
                           <div className="text-center mt-3">
                             <button className="text-sm site-text-secondary hover:text-[#4F46E5] transition-colors font-medium">
@@ -2592,6 +2614,17 @@ export default function CoursePage({ params }: CoursePageProps) {
       <CountrySelectionModal
         isOpen={showCountryModal}
         onClose={() => setShowCountryModal(false)}
+      />
+
+      {/* Schedule Calendar Modal */}
+      <ScheduleCalendarModal
+        isOpen={showCalendarModal}
+        onClose={() => setShowCalendarModal(false)}
+        startDate={calendarSchedule?.startDate || ""}
+        endDate={calendarSchedule?.endDate || ""}
+        days={calendarSchedule?.days || []}
+        weekType={calendarSchedule?.type || "manual"}
+        title={`${calendarSchedule?.mode || "Course"} Schedule`}
       />
     </div>
   );

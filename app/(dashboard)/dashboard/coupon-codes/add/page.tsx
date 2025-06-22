@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { LoadingSpinner } from "@/app/components/LoadingSpinner";
+import CountryButton from "@/app/components/CountryButton";
+import { CountryData } from "@/app/context/LocationContext";
 import couponCodeService from "@/app/components/service/couponCode.service";
 import courseService from "@/app/components/service/course.service";
 import { formatDateForInput } from "@/app/utils/dateUtils";
@@ -98,6 +100,13 @@ export default function AddCouponCodePage() {
     setFormData((prev) => ({
       ...prev,
       discountCode: result
+    }));
+  };
+
+  const handleCountrySelect = (country: CountryData) => {
+    setFormData((prev) => ({
+      ...prev,
+      country: country.code
     }));
   };
 
@@ -221,29 +230,13 @@ export default function AddCouponCodePage() {
               </div>
 
               {/* Country selection */}
-              <div>
-                <label 
-                  htmlFor="country" 
-                  className="block text-sm font-medium text-[var(--foreground-muted)] mb-1"
-                >
-                  Country *
-                </label>
-                <select
-                  id="country"
-                  name="country"
-                  value={formData.country}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] rounded-[var(--radius-md)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                  required
-                >
-                  <option value="">Select a country</option>
-                  {countryCodes.map((country) => (
-                    <option key={country.code} value={country.code}>
-                      {country.name} ({country.code})
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <CountryButton
+                label="Country"
+                selectedCountryCode={formData.country}
+                onCountrySelect={handleCountrySelect}
+                placeholder="Select a country"
+                required
+              />
 
               {/* Discount code with generate button */}
               <div className="relative">

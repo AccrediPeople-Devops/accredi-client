@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { User } from "@/app/types/user";
 import UserProfileService from "@/app/components/user-dashboard/services/userProfile.service";
+import CountryButton from "@/app/components/CountryButton";
+import { CountryData } from "@/app/context/LocationContext";
 import Image from "next/image";
 import config from "@/app/components/config/config";
 import { toast } from "react-hot-toast";
@@ -115,6 +117,13 @@ export default function GeneralPage() {
     setFormData(prev => ({
       ...prev,
       [name]: value
+    }));
+  };
+
+  const handleCountrySelect = (country: CountryData) => {
+    setFormData(prev => ({
+      ...prev,
+      country: country.code
     }));
   };
 
@@ -290,19 +299,10 @@ export default function GeneralPage() {
               <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
                 Country
               </label>
-              <select 
-                name="country"
-                value={formData.country}
-                onChange={handleInputChange}
-                className="w-full px-4 py-3 bg-[var(--input-bg)] border border-[var(--border)] rounded-[var(--radius-md)] text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent transition-colors"
-              >
-                <option value="">Select Country</option>
-                <option value="US">United States</option>
-                <option value="CA">Canada</option>
-                <option value="UK">United Kingdom</option>
-                <option value="IN">India</option>
-                <option value="AU">Australia</option>
-              </select>
+              <CountryButton
+                selectedCountryCode={formData.country}
+                onCountrySelect={handleCountrySelect}
+              />
             </div>
 
             {/* City Field */}
