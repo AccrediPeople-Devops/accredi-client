@@ -25,12 +25,12 @@ export default function CoursePage({ params }: CoursePageProps) {
   const [error, setError] = useState("");
 
   // Location context for currency handling
-  const { 
-    currentCountry, 
-    geolocationLoading, 
-    formatPrice, 
+  const {
+    currentCountry,
+    geolocationLoading,
+    formatPrice,
     getCurrentCurrencyCode,
-    manuallySelectedCountry
+    manuallySelectedCountry,
   } = useLocation();
 
   const [showBrochureModal, setShowBrochureModal] = useState(false);
@@ -64,6 +64,9 @@ export default function CoursePage({ params }: CoursePageProps) {
   // Country selection modal state
   const [showCountryModal, setShowCountryModal] = useState(false);
 
+  // Validation state - only show validation after first attempt
+  const [showValidation, setShowValidation] = useState(false);
+
   // Note: Location data is now handled by LocationContext
 
   // Fetch course data
@@ -74,7 +77,9 @@ export default function CoursePage({ params }: CoursePageProps) {
 
       try {
         console.log("Fetching course with slug:", courseSlug);
-        const response = await siteCourseService.getPublicCourseBySlug(courseSlug);
+        const response = await siteCourseService.getPublicCourseBySlug(
+          courseSlug
+        );
 
         if (response.status && response.course) {
           setCourse(response.course);
@@ -210,75 +215,81 @@ export default function CoursePage({ params }: CoursePageProps) {
   const handleBrochureSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Brochure download requested:", brochureFormData);
-    
+
     try {
       // Check if course has a brochure file
       if (course && course.broucher && course.broucher.length > 0) {
         const brochureFile = course.broucher[0];
-        const brochureUrl = brochureFile.url || `${config.imageUrl}${brochureFile.path}`;
-        
+        const brochureUrl =
+          brochureFile.url || `${config.imageUrl}${brochureFile.path}`;
+
         try {
           // Try to fetch with CORS handling first
           const response = await fetch(brochureUrl, {
-            method: 'GET',
-            mode: 'cors',
-            credentials: 'same-origin',
+            method: "GET",
+            mode: "cors",
+            credentials: "same-origin",
             headers: {
-              'Content-Type': 'application/octet-stream',
+              "Content-Type": "application/octet-stream",
             },
           });
-          
+
           if (response.ok) {
             const blob = await response.blob();
-            
+
             // Create a blob URL and download link
             const blobUrl = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
+            const link = document.createElement("a");
             link.href = blobUrl;
             link.download = `${course.title}-Brochure.pdf`;
-            link.style.display = 'none';
-            
+            link.style.display = "none";
+
             // Add to DOM, click, and remove
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            
+
             // Clean up the blob URL
             window.URL.revokeObjectURL(blobUrl);
-            
+
             console.log("Brochure downloaded via fetch:", brochureUrl);
           } else {
-            throw new Error('Fetch failed');
+            throw new Error("Fetch failed");
           }
         } catch (fetchError) {
-          console.warn("Fetch failed, using direct download method:", fetchError);
-          
+          console.warn(
+            "Fetch failed, using direct download method:",
+            fetchError
+          );
+
           // Fallback: Direct download with download attribute
-          const link = document.createElement('a');
+          const link = document.createElement("a");
           link.href = brochureUrl;
           link.download = `${course.title}-Brochure.pdf`;
-          link.target = '_blank';
-          link.rel = 'noopener noreferrer';
-          link.style.display = 'none';
-          
+          link.target = "_blank";
+          link.rel = "noopener noreferrer";
+          link.style.display = "none";
+
           // Add to DOM, click, and remove
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
-          
+
           console.log("Brochure downloaded via direct link:", brochureUrl);
         }
       } else {
         // Fallback: Generate a dummy PDF or show message
-        alert("Brochure is currently being prepared. Please contact support for more information.");
+        alert(
+          "Brochure is currently being prepared. Please contact support for more information."
+        );
       }
     } catch (error) {
       console.error("Error downloading brochure:", error);
       alert("Failed to download brochure. Please try again.");
     } finally {
       // Close modal and reset form
-    setShowBrochureModal(false);
-    setBrochureFormData({ name: "", email: "", phone: "" });
+      setShowBrochureModal(false);
+      setBrochureFormData({ name: "", email: "", phone: "" });
     }
   };
 
@@ -294,7 +305,7 @@ export default function CoursePage({ params }: CoursePageProps) {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    if (name === "phone") {
+    if (name === "contactNumber") {
       const numericValue = value.replace(/[^0-9]/g, "").slice(0, 10);
       setEnrollFormData((prev) => ({
         ...prev,
@@ -306,6 +317,28 @@ export default function CoursePage({ params }: CoursePageProps) {
         [name]: value,
       }));
     }
+  };
+
+  // Validation function for enrollment form (excluding coupon)
+  const isEnrollFormValid = () => {
+    const { fullName, email, contactNumber, country, city } = enrollFormData;
+
+    // Check if all required fields are filled (coupon is optional)
+    const requiredFieldsFilled =
+      fullName.trim() !== "" &&
+      email.trim() !== "" &&
+      contactNumber.trim() !== "" &&
+      country.trim() !== "" &&
+      city.trim() !== "";
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const isEmailValid = emailRegex.test(email);
+
+    // Phone number validation (at least 10 digits)
+    const isPhoneValid = contactNumber.length >= 10;
+
+    return requiredFieldsFilled && isEmailValid && isPhoneValid;
   };
 
   const handleApplyCoupon = () => {
@@ -327,14 +360,21 @@ export default function CoursePage({ params }: CoursePageProps) {
     }
   };
 
-  const handlePayment = async () => {
+  const handlePayment = async (paymentType: "stripe" | "paypal" = "stripe") => {
     try {
+      // Check if form is valid first
+      if (!isEnrollFormValid()) {
+        // Show validation if form is invalid
+        setShowValidation(true);
+        return;
+      }
+
       // Determine the currency to use for payment - now uses same amount, different currency code
       const paymentCurrency = getCurrentCurrencyCode().toLowerCase();
       const totalAmount = calculateTotal(); // Same amount regardless of currency
 
       const paymentData = {
-        type: "stripe",
+        type: paymentType,
         shedule_id: selectedSchedule.id,
         couponCode: enrollFormData.couponCode || "",
         currency: paymentCurrency,
@@ -352,7 +392,7 @@ export default function CoursePage({ params }: CoursePageProps) {
         selectedCurrency: getCurrentCurrencyCode(),
       };
 
-      console.log("Processing payment:", paymentData);
+      console.log(`Processing ${paymentType} payment:`, paymentData);
 
       // const response = await fetch(
       //   "http://api.accredipeoplecertifications.com/api/payment/v1/create-checkout-session",
@@ -376,6 +416,7 @@ export default function CoursePage({ params }: CoursePageProps) {
         setShowEnrollModal(false);
         setSelectedSchedule(null);
         setAppliedCoupon(null);
+        setShowValidation(false);
         setEnrollFormData({
           fullName: "",
           email: "",
@@ -472,15 +513,17 @@ export default function CoursePage({ params }: CoursePageProps) {
   const getFilteredSchedules = () => {
     // Get user's current country name for filtering
     const userCountryName = currentCountry?.name || "United States";
-    
+
     // Filter schedules by country first, then by state/city for classroom
-    const countryFilteredSchedules = (scheduleData[selectedMode as keyof typeof scheduleData] || []).filter(
-      (schedule) => {
-        const scheduleCountry = schedule.country || "Global";
-        return scheduleCountry === "Global" || scheduleCountry === userCountryName;
-      }
-    );
-    
+    const countryFilteredSchedules = (
+      scheduleData[selectedMode as keyof typeof scheduleData] || []
+    ).filter((schedule) => {
+      const scheduleCountry = schedule.country || "Global";
+      return (
+        scheduleCountry === "Global" || scheduleCountry === userCountryName
+      );
+    });
+
     // For classroom schedules, apply additional state/city filtering
     if (selectedMode === "classroom") {
       return countryFilteredSchedules.filter(
@@ -489,7 +532,7 @@ export default function CoursePage({ params }: CoursePageProps) {
           (!selectedCity || schedule.city === selectedCity)
       );
     }
-    
+
     return countryFilteredSchedules;
   };
 
@@ -657,10 +700,8 @@ export default function CoursePage({ params }: CoursePageProps) {
 
           {/* Course Hero Section - Redesigned Structure */}
           <div className="space-y-12">
-            
             {/* Section 1: Title, Description and Image - Side by Side */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-              
               {/* Left: Category Badge, Course Title and Short Description */}
               <div className="order-2 lg:order-1 space-y-6">
                 {/* Category Badge */}
@@ -675,14 +716,12 @@ export default function CoursePage({ params }: CoursePageProps) {
 
                 {/* Course Title */}
                 <h1 className="text-4xl lg:text-5xl xl:text-6xl font-black leading-tight text-left">
-                  <span className="site-text-primary">
-                    {courseData.title}
-                  </span>
+                  <span className="site-text-primary">{courseData.title}</span>
                 </h1>
 
                 {/* Short Description */}
                 <div className="site-glass backdrop-blur-xl rounded-2xl p-6 lg:p-8 shadow-xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-300">
-                  <RichTextRenderer 
+                  <RichTextRenderer
                     content={courseData.description}
                     className="text-lg leading-relaxed"
                   />
@@ -708,25 +747,25 @@ export default function CoursePage({ params }: CoursePageProps) {
             {/* Section 3: Action Buttons - Centered */}
             <div className="flex justify-center pb-16">
               <div className="flex flex-col sm:flex-row gap-4 w-full max-w-lg">
-                  <button
-                    onClick={scrollToSchedule}
+                <button
+                  onClick={scrollToSchedule}
                   className="group flex items-center justify-center px-6 py-4 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#7C3AED] hover:to-[#6D28D9] text-white font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:shadow-[#4F46E5]/25 flex-1 whitespace-nowrap"
+                >
+                  <svg
+                    className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform duration-300"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    viewBox="0 0 24 24"
                   >
-                    <svg
-                      className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform duration-300"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      />
-                    </svg>
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
                   Schedules
-                  </button>
+                </button>
 
                 {course.broucher && course.broucher.length > 0 && (
                   <button
@@ -761,7 +800,7 @@ export default function CoursePage({ params }: CoursePageProps) {
           <div className="absolute inset-0">
             <div className="absolute top-20 left-20 w-64 h-64 bg-[#4F46E5]/5 site-light:bg-[#4F46E5]/10 rounded-full blur-3xl"></div>
             <div className="absolute bottom-20 right-20 w-80 h-80 bg-[#10B981]/5 site-light:bg-[#10B981]/10 rounded-full blur-3xl"></div>
-                  </div>
+          </div>
 
           <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
@@ -770,22 +809,22 @@ export default function CoursePage({ params }: CoursePageProps) {
                 <span className="text-[#4F46E5] text-sm font-semibold uppercase tracking-wider">
                   About This Course
                 </span>
-                </div>
+              </div>
               <h2 className="text-4xl lg:text-5xl xl:text-6xl font-black mb-6 leading-tight">
                 <span className="bg-gradient-to-r from-[#4F46E5] to-[#10B981] bg-clip-text text-transparent">
                   Course Overview
                 </span>
               </h2>
-              </div>
+            </div>
 
             <div className="site-glass backdrop-blur-xl rounded-3xl p-8 md:p-12 shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500">
-              <RichTextRenderer 
+              <RichTextRenderer
                 content={course.description}
                 className="text-lg leading-relaxed"
               />
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
       )}
 
       {/* Key Features Section */}
@@ -838,9 +877,9 @@ export default function CoursePage({ params }: CoursePageProps) {
                   </div>
                 ))}
               </div>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
       )}
 
       {/* Course Components Section */}
@@ -897,7 +936,7 @@ export default function CoursePage({ params }: CoursePageProps) {
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
                           </div>
-                          
+
                           {/* Component Number Badge */}
                           <div className="absolute top-4 right-4">
                             <div className="w-10 h-10 bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] rounded-xl flex items-center justify-center shadow-lg">
@@ -928,7 +967,6 @@ export default function CoursePage({ params }: CoursePageProps) {
           </div>
         </section>
       )}
-
 
       {/* Curriculum Section */}
       {course.curriculum && course.curriculum.length > 0 && (
@@ -1036,7 +1074,6 @@ export default function CoursePage({ params }: CoursePageProps) {
 
             {/* Currency Conversion Banner */}
 
-
             {/* <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-4 py-2 mt-4">
               <svg
                 className="w-4 h-4 text-[#10B981]"
@@ -1066,18 +1103,26 @@ export default function CoursePage({ params }: CoursePageProps) {
                 </div>
                 <div>
                   <p className="text-sm font-medium site-text-primary">
-                    Showing schedules for: <span className="text-[#4F46E5] font-bold">{currentCountry?.name || "United States"}</span>
+                    Showing schedules for:{" "}
+                    <span className="text-[#4F46E5] font-bold">
+                      {currentCountry?.name || "United States"}
+                    </span>
                   </p>
                   <p className="text-xs site-text-muted">
-                    {geolocationLoading ? "Detecting your location..." : 
-                     manuallySelectedCountry ? "Manually selected" : "Auto-detected from your location"}
+                    {geolocationLoading
+                      ? "Detecting your location..."
+                      : manuallySelectedCountry
+                      ? "Manually selected"
+                      : "Auto-detected from your location"}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                                 <span className="text-xs site-text-muted">
-                   {geolocationLoading ? "Loading..." : `${getFilteredSchedules().length} schedules available`}
-                 </span>
+                <span className="text-xs site-text-muted">
+                  {geolocationLoading
+                    ? "Loading..."
+                    : `${getFilteredSchedules().length} schedules available`}
+                </span>
                 <button
                   onClick={() => setShowCountryModal(true)}
                   className="px-3 py-1.5 text-xs font-medium text-[#4F46E5] hover:text-white hover:bg-[#4F46E5] rounded-lg transition-all duration-300 border border-[#4F46E5]/30 hover:border-[#4F46E5]"
@@ -1190,8 +1235,12 @@ export default function CoursePage({ params }: CoursePageProps) {
                   </h3>
                   <p className="site-text-secondary max-w-md mx-auto leading-relaxed">
                     {selectedMode === "classroom"
-                      ? `No classroom sessions are currently available for ${currentCountry?.name || "your location"}. Please try a different location or training mode.`
-                      : `No ${selectedMode} schedules are currently available for ${currentCountry?.name || "your location"}. Please try a different training mode or contact us for custom schedules.`}
+                      ? `No classroom sessions are currently available for ${
+                          currentCountry?.name || "your location"
+                        }. Please try a different location or training mode.`
+                      : `No ${selectedMode} schedules are currently available for ${
+                          currentCountry?.name || "your location"
+                        }. Please try a different training mode or contact us for custom schedules.`}
                   </p>
                 </div>
               </div>
@@ -1241,9 +1290,9 @@ export default function CoursePage({ params }: CoursePageProps) {
                               </div>
                               <div>
                                 <div className="flex items-center gap-2 mb-1">
-                                <h3 className="text-xl font-bold site-text-primary">
-                                  {schedule.mode}
-                                </h3>
+                                  <h3 className="text-xl font-bold site-text-primary">
+                                    {schedule.mode}
+                                  </h3>
                                   <span className="px-2 py-1 bg-[#4F46E5]/10 text-[#4F46E5] text-xs font-medium rounded-full">
                                     {schedule.country}
                                   </span>
@@ -1340,9 +1389,9 @@ export default function CoursePage({ params }: CoursePageProps) {
                               </div>
                               <div>
                                 <div className="flex items-center gap-2 mb-1">
-                                <h3 className="text-xl font-bold site-text-primary">
-                                  {schedule.mode}
-                                </h3>
+                                  <h3 className="text-xl font-bold site-text-primary">
+                                    {schedule.mode}
+                                  </h3>
                                   <span className="px-2 py-1 bg-[#10B981]/10 text-[#10B981] text-xs font-medium rounded-full">
                                     {schedule.country}
                                   </span>
@@ -1610,7 +1659,7 @@ export default function CoursePage({ params }: CoursePageProps) {
 
       {/* Brochure Download Modal - Redesigned */}
       {showBrochureModal && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
@@ -1640,8 +1689,8 @@ export default function CoursePage({ params }: CoursePageProps) {
                 </div>
                 <div>
                   <h3 className="text-xl font-bold site-text-primary">
-                Download Brochure
-              </h3>
+                    Download Brochure
+                  </h3>
                   <p className="text-sm site-text-muted">
                     Get detailed course information
                   </p>
@@ -1680,82 +1729,82 @@ export default function CoursePage({ params }: CoursePageProps) {
             {/* Modal Content */}
             <div className="relative z-10 p-6">
               <form onSubmit={handleBrochureSubmit} className="space-y-6">
-              <div>
-                <label
-                  htmlFor="brochure-name"
+                <div>
+                  <label
+                    htmlFor="brochure-name"
                     className="block text-sm font-medium site-text-primary mb-2"
-                >
-                  Full Name *
-                </label>
-                <input
-                  type="text"
-                  id="brochure-name"
-                  name="name"
-                  value={brochureFormData.name}
-                  onChange={handleBrochureInputChange}
+                  >
+                    Full Name *
+                  </label>
+                  <input
+                    type="text"
+                    id="brochure-name"
+                    name="name"
+                    value={brochureFormData.name}
+                    onChange={handleBrochureInputChange}
                     className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary placeholder:site-text-muted focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300"
-                  placeholder="Enter your full name"
-                  required
-                />
-              </div>
+                    placeholder="Enter your full name"
+                    required
+                  />
+                </div>
 
-              <div>
-                <label
-                  htmlFor="brochure-email"
+                <div>
+                  <label
+                    htmlFor="brochure-email"
                     className="block text-sm font-medium site-text-primary mb-2"
-                >
-                  Email Address *
-                </label>
-                <input
-                  type="email"
-                  id="brochure-email"
-                  name="email"
-                  value={brochureFormData.email}
-                  onChange={handleBrochureInputChange}
+                  >
+                    Email Address *
+                  </label>
+                  <input
+                    type="email"
+                    id="brochure-email"
+                    name="email"
+                    value={brochureFormData.email}
+                    onChange={handleBrochureInputChange}
                     className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary placeholder:site-text-muted focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300"
-                  placeholder="Enter your email address"
-                  required
-                />
-              </div>
+                    placeholder="Enter your email address"
+                    required
+                  />
+                </div>
 
-              <div>
-                <label
-                  htmlFor="brochure-phone"
+                <div>
+                  <label
+                    htmlFor="brochure-phone"
                     className="block text-sm font-medium site-text-primary mb-2"
-                >
-                  Contact Number *
-                </label>
-                <input
-                  type="tel"
-                  id="brochure-phone"
-                  name="phone"
-                  value={brochureFormData.phone}
-                  onChange={handleBrochureInputChange}
+                  >
+                    Contact Number *
+                  </label>
+                  <input
+                    type="tel"
+                    id="brochure-phone"
+                    name="phone"
+                    value={brochureFormData.phone}
+                    onChange={handleBrochureInputChange}
                     className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary placeholder:site-text-muted focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300"
-                  placeholder="Enter your contact number"
-                  required
-                />
-              </div>
+                    placeholder="Enter your contact number"
+                    required
+                  />
+                </div>
 
                 <div className="flex gap-3 pt-2">
-                <button
-                  type="button"
+                  <button
+                    type="button"
                     onClick={() => {
                       setShowBrochureModal(false);
                       setBrochureFormData({ name: "", email: "", phone: "" });
                     }}
                     className="flex-1 px-6 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-secondary hover:site-text-primary hover:bg-white/20 site-light:hover:bg-white/60 font-medium transition-all duration-300"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
                     className="flex-1 px-6 py-3 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#7C3AED] hover:to-[#6D28D9] text-white font-bold rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:shadow-[#4F46E5]/25"
-                >
-                  Download
-                </button>
-              </div>
-            </form>
+                  >
+                    Download
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </div>
@@ -1763,13 +1812,14 @@ export default function CoursePage({ params }: CoursePageProps) {
 
       {/* Enrollment Modal - Optimized */}
       {showEnrollModal && selectedSchedule && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-start justify-center z-50 p-4 overflow-y-auto"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setShowEnrollModal(false);
               setSelectedSchedule(null);
               setAppliedCoupon(null);
+              setShowValidation(false);
               setEnrollFormData({
                 fullName: "",
                 email: "",
@@ -1809,6 +1859,7 @@ export default function CoursePage({ params }: CoursePageProps) {
                   setShowEnrollModal(false);
                   setSelectedSchedule(null);
                   setAppliedCoupon(null);
+                  setShowValidation(false);
                   setEnrollFormData({
                     fullName: "",
                     email: "",
@@ -1847,259 +1898,385 @@ export default function CoursePage({ params }: CoursePageProps) {
             <div className="relative z-10 p-4 sm:p-6 space-y-6">
               {/* Two Column Layout */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                
                 {/* Left Column - Course Summary */}
                 <div className="space-y-6">
                   <div className="site-glass backdrop-blur-xl rounded-3xl p-4 sm:p-6 shadow-xl border site-border">
-                <h4 className="text-lg font-semibold site-text-primary mb-4">
-                  Course Summary
-                </h4>
+                    <h4 className="text-lg font-semibold site-text-primary mb-4">
+                      Course Summary
+                    </h4>
                     <div className="space-y-3">
                       <div className="flex justify-between items-start">
-                        <span className="site-text-secondary text-sm">Course:</span>
+                        <span className="site-text-secondary text-sm">
+                          Course:
+                        </span>
                         <span className="site-text-primary font-medium text-sm text-right flex-1 ml-2">
-                      {courseData.title}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                        <span className="site-text-secondary text-sm">Mode:</span>
+                          {courseData.title}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="site-text-secondary text-sm">
+                          Mode:
+                        </span>
                         <span className="site-text-primary font-medium text-sm">
-                      {selectedSchedule.mode}
-                    </span>
-                  </div>
-                  {selectedMode === "live-online" ||
-                  selectedMode === "classroom" ? (
-                    <>
+                          {selectedSchedule.mode}
+                        </span>
+                      </div>
+                      {selectedMode === "live-online" ||
+                      selectedMode === "classroom" ? (
+                        <>
                           <div className="flex justify-between items-start">
-                            <span className="site-text-secondary text-sm">Dates:</span>
-                            <span className="site-text-primary font-medium text-sm text-right flex-1 ml-2">
-                          {selectedSchedule.dates?.join(", ")}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                            <span className="site-text-secondary text-sm">Duration:</span>
-                            <span className="site-text-primary font-medium text-sm">
-                          {selectedSchedule.duration}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
                             <span className="site-text-secondary text-sm">
-                          Participants:
-                        </span>
+                              Dates:
+                            </span>
+                            <span className="site-text-primary font-medium text-sm text-right flex-1 ml-2">
+                              {selectedSchedule.dates?.join(", ")}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="site-text-secondary text-sm">
+                              Duration:
+                            </span>
                             <span className="site-text-primary font-medium text-sm">
-                          {quantity}
+                              {selectedSchedule.duration}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="site-text-secondary text-sm">
+                              Participants:
+                            </span>
+                            <span className="site-text-primary font-medium text-sm">
+                              {quantity}
+                            </span>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="flex justify-between">
+                          <span className="site-text-secondary text-sm">
+                            Access:
+                          </span>
+                          <span className="site-text-primary font-medium text-sm">
+                            {selectedSchedule.accessDays} Days
+                          </span>
+                        </div>
+                      )}
+                      <div className="flex justify-between font-bold text-lg border-t site-border pt-3 mt-4">
+                        <span className="site-text-primary">Total:</span>
+                        <span className="bg-gradient-to-r from-[#4F46E5] to-[#10B981] bg-clip-text text-transparent">
+                          {formatPrice(calculateTotal())}
                         </span>
                       </div>
-                    </>
-                  ) : (
-                    <div className="flex justify-between">
-                          <span className="site-text-secondary text-sm">Access:</span>
-                          <span className="site-text-primary font-medium text-sm">
-                        {selectedSchedule.accessDays} Days
-                      </span>
                     </div>
-                  )}
-                      <div className="flex justify-between font-bold text-lg border-t site-border pt-3 mt-4">
-                    <span className="site-text-primary">Total:</span>
-                    <span className="bg-gradient-to-r from-[#4F46E5] to-[#10B981] bg-clip-text text-transparent">
-                      {formatPrice(calculateTotal())}
-                    </span>
-                      </div>
                   </div>
                 </div>
-              </div>
 
                 {/* Right Column - Enrollment Form */}
                 <div className="space-y-6">
                   {/* Personal Information */}
                   <div className="site-glass backdrop-blur-xl rounded-3xl p-4 sm:p-6 shadow-xl border site-border">
-                <div className="flex items-center gap-3 mb-6">
+                    <div className="flex items-center gap-3 mb-6">
                       <div className="w-8 h-8 bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] rounded-xl flex items-center justify-center text-white font-bold shadow-lg shadow-[#4F46E5]/25">
-                    1
-                  </div>
+                        1
+                      </div>
                       <h4 className="text-lg font-semibold site-text-primary">
-                    Personal Information
-                  </h4>
-                </div>
+                        Personal Information
+                      </h4>
+                    </div>
 
                     <div className="space-y-4">
-                  <div>
+                      <div>
                         <label className="block text-sm font-medium site-text-primary mb-2">
-                      Full Name *
-                    </label>
-                    <input
-                      type="text"
-                      name="fullName"
-                      value={enrollFormData.fullName}
-                      onChange={handleEnrollInputChange}
-                      className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary placeholder:site-text-muted focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300"
-                      placeholder="Enter your full name"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                        <label className="block text-sm font-medium site-text-primary mb-2">
-                      Email Address *
-                    </label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={enrollFormData.email}
-                      onChange={handleEnrollInputChange}
-                      className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary placeholder:site-text-muted focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300"
-                      placeholder="Enter your email"
-                      required
-                    />
-                  </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                          <label className="block text-sm font-medium site-text-primary mb-2">
-                      Contact Number *
-                    </label>
-                    <input
-                      type="tel"
-                      name="contactNumber"
-                      value={enrollFormData.contactNumber}
-                      onChange={handleEnrollInputChange}
-                      className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary placeholder:site-text-muted focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300"
-                      placeholder="Enter your contact number"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                          <label className="block text-sm font-medium site-text-primary mb-2">
-                      Country *
-                    </label>
-                    <select
-                      name="country"
-                      value={enrollFormData.country}
-                      onChange={handleEnrollInputChange}
-                      className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300"
-                      required
-                    >
-                      {countries.map((country) => (
-                        <option key={country} value={country}>
-                          {country}
-                        </option>
-                      ))}
-                    </select>
-                        </div>
-                  </div>
+                          Full Name *
+                        </label>
+                        <input
+                          type="text"
+                          name="fullName"
+                          value={enrollFormData.fullName}
+                          onChange={handleEnrollInputChange}
+                          className={`w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl border site-text-primary placeholder:site-text-muted focus:ring-2 focus:border-transparent transition-all duration-300 ${
+                            showValidation &&
+                            enrollFormData.fullName.trim() === ""
+                              ? "border-red-300 focus:ring-red-500"
+                              : "site-border focus:ring-[#4F46E5]"
+                          }`}
+                          placeholder="Enter your full name"
+                          required
+                        />
+                      </div>
 
                       <div>
                         <label className="block text-sm font-medium site-text-primary mb-2">
-                      City *
-                    </label>
-                    <input
-                      type="text"
-                      name="city"
-                      value={enrollFormData.city}
-                      onChange={handleEnrollInputChange}
-                      className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary placeholder:site-text-muted focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300"
-                      placeholder="Enter your city"
-                      required
-                    />
-                  </div>
-                </div>
-              </div>
+                          Email Address *
+                        </label>
+                        <input
+                          type="email"
+                          name="email"
+                          value={enrollFormData.email}
+                          onChange={handleEnrollInputChange}
+                          className={`w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl border site-text-primary placeholder:site-text-muted focus:ring-2 focus:border-transparent transition-all duration-300 ${
+                            showValidation &&
+                            (enrollFormData.email.trim() === "" ||
+                              !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+                                enrollFormData.email
+                              ))
+                              ? "border-red-300 focus:ring-red-500"
+                              : "site-border focus:ring-[#4F46E5]"
+                          }`}
+                          placeholder="Enter your email"
+                          required
+                        />
+                      </div>
 
-              {/* Coupon Code Section */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium site-text-primary mb-2">
+                            Contact Number *
+                          </label>
+                          <input
+                            type="tel"
+                            name="contactNumber"
+                            value={enrollFormData.contactNumber}
+                            onChange={handleEnrollInputChange}
+                            className={`w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl border site-text-primary placeholder:site-text-muted focus:ring-2 focus:border-transparent transition-all duration-300 ${
+                              showValidation &&
+                              (enrollFormData.contactNumber.trim() === "" ||
+                                enrollFormData.contactNumber.length < 10)
+                                ? "border-red-300 focus:ring-red-500"
+                                : "site-border focus:ring-[#4F46E5]"
+                            }`}
+                            placeholder="Enter your contact number"
+                            required
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium site-text-primary mb-2">
+                            Country *
+                          </label>
+                          <select
+                            name="country"
+                            value={enrollFormData.country}
+                            onChange={handleEnrollInputChange}
+                            className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300"
+                            required
+                          >
+                            {countries.map((country) => (
+                              <option key={country} value={country}>
+                                {country}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium site-text-primary mb-2">
+                          City *
+                        </label>
+                        <input
+                          type="text"
+                          name="city"
+                          value={enrollFormData.city}
+                          onChange={handleEnrollInputChange}
+                          className={`w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl border site-text-primary placeholder:site-text-muted focus:ring-2 focus:border-transparent transition-all duration-300 ${
+                            showValidation && enrollFormData.city.trim() === ""
+                              ? "border-red-300 focus:ring-red-500"
+                              : "site-border focus:ring-[#4F46E5]"
+                          }`}
+                          placeholder="Enter your city"
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Coupon Code Section */}
                   <div className="site-glass backdrop-blur-xl rounded-3xl p-4 sm:p-6 shadow-xl border site-border">
                     <div className="flex items-center gap-3 mb-4">
                       <div className="w-8 h-8 bg-gradient-to-br from-[#10B981] to-[#059669] rounded-xl flex items-center justify-center text-white font-bold shadow-lg shadow-[#10B981]/25">
-                    2
-                  </div>
-                      <h4 className="text-lg font-semibold site-text-primary">
-                    Coupon Code
-                  </h4>
-                  <span className="text-sm text-blue-400 font-medium">
-                    (Optional)
-                  </span>
-                </div>
-
-                <div className="flex gap-3">
-                  <input
-                    type="text"
-                    name="couponCode"
-                    value={enrollFormData.couponCode}
-                    onChange={handleEnrollInputChange}
-                    className="flex-1 px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary placeholder:site-text-muted focus:ring-2 focus:ring-[#10B981] focus:border-transparent transition-all duration-300"
-                    placeholder="Enter coupon code"
-                  />
-                  <button
-                    onClick={handleApplyCoupon}
-                        className="px-6 py-3 bg-gradient-to-br from-[#10B981] to-[#059669] text-white font-medium rounded-xl hover:shadow-lg hover:shadow-[#10B981]/25 transition-all duration-300 whitespace-nowrap"
-                  >
-                    Apply
-                  </button>
-                </div>
-
-                {appliedCoupon && (
-                  <div className="mt-4 p-4 bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-xl">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                          <svg
-                            className="w-4 h-4 text-white"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth={2}
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M5 13l4 4L19 7"
-                            />
-                          </svg>
-                        </div>
-                            <span className="text-green-400 font-medium text-sm">
-                              Coupon "{appliedCoupon.code}" applied!
-                        </span>
+                        2
                       </div>
+                      <h4 className="text-lg font-semibold site-text-primary">
+                        Coupon Code
+                      </h4>
+                      <span className="text-sm text-blue-400 font-medium">
+                        (Optional)
+                      </span>
+                    </div>
+
+                    <div className="flex gap-3">
+                      <input
+                        type="text"
+                        name="couponCode"
+                        value={enrollFormData.couponCode}
+                        onChange={handleEnrollInputChange}
+                        className="flex-1 px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary placeholder:site-text-muted focus:ring-2 focus:ring-[#10B981] focus:border-transparent transition-all duration-300"
+                        placeholder="Enter coupon code"
+                      />
                       <button
-                        onClick={() => setAppliedCoupon(null)}
-                            className="text-green-400 hover:text-green-300 font-medium text-sm"
+                        onClick={handleApplyCoupon}
+                        className="px-6 py-3 bg-gradient-to-br from-[#10B981] to-[#059669] text-white font-medium rounded-xl hover:shadow-lg hover:shadow-[#10B981]/25 transition-all duration-300 whitespace-nowrap"
                       >
-                        Remove
+                        Apply
                       </button>
                     </div>
-                  </div>
-                )}
+
+                    {appliedCoupon && (
+                      <div className="mt-4 p-4 bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-xl">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                              <svg
+                                className="w-4 h-4 text-white"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth={2}
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M5 13l4 4L19 7"
+                                />
+                              </svg>
+                            </div>
+                            <span className="text-green-400 font-medium text-sm">
+                              Coupon "{appliedCoupon.code}" applied!
+                            </span>
+                          </div>
+                          <button
+                            onClick={() => setAppliedCoupon(null)}
+                            className="text-green-400 hover:text-green-300 font-medium text-sm"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
 
-              {/* Enroll Button - Full Width */}
+              {/* Payment Buttons - Full Width */}
               <div className="border-t site-border pt-6">
-              <button
-                onClick={handlePayment}
-                className="w-full group px-8 py-4 bg-gradient-to-r from-[#FF6B35] to-[#E55A2B] hover:from-[#E55A2B] hover:to-[#CC4A1D] text-white font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:shadow-[#FF6B35]/25"
-              >
-                <span className="flex items-center justify-center gap-2">
-                  <svg
-                    className="w-6 h-6 group-hover:scale-110 transition-transform duration-300"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-                    />
-                  </svg>
-                  ENROLL NOW - {formatPrice(calculateTotal())}
-                </span>
-              </button>
+                <div className="space-y-4">
+                  {/* Payment Method Header */}
+                  <div className="text-center mb-6">
+                    <h5 className="text-lg font-semibold site-text-primary mb-2">
+                      Choose Payment Method
+                    </h5>
+                    <p className="text-sm site-text-secondary">
+                      Select your preferred payment option
+                    </p>
+                  </div>
 
-              <p className="text-xs site-text-muted text-center mt-4">
-                  By enrolling, you agree to our Terms of Service and Privacy Policy
-              </p>
+                  {/* Stripe Payment Button */}
+                  <button
+                    onClick={() => handlePayment("stripe")}
+                    disabled={!isEnrollFormValid()}
+                    className={`w-full group px-8 py-4 font-bold rounded-2xl transition-all duration-300 transform ${
+                      isEnrollFormValid()
+                        ? "bg-gradient-to-r from-[#635BFF] to-[#5A54CC] hover:from-[#5A54CC] hover:to-[#514A99] text-white hover:scale-105 hover:shadow-xl hover:shadow-[#635BFF]/25"
+                        : "bg-gray-400 text-gray-600 cursor-not-allowed opacity-50"
+                    }`}
+                  >
+                    <span className="flex items-center justify-center gap-3">
+                      <svg
+                        className={`w-6 h-6 transition-transform duration-300 ${
+                          isEnrollFormValid() ? "group-hover:scale-110" : ""
+                        }`}
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.594-7.305h.003z" />
+                      </svg>
+                      <span>
+                        {isEnrollFormValid()
+                          ? `Pay with Stripe - ${formatPrice(calculateTotal())}`
+                          : "Complete Required Fields to Continue"}
+                      </span>
+                    </span>
+                  </button>
+
+                  {/* PayPal Payment Button */}
+                  <button
+                    onClick={() => handlePayment("paypal")}
+                    disabled={!isEnrollFormValid()}
+                    className={`w-full group px-8 py-4 font-bold rounded-2xl transition-all duration-300 transform ${
+                      isEnrollFormValid()
+                        ? "bg-gradient-to-r from-[#0070BA] to-[#003087] hover:from-[#003087] hover:to-[#001C64] text-white hover:scale-105 hover:shadow-xl hover:shadow-[#0070BA]/25"
+                        : "bg-gray-400 text-gray-600 cursor-not-allowed opacity-50"
+                    }`}
+                  >
+                    <span className="flex items-center justify-center gap-3">
+                      <svg
+                        className={`w-6 h-6 transition-transform duration-300 ${
+                          isEnrollFormValid() ? "group-hover:scale-110" : ""
+                        }`}
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106zm14.146-14.42a3.35 3.35 0 0 0-.438-.298c-.18-.1-.404-.16-.65-.16h-2.134c-.524 0-.968.382-1.05.9l-.72 4.57c-.08.518.254.9.777.9h1.357c3.005 0 5.32-1.23 5.997-4.787.677-3.558-.677-5.125-2.139-5.125z" />
+                      </svg>
+                      <span>
+                        {isEnrollFormValid()
+                          ? `Pay with PayPal - ${formatPrice(calculateTotal())}`
+                          : "Complete Required Fields to Continue"}
+                      </span>
+                    </span>
+                  </button>
+
+                  {/* Form Validation Message */}
+                  {showValidation && !isEnrollFormValid() && (
+                    <div className="mt-4 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl">
+                      <div className="flex items-start gap-3">
+                        <svg
+                          className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
+                          />
+                        </svg>
+                        <div>
+                          <p className="text-yellow-500 text-sm font-medium mb-1">
+                            Please complete all required fields:
+                          </p>
+                          <ul className="text-yellow-400 text-xs space-y-1">
+                            {enrollFormData.fullName.trim() === "" && (
+                              <li>• Full Name is required</li>
+                            )}
+                            {(enrollFormData.email.trim() === "" ||
+                              !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+                                enrollFormData.email
+                              )) && <li>• Valid Email Address is required</li>}
+                            {(enrollFormData.contactNumber.trim() === "" ||
+                              enrollFormData.contactNumber.length < 10) && (
+                              <li>
+                                • Contact Number (minimum 10 digits) is required
+                              </li>
+                            )}
+                            {enrollFormData.country.trim() === "" && (
+                              <li>• Country is required</li>
+                            )}
+                            {enrollFormData.city.trim() === "" && (
+                              <li>• City is required</li>
+                            )}
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <p className="text-xs site-text-muted text-center mt-6">
+                  By enrolling, you agree to our Terms of Service and Privacy
+                  Policy
+                </p>
               </div>
             </div>
           </div>
@@ -2298,8 +2475,9 @@ export default function CoursePage({ params }: CoursePageProps) {
                       Why do we need your information?
                     </p>
                     <p className="text-blue-300 text-xs leading-relaxed">
-                      We collect your details to send you relevant course updates, 
-                      certification information, and exclusive offers. Your privacy is important to us.
+                      We collect your details to send you relevant course
+                      updates, certification information, and exclusive offers.
+                      Your privacy is important to us.
                     </p>
                   </div>
                 </div>
