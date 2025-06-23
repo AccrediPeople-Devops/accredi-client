@@ -68,7 +68,7 @@ export default function HeroSection() {
               {/* Badge */}
               <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-6 py-3">
                 <div className="w-2 h-2 bg-[#10B981] rounded-full animate-pulse"></div>
-                <span className="text-sm font-medium">Transforming Careers Since 2019</span>
+                <span className="text-sm font-medium">Transforming Careers Since 2025</span>
               </div>
 
               {/* Main Heading */}
