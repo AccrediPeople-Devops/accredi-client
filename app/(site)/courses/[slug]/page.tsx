@@ -10,6 +10,9 @@ import { Course } from "@/app/types/course";
 import paymentService from "@/app/components/service/payment.service";
 import { useLocation } from "@/app/context/LocationContext";
 import CountrySelectionModal from "@/app/components/CountrySelectionModal";
+import StateButton from "@/app/components/StateButton";
+import { StateData } from "@/app/components/service/enhancedLocationData";
+import ScheduleCalendarModal from "@/app/components/ScheduleCalendarModal";
 
 interface CoursePageProps {
   params: Promise<{ slug: string }>;
@@ -67,6 +70,16 @@ export default function CoursePage({ params }: CoursePageProps) {
   // Validation state - only show validation after first attempt
   const [showValidation, setShowValidation] = useState(false);
 
+  // Schedule calendar modal state
+  const [showCalendarModal, setShowCalendarModal] = useState(false);
+  const [calendarSchedule, setCalendarSchedule] = useState<any>(null);
+
+  // Handler to open calendar modal
+  const handleViewCalendar = (schedule: any) => {
+    setCalendarSchedule(schedule);
+    setShowCalendarModal(true);
+  };
+
   // Note: Location data is now handled by LocationContext
 
   // Fetch course data
@@ -86,6 +99,7 @@ export default function CoursePage({ params }: CoursePageProps) {
           console.log("Course data loaded:", response.course);
           console.log("Course schedules:", response.course.schedules);
           console.log("Course FAQ:", response.course.faqId);
+          console.log("Course brochure:", response.course.broucher);
         } else {
           setError("Course not found");
         }
@@ -135,6 +149,26 @@ export default function CoursePage({ params }: CoursePageProps) {
       return (course.categoryId as any).name;
     }
     return "Professional Certification";
+  };
+
+  // Helper function to get sample certificate URL
+  const getSampleCertificateUrl = (course: Course) => {
+    if (course.upload?.courseSampleCertificate && course.upload.courseSampleCertificate.length > 0) {
+      const certificate = course.upload.courseSampleCertificate[0];
+      // First check if we have a complete URL
+      if (certificate.path?.startsWith("http")) {
+        return certificate.path;
+      }
+      // Then check if we have a path that needs the imageUrl prefixed
+      if (certificate.path) {
+        return `${config.imageUrl}${certificate.path}`;
+      }
+      // Then try the key property with imageUrl base
+      if (certificate.key) {
+        return `${config.imageUrl}${certificate.key}`;
+      }
+    }
+    return null;
   };
 
   // Loading state
@@ -299,6 +333,12 @@ export default function CoursePage({ params }: CoursePageProps) {
     } else if (action === "decrease" && quantity > 1) {
       setQuantity((prev) => prev - 1);
     }
+  };
+
+  // State selection handler for the modal
+  const handleStateSelect = (state: StateData) => {
+    setSelectedState(state.name);
+    setSelectedCity(""); // Reset city when state changes
   };
 
   const handleEnrollInputChange = (
@@ -607,7 +647,7 @@ export default function CoursePage({ params }: CoursePageProps) {
                     (1000 * 3600 * 24)
                 )} Days`
               : "TBD",
-          time: "9:00 AM - 5:00 PM",
+          time: "9:00 AM - 5:00 PM CST",
           seatsLeft: Math.floor(Math.random() * 10) + 1, // Mock seats for now
         });
       } else if (schedule.scheduleType === "self-paced") {
@@ -639,9 +679,8 @@ export default function CoursePage({ params }: CoursePageProps) {
                     (1000 * 3600 * 24)
                 )} Days`
               : "TBD",
-          time: "9:00 AM - 5:00 PM",
+          time: "9:00 AM - 5:00 PM CST",
           seatsLeft: Math.floor(Math.random() * 10) + 1, // Mock seats for now
-          curriculum: "32-hours curriculum",
         });
       }
     });
@@ -767,27 +806,25 @@ export default function CoursePage({ params }: CoursePageProps) {
                   Schedules
                 </button>
 
-                {course.broucher && course.broucher.length > 0 && (
-                  <button
-                    onClick={() => setShowBrochureModal(true)}
-                    className="group flex items-center justify-center gap-2 px-6 py-4 site-glass backdrop-blur-sm site-border border hover:bg-white/20 site-light:hover:bg-white/60 site-text-primary font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 flex-1 whitespace-nowrap"
+                <button
+                  onClick={() => setShowBrochureModal(true)}
+                  className="group flex items-center justify-center gap-2 px-6 py-4 site-glass backdrop-blur-sm site-border border hover:bg-white/20 site-light:hover:bg-white/60 site-text-primary font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 flex-1 whitespace-nowrap"
+                >
+                  <svg
+                    className="w-5 h-5 group-hover:scale-110 transition-transform duration-300"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    viewBox="0 0 24 24"
                   >
-                    <svg
-                      className="w-5 h-5 group-hover:scale-110 transition-transform duration-300"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2z"
-                      />
-                    </svg>
-                    Brochure
-                  </button>
-                )}
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2z"
+                    />
+                  </svg>
+                  Brochure
+                </button>
               </div>
             </div>
           </div>
@@ -835,7 +872,7 @@ export default function CoursePage({ params }: CoursePageProps) {
             <div className="absolute bottom-20 left-20 w-80 h-80 bg-[#F59E0B]/5 site-light:bg-[#F59E0B]/10 rounded-full blur-3xl"></div>
           </div>
 
-          <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-4 py-2 mb-6">
                 <div className="w-2 h-2 bg-[#10B981] rounded-full animate-pulse"></div>
@@ -850,33 +887,87 @@ export default function CoursePage({ params }: CoursePageProps) {
               </h2>
             </div>
 
-            <div className="site-glass backdrop-blur-xl rounded-3xl p-8 md:p-12 shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500">
-              <div className="space-y-6">
-                {course.keyFeatures.map((feature, index) => (
-                  <div key={index} className="flex items-start gap-4 group">
-                    <div className="flex-shrink-0 mt-1">
-                      <div className="w-6 h-6 bg-gradient-to-br from-[#10B981] to-[#059669] rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-stretch">
+              {/* Key Features List */}
+              <div className="site-glass backdrop-blur-xl rounded-3xl p-8 md:p-12 shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500">
+                <div className="space-y-6">
+                  {course.keyFeatures.map((feature, index) => (
+                    <div key={index} className="flex items-start gap-4 group">
+                      <div className="flex-shrink-0 mt-1">
+                        <div className="w-6 h-6 bg-gradient-to-br from-[#10B981] to-[#059669] rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                          <svg
+                            className="w-3 h-3 text-white"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth={3}
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                        </div>
+                      </div>
+                      <p className="text-lg leading-relaxed site-text-secondary group-hover:site-text-primary transition-colors duration-300">
+                        {feature}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Sample Certificate */}
+              {getSampleCertificateUrl(course) && (
+                <div className="relative w-full h-full">
+                  <div className="site-glass backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500 group h-full">
+                    <div className="relative overflow-hidden h-full min-h-[400px]">
+                      <Image
+                        src={getSampleCertificateUrl(course) || ""}
+                        alt="Sample Certificate"
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        unoptimized
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
+                    </div>
+
+                    {/* Certificate Badge */}
+                    <div className="absolute top-4 left-4">
+                      <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-3 py-1.5">
+                        <div className="w-2 h-2 bg-[#F59E0B] rounded-full animate-pulse"></div>
+                        <span className="text-[#F59E0B] text-xs font-semibold uppercase tracking-wider">
+                          Sample Certificate
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Certificate Icon */}
+                    <div className="absolute top-4 right-4">
+                      <div className="w-10 h-10 bg-gradient-to-br from-[#F59E0B] to-[#EF4444] rounded-xl flex items-center justify-center shadow-lg">
                         <svg
-                          className="w-3 h-3 text-white"
+                          className="w-5 h-5 text-white"
                           fill="none"
                           stroke="currentColor"
-                          strokeWidth={3}
+                          strokeWidth={2}
                           viewBox="0 0 24 24"
                         >
                           <path
                             strokeLinecap="round"
                             strokeLinejoin="round"
-                            d="M5 13l4 4L19 7"
+                            d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
                           />
                         </svg>
                       </div>
                     </div>
-                    <p className="text-lg leading-relaxed site-text-secondary group-hover:site-text-primary transition-colors duration-300">
-                      {feature}
-                    </p>
+
+                    {/* Decorative Elements */}
+                    <div className="absolute -top-4 -right-4 w-8 h-8 bg-[#F59E0B] rounded-full opacity-60 animate-pulse"></div>
+                    <div className="absolute -bottom-4 -left-4 w-6 h-6 bg-[#10B981] rounded-full opacity-60 animate-pulse delay-1000"></div>
                   </div>
-                ))}
-              </div>
+                </div>
+              )}
             </div>
           </div>
         </section>
@@ -1173,38 +1264,15 @@ export default function CoursePage({ params }: CoursePageProps) {
               {/* Location Filters for Classroom */}
               {selectedMode === "classroom" && (
                 <div className="flex items-center gap-3 ml-4">
-                  <select
-                    value={selectedState}
-                    onChange={(e) => {
-                      setSelectedState(e.target.value);
-                      setSelectedCity("");
-                    }}
-                    className="px-4 py-3 site-glass backdrop-blur-sm rounded-2xl site-border border focus:ring-2 focus:ring-[#F59E0B] focus:border-transparent transition-all duration-300 site-text-primary text-sm font-medium"
-                  >
-                    <option value="">Any State</option>
-                    {states.map((state) => (
-                      <option key={state} value={state}>
-                        {state}
-                      </option>
-                    ))}
-                  </select>
-
-                  <select
-                    value={selectedCity}
-                    onChange={(e) => setSelectedCity(e.target.value)}
-                    className="px-4 py-3 site-glass backdrop-blur-sm rounded-2xl site-border border focus:ring-2 focus:ring-[#F59E0B] focus:border-transparent transition-all duration-300 site-text-primary text-sm font-medium"
-                    disabled={!selectedState}
-                  >
-                    <option value="">Any Location</option>
-                    {selectedState &&
-                      cities[selectedState as keyof typeof cities]?.map(
-                        (city) => (
-                          <option key={city} value={city}>
-                            {city}
-                          </option>
-                        )
-                      )}
-                  </select>
+                  <StateButton
+                    selectedCountryCode={currentCountry?.code}
+                    selectedStateCode={selectedState ? selectedState : undefined}
+                    onStateSelect={handleStateSelect}
+                    placeholder="Any State"
+                    variant="minimal"
+                    size="sm"
+                    className="text-sm font-medium"
+                  />
                 </div>
               )}
             </div>
@@ -1306,8 +1374,7 @@ export default function CoursePage({ params }: CoursePageProps) {
                             <div className="space-y-4">
                               <div className="flex items-center gap-2">
                                 <span className="text-2xl font-black site-text-primary">
-                                  {schedule.dates.join(", ")} (
-                                  {schedule.duration})
+                                  {schedule.dates.join(" - ")}
                                 </span>
                               </div>
                               <div className="flex items-center gap-4 text-sm">
@@ -1480,7 +1547,7 @@ export default function CoursePage({ params }: CoursePageProps) {
                           <div className="text-sm site-text-muted line-through mb-1">
                             {formatPrice(schedule.standardPrice)}
                           </div>
-                          <div className="text-3xl font-black bg-gradient-to-r from-[#4F46E5] to-[#10B981] bg-clip-text text-transparent mb-2">
+                          <div className="text-3xl font-black site-text-primary mb-2">
                             {formatPrice(schedule.earlyBirdPrice)}
                           </div>
                           {selectedMode === "self-paced" && (
@@ -1529,6 +1596,33 @@ export default function CoursePage({ params }: CoursePageProps) {
                             ENROLL NOW
                           </span>
                         </button>
+                        
+                        {/* View Dates Button - Only for live-online and classroom with dates */}
+                        {(selectedMode === "live-online" || selectedMode === "classroom") && 
+                         schedule.startDate && schedule.endDate && schedule.days && (
+                          <button
+                            onClick={() => handleViewCalendar(schedule)}
+                            className="w-full mt-3 group px-6 py-3 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white font-semibold rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:shadow-[#4F46E5]/25"
+                          >
+                            <span className="flex items-center justify-center gap-2">
+                              <svg
+                                className="w-5 h-5 group-hover:scale-110 transition-transform duration-300"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth={2}
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                />
+                              </svg>
+                              VIEW DATES
+                            </span>
+                          </button>
+                        )}
+                        
                         {selectedMode === "live-online" && (
                           <div className="text-center mt-3">
                             <button className="text-sm site-text-secondary hover:text-[#4F46E5] transition-colors font-medium">
@@ -2520,6 +2614,17 @@ export default function CoursePage({ params }: CoursePageProps) {
       <CountrySelectionModal
         isOpen={showCountryModal}
         onClose={() => setShowCountryModal(false)}
+      />
+
+      {/* Schedule Calendar Modal */}
+      <ScheduleCalendarModal
+        isOpen={showCalendarModal}
+        onClose={() => setShowCalendarModal(false)}
+        startDate={calendarSchedule?.startDate || ""}
+        endDate={calendarSchedule?.endDate || ""}
+        days={calendarSchedule?.days || []}
+        weekType={calendarSchedule?.type || "manual"}
+        title={`${calendarSchedule?.mode || "Course"} Schedule`}
       />
     </div>
   );

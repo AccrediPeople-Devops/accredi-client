@@ -1,24 +1,58 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
-import { HiSearch, HiX } from "react-icons/hi";
+import { createPortal } from "react-dom";
+import { HiSearch, HiX, HiCheck } from "react-icons/hi";
 import { useLocation, COUNTRIES_DATA, CountryData } from "@/app/context/LocationContext";
 
 interface CountrySelectionModalProps {
   isOpen: boolean;
   onClose: () => void;
+  // New props for form field mode
+  mode?: 'currency' | 'form';
+  selectedCountryCode?: string;
+  onCountrySelect?: (country: CountryData) => void;
+  title?: string;
+  subtitle?: string;
 }
 
-export default function CountrySelectionModal({ isOpen, onClose }: CountrySelectionModalProps) {
+export default function CountrySelectionModal({ 
+  isOpen, 
+  onClose,
+  mode = 'currency',
+  selectedCountryCode,
+  onCountrySelect,
+  title,
+  subtitle
+}: CountrySelectionModalProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
   
   const { currentCountry, setManualCountry, geolocationLoading } = useLocation();
+
+  // Determine which country is currently selected based on mode
+  const getSelectedCountry = () => {
+    if (mode === 'form') {
+      return selectedCountryCode ? COUNTRIES_DATA.find(c => c.code === selectedCountryCode) : null;
+    }
+    return currentCountry;
+  };
+
+  const selectedCountry = getSelectedCountry();
 
   // Filter countries based on search term
   const filteredCountries = COUNTRIES_DATA.filter(country =>
     country.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     country.currencyCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
     country.code.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Separate popular countries for better UX
+  const popularCountryCodes = ['US', 'CA', 'GB', 'IN', 'AU', 'DE', 'FR', 'SG', 'MY', 'JP', 'BR', 'MX', 'NL', 'ZA', 'AE'];
+  const popularCountries = filteredCountries.filter(country => 
+    popularCountryCodes.includes(country.code)
+  );
+  const otherCountries = filteredCountries.filter(country => 
+    !popularCountryCodes.includes(country.code)
   );
 
   // Focus search input when modal opens
@@ -56,12 +90,20 @@ export default function CountrySelectionModal({ isOpen, onClose }: CountrySelect
   }, [isOpen]);
 
   const handleCountrySelect = (country: CountryData) => {
-    setManualCountry(country);
+    if (mode === 'currency') {
+      // Original currency selection behavior
+      setManualCountry(country);
+    } else {
+      // Form field selection behavior
+      onCountrySelect?.(country);
+    }
     handleClose();
   };
 
   const handleAutoDetect = () => {
-    setManualCountry(null);
+    if (mode === 'currency') {
+      setManualCountry(null);
+    }
     handleClose();
   };
 
@@ -72,8 +114,15 @@ export default function CountrySelectionModal({ isOpen, onClose }: CountrySelect
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+  // Default titles based on mode
+  const modalTitle = title || (mode === 'currency' ? 'Choose Your Country' : 'Select Country');
+  const modalSubtitle = subtitle || (mode === 'currency' 
+    ? 'Select your country to display prices in your local currency'
+    : 'Choose a country from the list below'
+  );
+
+  const modalContent = (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center">
       {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
@@ -81,13 +130,13 @@ export default function CountrySelectionModal({ isOpen, onClose }: CountrySelect
       />
       
       {/* Modal */}
-      <div className="relative w-full max-w-2xl mx-4 bg-gradient-to-br from-[#0F0F23] via-[#1A1A3E] to-[#2D1B69] border border-white/20 rounded-2xl shadow-2xl max-h-[80vh] overflow-hidden">
+      <div className="relative w-full max-w-2xl mx-4 bg-gradient-to-br from-[#0F0F23] via-[#1A1A3E] to-[#2D1B69] border border-white/20 rounded-2xl shadow-2xl max-h-[80vh] overflow-hidden z-[10000]">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-white/20">
           <div>
-            <h2 className="text-2xl font-bold text-white">Choose Your Country</h2>
+            <h2 className="text-2xl font-bold text-white">{modalTitle}</h2>
             <p className="text-gray-400 text-sm mt-1">
-              Select your country to display prices in your local currency
+              {modalSubtitle}
             </p>
           </div>
           <button
@@ -99,14 +148,17 @@ export default function CountrySelectionModal({ isOpen, onClose }: CountrySelect
         </div>
 
         {/* Current Selection */}
-        {currentCountry && !geolocationLoading && (
+        {selectedCountry && !geolocationLoading && (
           <div className="p-4 bg-white/5 border-b border-white/10">
             <div className="flex items-center gap-3">
-              <span className="text-2xl">{currentCountry.flag}</span>
+              <span className="text-2xl">{selectedCountry.flag}</span>
               <div>
-                <div className="text-white font-semibold">{currentCountry.name}</div>
+                <div className="text-white font-semibold">{selectedCountry.name}</div>
                 <div className="text-gray-400 text-sm">
-                  Currently showing prices in {currentCountry.currencyCode}
+                  {mode === 'currency' 
+                    ? `Currently showing prices in ${selectedCountry.currencyCode}`
+                    : `Currently selected: ${selectedCountry.code}`
+                  }
                 </div>
               </div>
             </div>
@@ -130,14 +182,7 @@ export default function CountrySelectionModal({ isOpen, onClose }: CountrySelect
 
         {/* Countries List */}
         <div className="flex-1 overflow-y-auto max-h-96">
-          {geolocationLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="flex items-center gap-3">
-                <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                <span className="text-gray-400">Loading location data...</span>
-              </div>
-            </div>
-          ) : filteredCountries.length === 0 ? (
+          {filteredCountries.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12">
               <div className="text-6xl mb-4">🔍</div>
               <div className="text-gray-400 text-center">
@@ -147,30 +192,39 @@ export default function CountrySelectionModal({ isOpen, onClose }: CountrySelect
             </div>
           ) : (
             <div className="p-4 space-y-2">
-              {filteredCountries.map((country) => (
-                <button
-                  key={country.code}
-                  onClick={() => handleCountrySelect(country)}
-                  className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all duration-200 ${
-                    currentCountry?.code === country.code
-                      ? 'bg-[#4F46E5]/20 border border-[#4F46E5]/40 text-[#4F46E5]'
-                      : 'hover:bg-white/10 border border-transparent text-gray-300'
-                  }`}
-                >
-                  <span className="text-3xl">{country.flag}</span>
-                  <div className="flex-1 text-left">
-                    <div className="font-semibold text-lg">{country.name}</div>
-                    <div className="text-sm opacity-75">
-                      {country.currencyCode} ({country.currencySymbol})
-                    </div>
+              {/* Popular Countries */}
+              {popularCountries.length > 0 && !searchTerm && (
+                <>
+                  <div className="text-gray-400 text-sm font-medium mb-3 px-2">
+                    🌟 Popular Countries
                   </div>
-                  {currentCountry?.code === country.code && (
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-[#4F46E5] rounded-full"></div>
-                      <span className="text-sm font-medium">Selected</span>
+                  {popularCountries.map((country) => (
+                    <CountryOption
+                      key={country.code}
+                      country={country}
+                      isSelected={selectedCountry?.code === country.code}
+                      onClick={() => handleCountrySelect(country)}
+                      mode={mode}
+                    />
+                  ))}
+                  
+                  {otherCountries.length > 0 && (
+                    <div className="text-gray-400 text-sm font-medium mb-3 px-2 mt-6">
+                      🌍 All Countries
                     </div>
                   )}
-                </button>
+                </>
+              )}
+              
+              {/* Other Countries */}
+              {(searchTerm ? filteredCountries : otherCountries).map((country) => (
+                <CountryOption
+                  key={country.code}
+                  country={country}
+                  isSelected={selectedCountry?.code === country.code}
+                  onClick={() => handleCountrySelect(country)}
+                  mode={mode}
+                />
               ))}
             </div>
           )}
@@ -179,15 +233,17 @@ export default function CountrySelectionModal({ isOpen, onClose }: CountrySelect
         {/* Footer */}
         <div className="p-4 border-t border-white/20 bg-white/5">
           <div className="flex items-center justify-between">
-            <button
-              onClick={handleAutoDetect}
-              className="flex items-center gap-2 px-4 py-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
-            >
-              <span className="text-lg">🌐</span>
-              <span className="text-sm">Auto-detect my location</span>
-            </button>
+            {mode === 'currency' && (
+              <button
+                onClick={handleAutoDetect}
+                className="flex items-center gap-2 px-4 py-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+              >
+                <span className="text-lg">🌐</span>
+                <span className="text-sm">Auto-detect my location</span>
+              </button>
+            )}
             
-            <div className="flex gap-3">
+            <div className="flex gap-3 ml-auto">
               <button
                 onClick={handleClose}
                 className="px-6 py-2 text-gray-400 hover:text-white border border-white/20 rounded-lg hover:bg-white/10 transition-colors"
@@ -199,5 +255,45 @@ export default function CountrySelectionModal({ isOpen, onClose }: CountrySelect
         </div>
       </div>
     </div>
+  );
+
+  return createPortal(modalContent, document.body);
+}
+
+// Country Option Component
+interface CountryOptionProps {
+  country: CountryData;
+  isSelected: boolean;
+  onClick: () => void;
+  mode: 'currency' | 'form';
+}
+
+function CountryOption({ country, isSelected, onClick, mode }: CountryOptionProps) {
+  return (
+    <button
+      onClick={onClick}
+      className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all duration-200 ${
+        isSelected
+          ? 'bg-[#4F46E5]/20 border border-[#4F46E5]/40 text-[#4F46E5]'
+          : 'hover:bg-white/10 border border-transparent text-gray-300'
+      }`}
+    >
+      <span className="text-3xl">{country.flag}</span>
+      <div className="flex-1 text-left">
+        <div className="font-semibold text-lg">{country.name}</div>
+        <div className="text-sm opacity-75">
+          {mode === 'currency' 
+            ? `${country.currencyCode} (${country.currencySymbol})`
+            : country.code
+          }
+        </div>
+      </div>
+      {isSelected && (
+        <div className="flex items-center gap-2">
+          <HiCheck className="w-5 h-5 text-[#4F46E5]" />
+          <span className="text-sm font-medium">Selected</span>
+        </div>
+      )}
+    </button>
   );
 } 

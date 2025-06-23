@@ -64,7 +64,7 @@ export default function OurApproachSection() {
                   <div className="site-glass backdrop-blur-xl rounded-3xl px-4 py-6 hover:bg-white/20 site-light:hover:bg-white/80 transition-all duration-500 group hover:scale-105 hover:shadow-2xl relative overflow-hidden">
                     <div className="absolute inset-0 bg-gradient-to-br from-[#4F46E5]/5 via-transparent to-[#B39DDB]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     <div className="relative z-10 text-center">
-                      <h4 className="font-black text-lg mb-3 site-text-primary">Align</h4>
+                      <div className="approach-card-title">Align</div>
                       <p className="site-text-secondary leading-relaxed mb-2 text-sm">
                         We begin by aligning learning objectives with real-world industry needs and global certification standards. Whether it's Project Management, Agile, or Quality frameworks, our programs are built to meet the demands of today's dynamic professional landscape.
                       </p>
@@ -77,7 +77,7 @@ export default function OurApproachSection() {
                   <div className="site-glass backdrop-blur-xl rounded-3xl px-4 py-6 hover:bg-white/20 site-light:hover:bg-white/80 transition-all duration-500 group hover:scale-105 hover:shadow-2xl relative overflow-hidden">
                     <div className="absolute inset-0 bg-gradient-to-br from-[#F59E0B]/5 via-transparent to-[#D97706]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     <div className="relative z-10 text-center">
-                      <h4 className="font-black text-lg mb-3 site-text-primary">Acquire</h4>
+                      <div className="approach-card-title">Acquire</div>
                       <p className="site-text-secondary leading-relaxed mb-2 text-sm">
                         Through expert-led, instructor-led training, learners gain practical skills, tools, and frameworks that can be applied immediately. Our programs are structured to deliver deep knowledge, hands-on application, and preparation for globally recognized certifications.
                       </p>
@@ -90,7 +90,7 @@ export default function OurApproachSection() {
                   <div className="site-glass backdrop-blur-xl rounded-3xl px-4 py-6 hover:bg-white/20 site-light:hover:bg-white/80 transition-all duration-500 group hover:scale-105 hover:shadow-2xl relative overflow-hidden">
                     <div className="absolute inset-0 bg-gradient-to-br from-[#EF4444]/5 via-transparent to-[#DC2626]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     <div className="relative z-10 text-center">
-                      <h4 className="font-black text-lg mb-3 site-text-primary">Achieve</h4>
+                      <div className="approach-card-title">Achieve</div>
                       <p className="site-text-secondary leading-relaxed mb-2 text-sm">
                         Our mission is to help you succeed—with confidence. Learners walk away not only with certifications but with career momentum, enhanced capability, and the ability to lead in their fields. For organizations, we offer measurable upskilling solutions that support strategic growth.
                       </p>
@@ -165,80 +165,107 @@ export default function OurApproachSection() {
               </p>
             </div>
 
-            {/* Three Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-1">
-              <div className="site-glass backdrop-blur-xl rounded-3xl p-10 shadow-2xl hover:bg-white/20 site-light:hover:bg-white/80 transition-all duration-500 text-center group hover:scale-105 hover:shadow-3xl relative overflow-hidden">
+            {/* Three Cards - Simplified Design */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="site-glass backdrop-blur-xl rounded-3xl p-8 shadow-2xl hover:bg-white/20 site-light:hover:bg-white/80 transition-all duration-500 text-center group hover:scale-105 hover:shadow-3xl relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-[#4F46E5]/5 via-transparent to-[#B39DDB]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <div className="relative z-10">
-                  <div className="w-20 h-20 bg-gradient-to-br from-[#4F46E5] to-[#B39DDB] rounded-3xl mx-auto mb-8 flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-xl">
+                  <div className="w-16 h-16 bg-[#4F46E5] rounded-full mx-auto mb-6 flex items-center justify-center group-hover:scale-110 transition-all duration-500 shadow-xl">
                     <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                     </svg>
                   </div>
-                  <h4 className="text-xl font-black mb-6 bg-gradient-to-r from-[#4F46E5] to-[#B39DDB] bg-clip-text text-transparent">
+                  <h4 className="text-xl font-bold mb-6 site-text-primary">
                     Expert-Led, Insight-Driven Learning
                   </h4>
-                  <div className="site-text-secondary leading-relaxed space-y-3">
-                    <p>World-class facilitators with advanced degrees and proven leadership experience</p>
-                    <p>Focused on helping learners identify strengths, gaps, and personalized goals</p>
-                    <p>Enriched with research, curated resources, and practical real-world examples</p>
+                  <div className="site-text-secondary leading-relaxed space-y-4 text-left">
+                    <p className="flex items-start gap-3">
+                      <span className="w-2 h-2 bg-[#4F46E5] rounded-full mt-2 flex-shrink-0"></span>
+                      World-class facilitators with advanced degrees and proven leadership experience
+                    </p>
+                    <p className="flex items-start gap-3">
+                      <span className="w-2 h-2 bg-[#4F46E5] rounded-full mt-2 flex-shrink-0"></span>
+                      Focused on helping learners identify strengths, gaps, and personalized goals
+                    </p>
+                    <p className="flex items-start gap-3">
+                      <span className="w-2 h-2 bg-[#4F46E5] rounded-full mt-2 flex-shrink-0"></span>
+                      Enriched with research, curated resources, and practical real-world examples
+                    </p>
                   </div>
                 </div>
               </div>
               
-              <div className="site-glass backdrop-blur-xl rounded-3xl p-10 shadow-2xl hover:bg-white/20 site-light:hover:bg-white/80 transition-all duration-500 text-center group hover:scale-105 hover:shadow-3xl relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-[#B39DDB]/5 via-transparent to-[#10B981]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="site-glass backdrop-blur-xl rounded-3xl p-8 shadow-2xl hover:bg-white/20 site-light:hover:bg-white/80 transition-all duration-500 text-center group hover:scale-105 hover:shadow-3xl relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-[#F59E0B]/5 via-transparent to-[#F59E0B]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <div className="relative z-10">
-                  <div className="w-20 h-20 bg-gradient-to-br from-[#B39DDB] to-[#10B981] rounded-3xl mx-auto mb-8 flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-xl">
+                  <div className="w-16 h-16 bg-[#F59E0B] rounded-full mx-auto mb-6 flex items-center justify-center group-hover:scale-110 transition-all duration-500 shadow-xl">
                     <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h2m0 0h2m-2 0v4l3-3m-3 3l-3-3" />
                     </svg>
                   </div>
-                  <h4 className="text-xl font-black mb-6 bg-gradient-to-r from-[#B39DDB] to-[#10B981] bg-clip-text text-transparent">
+                  <h4 className="text-xl font-bold mb-6 site-text-primary">
                     Action Plans That Fuel Continued Growth
                   </h4>
-                  <div className="site-text-secondary leading-relaxed space-y-3">
-                    <p>Every participant walks away with a personalized action plan targeting growth areas</p>
-                    <p>These plans can be shared with leaders or HR to support long-term coaching and follow-up</p>
-                    <p>Ensures accountability and ongoing development post-training</p>
+                  <div className="site-text-secondary leading-relaxed space-y-4 text-left">
+                    <p className="flex items-start gap-3">
+                      <span className="w-2 h-2 bg-[#F59E0B] rounded-full mt-2 flex-shrink-0"></span>
+                      Every participant walks away with a personalized action plan targeting growth areas
+                    </p>
+                    <p className="flex items-start gap-3">
+                      <span className="w-2 h-2 bg-[#F59E0B] rounded-full mt-2 flex-shrink-0"></span>
+                      These plans can be shared with leaders or HR to support long-term coaching and follow-up
+                    </p>
+                    <p className="flex items-start gap-3">
+                      <span className="w-2 h-2 bg-[#F59E0B] rounded-full mt-2 flex-shrink-0"></span>
+                      Ensures accountability and ongoing development post-training
+                    </p>
                   </div>
                 </div>
               </div>
 
-              <div className="site-glass backdrop-blur-xl rounded-3xl p-10 shadow-2xl hover:bg-white/20 site-light:hover:bg-white/80 transition-all duration-500 text-center group hover:scale-105 hover:shadow-3xl relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-[#10B981]/5 via-transparent to-[#4F46E5]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="site-glass backdrop-blur-xl rounded-3xl p-8 shadow-2xl hover:bg-white/20 site-light:hover:bg-white/80 transition-all duration-500 text-center group hover:scale-105 hover:shadow-3xl relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-[#10B981]/5 via-transparent to-[#10B981]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <div className="relative z-10">
-                  <div className="w-20 h-20 bg-gradient-to-br from-[#10B981] to-[#4F46E5] rounded-3xl mx-auto mb-8 flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-xl">
+                  <div className="w-16 h-16 bg-[#10B981] rounded-full mx-auto mb-6 flex items-center justify-center group-hover:scale-110 transition-all duration-500 shadow-xl">
                     <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
                   </div>
-                  <h4 className="text-xl font-black mb-6 bg-gradient-to-r from-[#10B981] to-[#4F46E5] bg-clip-text text-transparent">
+                  <h4 className="text-xl font-bold mb-6 site-text-primary">
                     Personalized & Immersive Learning Experiences
                   </h4>
-                  <div className="site-text-secondary leading-relaxed space-y-3">
-                    <p>Sessions tailored to individual learning styles and career contexts</p>
-                    <p>Highly interactive format with breakout rooms, role-plays, reflections & real scenarios</p>
-                    <p>Designed to promote engagement, critical thinking, and behavioural change</p>
+                  <div className="site-text-secondary leading-relaxed space-y-4 text-left">
+                    <p className="flex items-start gap-3">
+                      <span className="w-2 h-2 bg-[#10B981] rounded-full mt-2 flex-shrink-0"></span>
+                      Sessions tailored to individual learning styles and career contexts
+                    </p>
+                    <p className="flex items-start gap-3">
+                      <span className="w-2 h-2 bg-[#10B981] rounded-full mt-2 flex-shrink-0"></span>
+                      Highly interactive format with breakout rooms, role-plays, reflections & real scenarios
+                    </p>
+                    <p className="flex items-start gap-3">
+                      <span className="w-2 h-2 bg-[#10B981] rounded-full mt-2 flex-shrink-0"></span>
+                      Designed to promote engagement, critical thinking, and behavioural change
+                    </p>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Result Statement */}
-            <div className="text-center site-glass backdrop-blur-xl rounded-3xl p-12 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 relative overflow-hidden group">
-              <div className="absolute inset-0 bg-gradient-to-br from-[#10B981]/5 via-[#4F46E5]/5 to-[#B39DDB]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <div className="text-center site-glass backdrop-blur-xl rounded-3xl p-12 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 relative overflow-hidden group mt-12">
+              <div className="absolute inset-0 bg-gradient-to-br from-[#10B981]/10 via-[#4F46E5]/10 to-[#B39DDB]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               <div className="relative z-10">
                 <div className="inline-flex items-center gap-4 mb-6">
-                  <div className="w-12 h-12 bg-gradient-to-r from-[#10B981] to-[#4F46E5] rounded-full flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform duration-300">
+                  <div className="w-12 h-12 bg-[#10B981] rounded-full flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform duration-300">
                     <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <span className="text-3xl font-black bg-gradient-to-r from-[#10B981] to-[#4F46E5] bg-clip-text text-transparent">The Result?</span>
+                  <span className="text-3xl font-bold site-text-primary">The Result?</span>
                 </div>
                 <p className="text-2xl font-bold site-text-primary leading-relaxed">
-                  Training that's not just informative—but truly <span className="bg-gradient-to-r from-[#4F46E5] via-[#B39DDB] to-[#10B981] bg-clip-text text-transparent">transformative</span>.
+                  Training that's not just informative—but truly <span className="text-[#10B981] font-black">transformative</span>.
                 </p>
               </div>
             </div>

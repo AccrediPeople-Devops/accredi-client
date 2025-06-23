@@ -160,7 +160,7 @@ export default function ClientLogosSection() {
             transform: translateX(0); 
           }
           100% { 
-            transform: translateX(-33.333%); 
+            transform: translateX(-55.333%); 
           }
         }
         

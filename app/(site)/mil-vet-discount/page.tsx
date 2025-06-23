@@ -76,7 +76,7 @@ export default function MilitaryDiscountPage() {
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-3 site-glass backdrop-blur-sm rounded-full px-8 py-4 mb-8 hover:bg-white/20 site-light:hover:bg-white/60 transition-all duration-300">
               <div className="w-3 h-3 bg-[#7C3AED] rounded-full animate-pulse"></div>
-              <span className="site-text-accent font-bold text-sm uppercase tracking-wider">🇺🇸 Military Discount</span>
+              <span className="site-text-accent font-bold text-sm uppercase tracking-wider">Military Discount</span>
               <div className="w-3 h-3 bg-[#F59E0B] rounded-full animate-pulse delay-500"></div>
             </div>
 

@@ -5,10 +5,14 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { DashboardInput, DashboardSelect, DashboardCheckbox } from "@/app/components/DashboardInput";
 import SearchableDropdown from "@/app/components/SearchableDropdown";
+import CountryButton from "@/app/components/CountryButton";
+import StateButton from "@/app/components/StateButton";
 import scheduleService from "@/app/components/service/schedule.service";
 import courseService from "@/app/components/service/course.service";
 import locationService from "@/app/components/service/location.service";
 import { WORLD_COUNTRIES } from "@/app/components/service/worldLocationData";
+import { CountryData } from "@/app/context/LocationContext";
+import { StateData } from "@/app/components/service/enhancedLocationData";
 import { LoadingSpinner } from "@/app/components/LoadingSpinner";
 
 interface Course {
@@ -82,6 +86,7 @@ export default function AddSchedulePage() {
     { value: "weekday", label: "Weekday" },
     { value: "weekend", label: "Weekend" },
     { value: "all", label: "All Days" },
+    { value: "manual", label: "Manual" },
   ];
 
   // All days of the week
@@ -137,6 +142,29 @@ export default function AddSchedulePage() {
         ...prev,
         [name]: parseFloat(value) || 0,
       }));
+    } else if (name === "type") {
+      // Handle week type change and auto-select days
+      let selectedDays: string[] = [];
+      
+      switch (value) {
+        case "weekday":
+          selectedDays = ["1", "2", "3", "4", "5"]; // Monday to Friday
+          break;
+        case "weekend":
+          selectedDays = ["6", "7"]; // Saturday and Sunday
+          break;
+        case "all":
+          selectedDays = ["1", "2", "3", "4", "5", "6", "7"]; // All days
+          break;
+        default:
+          selectedDays = [];
+      }
+      
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+        days: selectedDays,
+      }));
     } else {
       setFormData((prev) => ({
         ...prev,
@@ -153,22 +181,52 @@ export default function AddSchedulePage() {
     }));
   };
 
+  // Helper function to determine week type based on selected days
+  const getWeekTypeFromDays = (days: string[]): string => {
+    const sortedDays = [...days].sort();
+    
+    // Check if it matches weekday pattern (Mon-Fri)
+    if (sortedDays.length === 5 && 
+        sortedDays.every(day => ["1", "2", "3", "4", "5"].includes(day))) {
+      return "weekday";
+    }
+    
+    // Check if it matches weekend pattern (Sat-Sun)
+    if (sortedDays.length === 2 && 
+        sortedDays.every(day => ["6", "7"].includes(day))) {
+      return "weekend";
+    }
+    
+    // Check if it matches all days pattern
+    if (sortedDays.length === 7 && 
+        sortedDays.every(day => ["1", "2", "3", "4", "5", "6", "7"].includes(day))) {
+      return "all";
+    }
+    
+    // If it doesn't match any pattern, it's manual
+    return "manual";
+  };
+
   const handleDayChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value, checked } = e.target;
     
+    let newDays: string[];
     if (checked) {
       // Add day to array if checked
-      setFormData((prev) => ({
-        ...prev,
-        days: [...prev.days, value],
-      }));
+      newDays = [...formData.days, value];
     } else {
       // Remove day from array if unchecked
-      setFormData((prev) => ({
-        ...prev,
-        days: prev.days.filter((day) => day !== value),
-      }));
+      newDays = formData.days.filter((day) => day !== value);
     }
+    
+    // Determine the appropriate week type based on the new day selection
+    const newWeekType = getWeekTypeFromDays(newDays);
+    
+    setFormData((prev) => ({
+      ...prev,
+      days: newDays,
+      type: newWeekType,
+    }));
   };
 
   // Location dropdown handlers
@@ -183,11 +241,24 @@ export default function AddSchedulePage() {
     }));
   };
 
-  const handleStateChange = (value: string, code?: string) => {
+  // Country button handler
+  const handleCountrySelect = (country: CountryData) => {
     setFormData((prev) => ({
       ...prev,
-      state: value,
-      stateCode: code || "",
+      country: country.name,
+      countryCode: country.code,
+      state: "",
+      stateCode: "",
+      city: "",
+    }));
+  };
+
+  // State button handler
+  const handleStateSelect = (state: StateData) => {
+    setFormData((prev) => ({
+      ...prev,
+      state: state.name,
+      stateCode: state.code,
       city: "",
     }));
   };
@@ -196,6 +267,14 @@ export default function AddSchedulePage() {
     setFormData((prev) => ({
       ...prev,
       city: value,
+    }));
+  };
+
+  // City input handler
+  const handleCityInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData((prev) => ({
+      ...prev,
+      city: e.target.value,
     }));
   };
 
@@ -467,19 +546,29 @@ export default function AddSchedulePage() {
             </div>
 
             {/* Week Type */}
-            <DashboardSelect
-              label="Week Type"
-              name="type"
-              value={formData.type}
-              onChange={handleChange}
-              required
-            >
-              {weekdayTypes.map((type) => (
-                <option key={type.value} value={type.value}>
-                  {type.label}
-                </option>
-              ))}
-            </DashboardSelect>
+            <div>
+              <DashboardSelect
+                label="Week Type"
+                name="type"
+                value={formData.type}
+                onChange={handleChange}
+                required
+              >
+                {weekdayTypes.map((type) => (
+                  <option key={type.value} value={type.value}>
+                    {type.label}
+                  </option>
+                ))}
+              </DashboardSelect>
+              <p className="mt-1 text-sm text-[var(--foreground)]/60">
+                Days will be automatically selected: 
+                <span className="font-medium"> Weekday</span> (Mon-Fri), 
+                <span className="font-medium"> Weekend</span> (Sat-Sun), 
+                <span className="font-medium"> All Days</span> (Mon-Sun).
+                <br />
+                <span className="font-medium">Manual</span> selection will be set automatically when you customize the days.
+              </p>
+            </div>
 
             {/* Days Selection */}
             <div>
@@ -519,14 +608,11 @@ export default function AddSchedulePage() {
         )}
 
         {/* Country field - shown for all types */}
-        <SearchableDropdown
+        <CountryButton
           label="Country"
-          name="country"
-          value={formData.country}
-          onChange={handleCountryChange}
-          options={countryOptions}
+          selectedCountryCode={formData.countryCode}
+          onCountrySelect={handleCountrySelect}
           placeholder="Select a country"
-          searchPlaceholder="Search countries..."
           required
         />
 
@@ -534,30 +620,24 @@ export default function AddSchedulePage() {
         {formData.scheduleType === "classroom" && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* State */}
-            <SearchableDropdown
+            <StateButton
               label="State"
-              name="state"
-              value={formData.state}
-              onChange={handleStateChange}
-              options={stateOptions}
+              selectedCountryCode={formData.countryCode}
+              selectedStateCode={formData.stateCode}
+              onStateSelect={handleStateSelect}
               placeholder="Select a state"
-              searchPlaceholder="Search states..."
               disabled={!formData.countryCode}
-              noOptionsMessage={!formData.countryCode ? "Please select a country first" : "No states found"}
               required
             />
 
             {/* City */}
-            <SearchableDropdown
+            <DashboardInput
               label="City"
               name="city"
               value={formData.city}
-              onChange={handleCityChange}
-              options={cityOptions}
-              placeholder="Select a city"
-              searchPlaceholder="Search cities..."
+              onChange={handleCityInputChange}
+              placeholder={!formData.stateCode ? "Select a state first" : "Enter city name"}
               disabled={!formData.stateCode}
-              noOptionsMessage={!formData.stateCode ? "Please select a state first" : "No cities found"}
               required
             />
           </div>
