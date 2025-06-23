@@ -1,5 +1,6 @@
 import axiosInstance from "../../config/axiosInstance";
 import { User, UserFormData } from "../../../types/user";
+import { PurchaseHistoryResponse } from "../../../types/purchaseHistory";
 
 /**
  * Password change request interface
@@ -66,6 +67,19 @@ class UserProfileService {
       const response = await axiosInstance.put("/users/profile", {
         is2FAEnabled: is2FAEnabled
       });
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  /**
+   * Get user's purchase history
+   * @returns {Promise<PurchaseHistoryResponse>}
+   */
+  async getPurchaseHistory(): Promise<PurchaseHistoryResponse> {
+    try {
+      const response = await axiosInstance.get("/users/purchased-history");
       return response.data;
     } catch (error) {
       throw error;

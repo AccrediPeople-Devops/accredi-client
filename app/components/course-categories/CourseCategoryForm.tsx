@@ -99,29 +99,101 @@ export default function CourseCategoryForm({
     setFormData({ ...formData, [name]: checked });
   };
 
-  const handleImageChange = (imageData: { url: string; key: string; path?: string; isEmoji?: boolean }) => {
-    // Update current image data
-    setCurrentImageData(imageData);
-
-    // Update form data according to ImageItem interface
-    if (imageData.url && imageData.key) {
-          setFormData((prev) => ({
-            ...prev,
-            image: [
-              {
-            path: imageData.path || imageData.key,
-            key: imageData.key,
-                _id: undefined,
-              },
-            ],
-          }));
-        } else {
-      // Clear image from form data
-    setFormData((prev) => ({
-      ...prev,
-      image: [],
-    }));
+  const handleImageChange = async (imageData: { url: string; key: string; path?: string; isEmoji?: boolean }) => {
+    // Handle image removal
+    if (!imageData.url || imageData.url === "") {
       setCurrentImageData(null);
+      setFormData((prev) => ({
+        ...prev,
+        image: [],
+      }));
+      setErrors(errors.filter((error) => error.field !== "image"));
+      return;
+    }
+
+    // If the file already has a path (uploaded from EnhancedImageUpload emoji or already uploaded), just update form data
+    if (imageData.path) {
+      setCurrentImageData(imageData);
+      setFormData((prev) => ({
+        ...prev,
+        image: [
+          {
+            path: imageData.path!,
+            key: imageData.key,
+            _id: undefined,
+          },
+        ],
+      }));
+      setErrors(errors.filter((error) => error.field !== "image"));
+      return;
+    }
+
+    // For regular image files that don't have a path yet, upload them immediately
+    if (!imageData.isEmoji && imageData.url && !imageData.path) {
+      setIsUploadingImage(true);
+
+      try {
+        // Extract actual File object from the url (which is a Blob URL)
+        const response = await fetch(imageData.url);
+        const blob = await response.blob();
+        const fileExtension = imageData.url.split(".").pop() || "jpg";
+        const actualFile = new File([blob], `upload.${fileExtension}`, {
+          type: blob.type,
+        });
+
+        // Upload to server
+        const uploadResponse = await uploadService.uploadImage(actualFile);
+
+        if (uploadResponse && uploadResponse.upload && uploadResponse.upload[0]) {
+          const uploadedFile = uploadResponse.upload[0];
+          const path = uploadedFile.path;
+          const key = uploadedFile.key || path;
+
+          // Create a new file object with the server response
+          const serverFile = {
+            url: `${config.imageUrl}${path}`,
+            key: key,
+            path: path,
+            isEmoji: false,
+          };
+
+                     // Update current image data and form data
+           setCurrentImageData(serverFile);
+           setFormData((prev) => ({
+             ...prev,
+             image: [
+               {
+                 path: serverFile.path!,
+                 key: serverFile.key,
+                 _id: undefined,
+               },
+             ],
+           }));
+        } else {
+          throw new Error("Failed to upload image");
+        }
+      } catch (err) {
+        console.error("Error uploading image:", err);
+        setErrors([
+          ...errors.filter((error) => error.field !== "image"),
+          { field: "image", message: "Failed to upload image. Please try again." },
+        ]);
+      } finally {
+        setIsUploadingImage(false);
+      }
+    } else {
+      // For other cases (like emojis that are already processed), just update the data
+      setCurrentImageData(imageData);
+      setFormData((prev) => ({
+        ...prev,
+        image: [
+          {
+            path: imageData.path || imageData.key || "",
+            key: imageData.key,
+            _id: undefined,
+          },
+        ],
+      }));
     }
 
     // Clear errors

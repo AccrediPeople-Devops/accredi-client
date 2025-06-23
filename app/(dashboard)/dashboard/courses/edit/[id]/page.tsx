@@ -511,6 +511,40 @@ function CourseEditor({ courseId }: { courseId: string }) {
       delete cleanedData.createdAt;
       delete cleanedData.updatedAt;
       delete cleanedData.__v;
+      delete cleanedData.isDeleted;
+      delete cleanedData.courseCount;
+      
+      // Remove any undefined or null values
+      Object.keys(cleanedData).forEach(key => {
+        if (cleanedData[key] === undefined || cleanedData[key] === null) {
+          delete cleanedData[key];
+        }
+      });
+      
+      // Ensure required fields are present and valid
+      if (!cleanedData.title || typeof cleanedData.title !== 'string') {
+        throw new Error("Course title is required and must be a string");
+      }
+      if (!cleanedData.categoryId || typeof cleanedData.categoryId !== 'string') {
+        throw new Error("Course category is required and must be a string");
+      }
+      
+      // Ensure arrays are properly formatted
+      if (!cleanedData.keyFeatures || !Array.isArray(cleanedData.keyFeatures)) {
+        cleanedData.keyFeatures = [];
+      }
+      if (!cleanedData.components || !Array.isArray(cleanedData.components)) {
+        cleanedData.components = [];
+      }
+      
+      // Ensure upload object structure is correct
+      if (!cleanedData.upload) {
+        cleanedData.upload = {
+          courseImage: [],
+          courseSampleCertificate: [],
+          courseBadge: []
+        };
+      }
 
       console.log("Updating course with cleaned data:", cleanedData);
       console.log("Course ID:", courseId);

@@ -42,7 +42,11 @@ export const EnhancedLocationExample: React.FC = () => {
   const scheduleFilter: ScheduleLocationFilter = EnhancedLocationService.createScheduleFilter(MOCK_SCHEDULES);
 
   const formatSelectedLocation = (country?: string | null, state?: string | null, city?: string | null) => {
-    return EnhancedLocationService.formatLocation(city, state, country) || 'None selected';
+    return EnhancedLocationService.formatLocation(
+      city || undefined, 
+      state || undefined, 
+      country || undefined
+    ) || 'None selected';
   };
 
   return (

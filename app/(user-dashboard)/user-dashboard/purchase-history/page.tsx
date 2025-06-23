@@ -13,30 +13,14 @@ import {
   HiOutlineXCircle,
   HiOutlineClock
 } from "react-icons/hi";
-
-interface Transaction {
-  id: string;
-  transactionId: string;
-  amountPaid: number;
-  currency: string;
-  paymentStatus: 'completed' | 'pending' | 'failed' | 'refunded';
-  paymentDate: string;
-  orderDetails: {
-    courseName: string;
-    courseType: string;
-    quantity: number;
-  };
-  paymentMethod: string;
-  invoiceUrl?: string;
-}
-
-type SortField = 'transactionId' | 'amountPaid' | 'paymentStatus' | 'paymentDate';
-type SortOrder = 'asc' | 'desc';
+import UserProfileService from "@/app/components/user-dashboard/services/userProfile.service";
+import { Transaction, SortField, SortOrder } from "@/app/types/purchaseHistory";
 
 export default function PurchaseHistoryPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [entriesPerPage, setEntriesPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
@@ -44,97 +28,66 @@ export default function PurchaseHistoryPage() {
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
 
   useEffect(() => {
-    // Simulate fetching transaction data
-    const fetchTransactions = async () => {
+    const fetchPurchaseHistory = async () => {
+      console.log("🔍 PURCHASE HISTORY: Fetching purchase history from API...");
       setIsLoading(true);
+      setError('');
+      
       try {
-        // Mock data - in real app, this would come from API
-        const mockTransactions: Transaction[] = [
-          {
-            id: '1',
-            transactionId: 'TXN-2024-001',
-            amountPaid: 1299.00,
-            currency: 'USD',
-            paymentStatus: 'completed',
-            paymentDate: '2024-01-15T10:30:00Z',
+        const response = await UserProfileService.getPurchaseHistory();
+        console.log("📡 PURCHASE HISTORY: API Response:", response);
+        
+        if (response.status && response.history) {
+          // Transform backend data to match frontend interface
+          const transformedTransactions: Transaction[] = response.history.map((item) => ({
+            id: item._id,
+            transactionId: item.paymentIntentId || item.sessionId,
+            amountPaid: item.amountTotal,
+            currency: item.currency.toUpperCase(),
+            paymentStatus: item.paymentStatus === 'paid' ? 'completed' : 
+                          item.status === 'complete' ? 'completed' : 
+                          item.paymentStatus as Transaction['paymentStatus'],
+            paymentDate: item.createdAt,
             orderDetails: {
-              courseName: 'PMP® Certification Training',
-              courseType: 'Instructor-Led Live Online',
+              courseName: `Course - ${item.courseId}`, // This would need course name lookup
+              courseType: item.scheduleType === 'online' ? 'Instructor-Led Live Online' : 'Classroom Training',
               quantity: 1
             },
-            paymentMethod: 'Credit Card',
-            invoiceUrl: '/invoices/TXN-2024-001.pdf'
-          },
-          {
-            id: '2',
-            transactionId: 'TXN-2024-002',
-            amountPaid: 899.00,
-            currency: 'USD',
-            paymentStatus: 'completed',
-            paymentDate: '2024-01-10T14:20:00Z',
-            orderDetails: {
-              courseName: 'PMP® Certification Training (Self-Paced)',
-              courseType: 'E-Learning',
-              quantity: 1
+            paymentMethod: 'Card Payment', // Default as not provided in response
+            customerInfo: {
+              name: item.customerName,
+              email: item.customerEmail,
+              phone: item.customerPhone
             },
-            paymentMethod: 'PayPal',
-            invoiceUrl: '/invoices/TXN-2024-002.pdf'
-          },
-          {
-            id: '3',
-            transactionId: 'TXN-2024-003',
-            amountPaid: 799.00,
-            currency: 'USD',
-            paymentStatus: 'pending',
-            paymentDate: '2024-01-20T09:15:00Z',
-            orderDetails: {
-              courseName: 'CAPM® Certification Training',
-              courseType: 'Instructor-Led Live Online',
-              quantity: 1
-            },
-            paymentMethod: 'Bank Transfer'
-          },
-          {
-            id: '4',
-            transactionId: 'TXN-2023-045',
-            amountPaid: 599.00,
-            currency: 'USD',
-            paymentStatus: 'completed',
-            paymentDate: '2023-12-05T16:45:00Z',
-            orderDetails: {
-              courseName: 'Agile Project Management',
-              courseType: 'Instructor-Led Live Online',
-              quantity: 1
-            },
-            paymentMethod: 'Credit Card',
-            invoiceUrl: '/invoices/TXN-2023-045.pdf'
-          },
-          {
-            id: '5',
-            transactionId: 'TXN-2023-032',
-            amountPaid: 299.00,
-            currency: 'USD',
-            paymentStatus: 'refunded',
-            paymentDate: '2023-11-20T11:30:00Z',
-            orderDetails: {
-              courseName: 'Project Management Fundamentals',
-              courseType: 'E-Learning',
-              quantity: 1
-            },
-            paymentMethod: 'Credit Card'
-          }
-        ];
+            billingAddress: {
+              line1: item.billingAddress.line1,
+              line2: item.billingAddress.line2,
+              city: item.billingAddress.city,
+              state: item.billingAddress.state,
+              country: item.billingAddress.country,
+              postalCode: item.billingAddress.postal_code
+            }
+          }));
 
-        setTransactions(mockTransactions);
-        setFilteredTransactions(mockTransactions);
-      } catch (error) {
-        console.error('Error fetching transactions:', error);
+          console.log("✅ PURCHASE HISTORY: Transformed data:", transformedTransactions);
+          setTransactions(transformedTransactions);
+          setFilteredTransactions(transformedTransactions);
+        } else {
+          console.log("⚠️ PURCHASE HISTORY: No history data found");
+          setTransactions([]);
+          setFilteredTransactions([]);
+        }
+      } catch (error: any) {
+        console.error("❌ PURCHASE HISTORY: Error fetching data:", error);
+        setError(error.response?.data?.message || error.message || "Failed to load purchase history");
+        setTransactions([]);
+        setFilteredTransactions([]);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchTransactions();
+    fetchPurchaseHistory();
   }, []);
 
   // Search functionality
@@ -143,7 +96,9 @@ export default function PurchaseHistoryPage() {
       transaction.transactionId.toLowerCase().includes(searchTerm.toLowerCase()) ||
       transaction.orderDetails.courseName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       transaction.paymentStatus.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      transaction.paymentMethod.toLowerCase().includes(searchTerm.toLowerCase())
+      transaction.paymentMethod.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      transaction.customerInfo.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      transaction.customerInfo.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredTransactions(filtered);
     setCurrentPage(1); // Reset to first page when searching
@@ -189,6 +144,8 @@ export default function PurchaseHistoryPage() {
   const getStatusIcon = (status: Transaction['paymentStatus']) => {
     switch (status) {
       case 'completed':
+      case 'paid':
+      case 'complete':
         return <HiOutlineCheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />;
       case 'pending':
         return <HiOutlineClock className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />;
@@ -204,6 +161,8 @@ export default function PurchaseHistoryPage() {
   const getStatusColor = (status: Transaction['paymentStatus']) => {
     switch (status) {
       case 'completed':
+      case 'paid':
+      case 'complete':
         return 'text-green-800 dark:text-green-200 bg-green-100 dark:bg-green-900/20';
       case 'pending':
         return 'text-yellow-800 dark:text-yellow-200 bg-yellow-100 dark:bg-yellow-900/20';
@@ -225,9 +184,19 @@ export default function PurchaseHistoryPage() {
   };
 
   const formatAmount = (amount: number, currency: string) => {
+    // Handle different currency formats
+    const currencyCode = currency.toUpperCase();
+    
+    if (currencyCode === 'INR') {
+      return new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: 'INR'
+      }).format(amount);
+    }
+    
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: currency
+      currency: currencyCode
     }).format(amount);
   };
 
@@ -246,6 +215,31 @@ export default function PurchaseHistoryPage() {
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-[var(--foreground-muted)]">Loading purchase history...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-6xl mx-auto space-y-6">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-[var(--foreground)] mb-2">Payments History</h1>
+          <p className="text-[var(--foreground-muted)]">View your transaction history and download invoices</p>
+        </div>
+        
+        <div className="bg-[var(--card-bg)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-sm p-6">
+          <div className="text-center py-12">
+            <HiOutlineXCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-[var(--foreground)] mb-2">Failed to Load Purchase History</h3>
+            <p className="text-[var(--foreground-muted)] mb-4">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-[var(--primary)] text-[var(--primary-text)] rounded-[var(--radius-md)] hover:bg-[var(--primary)]/90 transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -342,6 +336,9 @@ export default function PurchaseHistoryPage() {
                   Order Details
                 </th>
                 <th className="text-left py-3 px-4 font-medium text-[var(--foreground)]">
+                  Customer Info
+                </th>
+                <th className="text-left py-3 px-4 font-medium text-[var(--foreground)]">
                   Actions
                 </th>
               </tr>
@@ -349,9 +346,9 @@ export default function PurchaseHistoryPage() {
             <tbody>
               {currentTransactions.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="text-center py-12">
+                  <td colSpan={7} className="text-center py-12">
                     <div className="text-blue-600 dark:text-blue-400 text-sm">
-                      No data available in table
+                      {searchTerm ? 'No transactions found matching your search.' : 'No purchase history available.'}
                     </div>
                   </td>
                 </tr>
@@ -359,7 +356,9 @@ export default function PurchaseHistoryPage() {
                 currentTransactions.map((transaction) => (
                   <tr key={transaction.id} className="border-b border-[var(--border)] hover:bg-[var(--border)] transition-colors">
                     <td className="py-3 px-4 text-sm text-[var(--foreground)]">
-                      {transaction.transactionId}
+                      <div className="font-mono text-xs">
+                        {transaction.transactionId}
+                      </div>
                     </td>
                     <td className="py-3 px-4 text-sm text-[var(--foreground)] font-medium">
                       {formatAmount(transaction.amountPaid, transaction.currency)}
@@ -368,7 +367,7 @@ export default function PurchaseHistoryPage() {
                       <div className="flex items-center gap-2">
                         {getStatusIcon(transaction.paymentStatus)}
                         <span className={`px-2 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(transaction.paymentStatus)}`}>
-                          {transaction.paymentStatus}
+                          {transaction.paymentStatus === 'paid' ? 'completed' : transaction.paymentStatus}
                         </span>
                       </div>
                     </td>
@@ -388,11 +387,28 @@ export default function PurchaseHistoryPage() {
                         </div>
                       </div>
                     </td>
+                    <td className="py-3 px-4 text-sm">
+                      <div>
+                        <div className="font-medium text-[var(--foreground)]">
+                          {transaction.customerInfo.name}
+                        </div>
+                        <div className="text-[var(--foreground-muted)] text-xs">
+                          {transaction.customerInfo.email}
+                        </div>
+                        <div className="text-[var(--foreground-muted)] text-xs">
+                          {transaction.customerInfo.phone}
+                        </div>
+                      </div>
+                    </td>
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-2">
                         <button
                           className="p-1 text-[var(--foreground-muted)] hover:text-[var(--primary)] transition-colors"
                           title="View Details"
+                          onClick={() => {
+                            // You can implement a modal or detailed view here
+                            console.log('View transaction details:', transaction);
+                          }}
                         >
                           <HiOutlineEye className="w-4 h-4" />
                         </button>
@@ -400,6 +416,10 @@ export default function PurchaseHistoryPage() {
                           <button
                             className="p-1 text-[var(--foreground-muted)] hover:text-[var(--primary)] transition-colors"
                             title="Download Invoice"
+                            onClick={() => {
+                              // Implement invoice download
+                              console.log('Download invoice for:', transaction.transactionId);
+                            }}
                           >
                             <HiOutlineDownload className="w-4 h-4" />
                           </button>

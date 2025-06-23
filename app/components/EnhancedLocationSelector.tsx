@@ -213,7 +213,7 @@ export const EnhancedLocationSelector: React.FC<EnhancedLocationSelectorProps> =
         </select>
         <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
           {isLoading ? (
-            <LoadingSpinner size="sm" />
+            <LoadingSpinner size="small" />
           ) : (
             <ChevronDownIcon className="h-5 w-5 text-gray-400" />
           )}
@@ -276,7 +276,7 @@ export const EnhancedLocationSelector: React.FC<EnhancedLocationSelectorProps> =
             </select>
             <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
               {loading.countries ? (
-                <LoadingSpinner size="sm" />
+                <LoadingSpinner size="small" />
               ) : (
                 <ChevronDownIcon className="h-5 w-5 text-gray-400" />
               )}
@@ -289,7 +289,7 @@ export const EnhancedLocationSelector: React.FC<EnhancedLocationSelectorProps> =
       {showState && (
         renderDropdown(
           stateLabel,
-          selectedState,
+          selectedState || null,
           states,
           handleStateChange,
           !selectedCountry 
@@ -298,7 +298,7 @@ export const EnhancedLocationSelector: React.FC<EnhancedLocationSelectorProps> =
               ? 'No states available' 
               : statePlaceholder,
           loading.states,
-          !EnhancedLocationService.shouldEnableStateSelection(selectedCountry) || disabled,
+          !EnhancedLocationService.shouldEnableStateSelection(selectedCountry || null) || disabled,
           (state: StateData) => ({
             value: state.code,
             label: state.name,
@@ -311,7 +311,7 @@ export const EnhancedLocationSelector: React.FC<EnhancedLocationSelectorProps> =
       {showCity && (
         renderDropdown(
           cityLabel,
-          selectedCity,
+          selectedCity || null,
           cities,
           handleCityChange,
           !selectedState 
@@ -320,7 +320,7 @@ export const EnhancedLocationSelector: React.FC<EnhancedLocationSelectorProps> =
               ? 'No cities available' 
               : cityPlaceholder,
           loading.cities,
-          !EnhancedLocationService.shouldEnableCitySelection(selectedCountry, selectedState) || disabled,
+          !EnhancedLocationService.shouldEnableCitySelection(selectedCountry || null, selectedState || null) || disabled,
           (city: CityData) => ({
             value: city.name,
             label: city.name,
