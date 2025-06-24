@@ -86,12 +86,11 @@ export default function ProfessionalTrainingSection() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
           {/* Left Side - Feature Cards */}
           <div className="lg:col-span-8">
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-16">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {features.map((feature, index) => (
                 <div key={index} className="group h-full">
                   <div className="site-glass backdrop-blur-sm rounded-3xl p-6 shadow-xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-300 hover:scale-105 h-full min-h-[280px] flex flex-col">
-                    <div className="flex flex-col items-center text-center h-full">
+                    <div className="flex flex-col items-start text-left h-full">
                       <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">
                         {feature.emoji}
                       </div>
@@ -108,64 +107,62 @@ export default function ProfessionalTrainingSection() {
             </div>
           </div>
 
-          {/* Right Side - Our New Normal (Sticky) */}
+          {/* Right Side - Get Support Card (Fixed Height, No Sticky) */}
           <div className="lg:col-span-4">
-            <div className="lg:sticky lg:top-4 lg:h-screen lg:flex lg:items-center">
-              <div className="site-glass backdrop-blur-xl rounded-3xl p-8 shadow-2xl site-text-primary relative overflow-hidden w-full">
-                {/* Background Pattern */}
-                <div className="absolute inset-0 opacity-10">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] rounded-full blur-2xl"></div>
-                  <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-br from-[#10B981] to-[#059669] rounded-full blur-2xl"></div>
-                  <div className="absolute top-1/2 right-1/3 w-20 h-20 bg-gradient-to-br from-[#F59E0B] to-[#EF4444] rounded-full blur-2xl"></div>
+            <div className="site-glass backdrop-blur-xl rounded-3xl p-8 shadow-2xl site-text-primary relative overflow-hidden w-full">
+              {/* Background Pattern */}
+              <div className="absolute inset-0 opacity-10">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] rounded-full blur-2xl"></div>
+                <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-br from-[#10B981] to-[#059669] rounded-full blur-2xl"></div>
+                <div className="absolute top-1/2 right-1/3 w-20 h-20 bg-gradient-to-br from-[#F59E0B] to-[#EF4444] rounded-full blur-2xl"></div>
+              </div>
+
+              <div className="relative z-10">
+                {/* Badge */}
+                <div className="inline-flex items-center gap-2 bg-gradient-to-r from-[#10B981]/20 to-[#059669]/20 site-light:from-[#10B981]/30 site-light:to-[#059669]/30 backdrop-blur-sm rounded-full px-4 py-2 mb-6 border border-[#10B981]/30 site-light:border-[#10B981]/50">
+                  <div className="w-2 h-2 bg-[#10B981] rounded-full animate-pulse"></div>
+                  <span className="text-[#10B981] text-sm font-semibold uppercase tracking-wider">Get Support</span>
                 </div>
 
-                <div className="relative z-10">
-                  {/* Badge */}
-                  <div className="inline-flex items-center gap-2 bg-gradient-to-r from-[#10B981]/20 to-[#059669]/20 site-light:from-[#10B981]/30 site-light:to-[#059669]/30 backdrop-blur-sm rounded-full px-4 py-2 mb-6 border border-[#10B981]/30 site-light:border-[#10B981]/50">
-                    <div className="w-2 h-2 bg-[#10B981] rounded-full animate-pulse"></div>
-                    <span className="text-[#10B981] text-sm font-semibold uppercase tracking-wider">Get Support</span>
-                  </div>
+                <h3 className="text-3xl font-black mb-6 bg-gradient-to-r from-[#10B981] to-[#F59E0B] bg-clip-text text-transparent">
+                  Support When You Need It Most
+                </h3>
+                
+                <p className="site-text-secondary mb-6 leading-relaxed">
+                  At AccrediPeople Certifications, we understand that facing unemployment or furlough can be one of life's most challenging periods. In today's job market, upskilling isn't just an advantage — it's essential.
+                </p>
+                
+                <p className="site-text-secondary mb-6 leading-relaxed">
+                  That's why we're committed to supporting professionals in transition. Whether you've been laid off, furloughed, or are simply seeking a new direction, we're here to help you move forward. Our training programs are designed to equip you with the most in-demand skills and certifications employers are looking for.
+                </p>
 
-                  <h3 className="text-3xl font-black mb-6 bg-gradient-to-r from-[#10B981] to-[#F59E0B] bg-clip-text text-transparent">
-                    Support When You Need It Most
-                  </h3>
-                  
-                  <p className="site-text-secondary mb-6 leading-relaxed">
-                    At AccrediPeople Certifications, we understand that facing unemployment or furlough can be one of life's most challenging periods. In today's job market, upskilling isn't just an advantage — it's essential.
-                  </p>
-                  
-                  <p className="site-text-secondary mb-6 leading-relaxed">
-                    That's why we're committed to supporting professionals in transition. Whether you've been laid off, furloughed, or are simply seeking a new direction, we're here to help you move forward. Our training programs are designed to equip you with the most in-demand skills and certifications employers are looking for.
-                  </p>
-
-                  {/* Special Offer */}
-                  <div className="bg-gradient-to-r from-[#F59E0B]/20 to-[#EF4444]/20 site-light:from-[#F59E0B]/30 site-light:to-[#EF4444]/30 backdrop-blur-sm p-6 rounded-2xl mb-6 border border-[#F59E0B]/30 site-light:border-[#F59E0B]/50 relative overflow-hidden">
-                    {/* Glow Effect */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-[#F59E0B]/5 to-[#EF4444]/5 rounded-2xl"></div>
-                    <div className="relative z-10">
-                      <div className="flex items-center gap-2 mb-3">
-                        <svg className="w-5 h-5 text-[#F59E0B]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <span className="text-[#F59E0B] font-bold text-sm uppercase tracking-wider">Limited Time Offer</span>
-                      </div>
-                      <p className="font-black site-text-primary text-xl leading-relaxed mb-2">
-                        Up to 15% OFF all Online Instructor-led courses
-                      </p>
-                      <p className="site-text-secondary text-sm">Don't miss out on this exclusive opportunity!</p>
-                    </div>
-                  </div>
-
-                  {/* CTA Button */}
-                  <Link href="/contact">
-                    <button className="bg-gradient-to-r from-[#10B981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-white font-bold py-4 px-8 rounded-2xl transition-all duration-300 w-full hover:scale-105 hover:shadow-xl hover:shadow-[#10B981]/25 flex items-center justify-center gap-2">
-                      <span>Enquire Now</span>
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                {/* Special Offer */}
+                <div className="bg-gradient-to-r from-[#F59E0B]/20 to-[#EF4444]/20 site-light:from-[#F59E0B]/30 site-light:to-[#EF4444]/30 backdrop-blur-sm p-6 rounded-2xl mb-6 border border-[#F59E0B]/30 site-light:border-[#F59E0B]/50 relative overflow-hidden">
+                  {/* Glow Effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#F59E0B]/5 to-[#EF4444]/5 rounded-2xl"></div>
+                  <div className="relative z-10">
+                    <div className="flex items-center gap-2 mb-3">
+                      <svg className="w-5 h-5 text-[#F59E0B]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                    </button>
-                  </Link>
+                      <span className="text-[#F59E0B] font-bold text-sm uppercase tracking-wider">Limited Time Offer</span>
+                    </div>
+                    <p className="font-black site-text-primary text-xl leading-relaxed mb-2">
+                      Up to 15% OFF all Online Instructor-led courses
+                    </p>
+                    <p className="site-text-secondary text-sm">Don't miss out on this exclusive opportunity!</p>
+                  </div>
                 </div>
+
+                {/* CTA Button */}
+                <Link href="/contact">
+                  <button className="bg-gradient-to-r from-[#10B981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-white font-bold py-4 px-8 rounded-2xl transition-all duration-300 w-full hover:scale-105 hover:shadow-xl hover:shadow-[#10B981]/25 flex items-center justify-center gap-2">
+                    <span>Enquire Now</span>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </Link>
               </div>
             </div>
           </div>

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import courseService from "@/app/components/service/course.service";
+import RichTextRenderer from "@/app/components/RichTextRenderer";
 import { LoadingSpinner } from "@/app/components/LoadingSpinner";
 
 interface FAQItem {
@@ -213,9 +214,9 @@ export default function FAQsPage() {
                         className="w-full px-6 py-6 text-left hover:bg-[var(--input-bg)] transition-colors focus:outline-none focus:bg-[var(--input-bg)]"
                       >
                         <div className="flex items-center justify-between">
-                          <h3 className="text-lg font-semibold text-[var(--foreground)] pr-4">
-                            {item.question}
-                          </h3>
+                          <div className="text-lg font-semibold text-[var(--foreground)] pr-4">
+                            <RichTextRenderer content={item.question} />
+                          </div>
                           <svg
                             className={`w-5 h-5 text-[var(--primary)] transition-transform duration-200 flex-shrink-0 ${
                               openAccordions.has(`${faq._id}-${item._id}`) ? 'rotate-180' : ''
@@ -237,9 +238,7 @@ export default function FAQsPage() {
                       {openAccordions.has(`${faq._id}-${item._id}`) && (
                         <div className="px-6 pb-6 transition-all duration-200">
                           <div className="bg-[var(--input-bg)] rounded-[var(--radius-lg)] p-4 border-l-4 border-[var(--primary)]">
-                            <p className="text-[var(--foreground)] leading-relaxed">
-                              {item.answer}
-                            </p>
+                            <RichTextRenderer content={item.answer} />
                           </div>
                         </div>
                       )}

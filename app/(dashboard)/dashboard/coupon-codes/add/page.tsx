@@ -106,7 +106,7 @@ export default function AddCouponCodePage() {
   const handleCountrySelect = (country: CountryData) => {
     setFormData((prev) => ({
       ...prev,
-      country: country.code
+      country: country.name
     }));
   };
 

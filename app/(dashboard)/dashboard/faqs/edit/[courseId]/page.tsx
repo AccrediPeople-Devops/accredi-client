@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
+import RichTextEditor from "@/app/components/RichTextEditor";
 import faqService from "@/app/components/service/faq.service";
 import courseService from "@/app/components/service/course.service";
 import { LoadingSpinner } from "@/app/components/LoadingSpinner";
@@ -107,10 +108,14 @@ export default function EditFaqPage() {
     const newErrors: {[key: string]: string} = {};
 
     faqs.forEach((faq, index) => {
-      if (!faq.question.trim()) {
+      // Strip HTML tags and check if content is empty
+      const questionText = faq.question.replace(/<[^>]*>/g, '').trim();
+      const answerText = faq.answer.replace(/<[^>]*>/g, '').trim();
+      
+      if (!questionText) {
         newErrors[`faq_${index}_question`] = "Question is required";
       }
-      if (!faq.answer.trim()) {
+      if (!answerText) {
         newErrors[`faq_${index}_answer`] = "Answer is required";
       }
     });
@@ -338,15 +343,12 @@ export default function EditFaqPage() {
                     >
                       Question <span className="text-red-500">*</span>
                     </label>
-                    <input
-                      type="text"
+                    <RichTextEditor
                       id={`question-${index}`}
                       value={faq.question}
-                      onChange={(e) => updateFaqItem(index, "question", e.target.value)}
+                      onChange={(value) => updateFaqItem(index, "question", value)}
                       placeholder="Enter the question..."
-                      className={`w-full px-4 py-2 border rounded-[var(--radius-md)] bg-[var(--input-bg)] text-[var(--foreground)] placeholder-[var(--foreground-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent ${
-                        errors[`faq_${index}_question`] ? "border-red-500" : "border-[var(--border)]"
-                      }`}
+                      minHeight="120px"
                     />
                     {errors[`faq_${index}_question`] && (
                       <p className="mt-1 text-sm text-red-600">
@@ -363,15 +365,12 @@ export default function EditFaqPage() {
                     >
                       Answer <span className="text-red-500">*</span>
                     </label>
-                    <textarea
+                    <RichTextEditor
                       id={`answer-${index}`}
                       value={faq.answer}
-                      onChange={(e) => updateFaqItem(index, "answer", e.target.value)}
+                      onChange={(value) => updateFaqItem(index, "answer", value)}
                       placeholder="Enter the answer..."
-                      rows={4}
-                      className={`w-full px-4 py-2 border rounded-[var(--radius-md)] bg-[var(--input-bg)] text-[var(--foreground)] placeholder-[var(--foreground-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent resize-vertical ${
-                        errors[`faq_${index}_answer`] ? "border-red-500" : "border-[var(--border)]"
-                      }`}
+                      minHeight="150px"
                     />
                     {errors[`faq_${index}_answer`] && (
                       <p className="mt-1 text-sm text-red-600">

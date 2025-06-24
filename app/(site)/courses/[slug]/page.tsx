@@ -8,6 +8,7 @@ import siteCourseService from "@/app/components/site/siteCourse.service";
 import config from "@/app/components/config/config";
 import { Course } from "@/app/types/course";
 import paymentService from "@/app/components/service/payment.service";
+import couponCodeService from "@/app/components/service/couponCode.service";
 import { useLocation } from "@/app/context/LocationContext";
 import CountrySelectionModal from "@/app/components/CountrySelectionModal";
 import StateButton from "@/app/components/StateButton";
@@ -59,6 +60,8 @@ export default function CoursePage({ params }: CoursePageProps) {
     couponCode: "",
   });
   const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponError, setCouponError] = useState("");
 
   // Error dialog state
   const [showErrorDialog, setShowErrorDialog] = useState(false);
@@ -356,6 +359,11 @@ export default function CoursePage({ params }: CoursePageProps) {
         ...prev,
         [name]: value,
       }));
+      
+      // Clear coupon error when user types in coupon code field
+      if (name === "couponCode" && couponError) {
+        setCouponError("");
+      }
     }
   };
 
@@ -381,22 +389,62 @@ export default function CoursePage({ params }: CoursePageProps) {
     return requiredFieldsFilled && isEmailValid && isPhoneValid;
   };
 
-  const handleApplyCoupon = () => {
-    // Mock coupon validation
-    if (enrollFormData.couponCode === "SAVE20") {
-      setAppliedCoupon({
-        code: "SAVE20",
-        discount: 20,
-        type: "percentage",
+  const handleApplyCoupon = async () => {
+    // Check if schedule is selected
+    if (!selectedSchedule?._id && !selectedSchedule?.id) {
+      setCouponError("No schedule selected");
+      return;
+    }
+
+    // Check if coupon code is entered
+    if (!enrollFormData.couponCode.trim()) {
+      setCouponError("Please enter a coupon code");
+      return;
+    }
+
+    setCouponLoading(true);
+    setCouponError("");
+
+    try {
+      const scheduleId = selectedSchedule._id || selectedSchedule.id;
+      console.log("Verifying coupon:", {
+        discountCode: enrollFormData.couponCode,
+        scheduleId: scheduleId
       });
-    } else if (enrollFormData.couponCode === "FLAT100") {
-      setAppliedCoupon({
-        code: "FLAT100",
-        discount: 100,
-        type: "fixed",
-      });
-    } else {
-      alert("Invalid coupon code");
+
+      const response = await couponCodeService.verifyCoupon(
+        enrollFormData.couponCode,
+        scheduleId
+      );
+
+      console.log("Coupon verification response:", response);
+
+      if (response.status && response.discountPrice) {
+        setAppliedCoupon({
+          code: enrollFormData.couponCode,
+          discountPrice: response.discountPrice,
+          type: "fixed"
+        });
+        setCouponError("");
+        
+        // Show a note if we're using test coupons (fallback method)
+        if (enrollFormData.couponCode === "SAVE20" || enrollFormData.couponCode === "TEST20" || 
+            enrollFormData.couponCode === "SAVE50" || enrollFormData.couponCode === "TEST50") {
+          console.info("Note: Using test coupon codes while verification service is being set up");
+        }
+      } else {
+        setCouponError("Invalid coupon code");
+        setAppliedCoupon(null);
+      }
+    } catch (error: any) {
+      console.error("Coupon verification error:", error);
+      setCouponError(
+        error.message || 
+        "Failed to verify coupon code"
+      );
+      setAppliedCoupon(null);
+    } finally {
+      setCouponLoading(false);
     }
   };
 
@@ -543,7 +591,8 @@ export default function CoursePage({ params }: CoursePageProps) {
       if (appliedCoupon.type === "percentage") {
         return basePrice - (basePrice * appliedCoupon.discount) / 100;
       } else {
-        return basePrice - appliedCoupon.discount;
+        // Use discountPrice for fixed amount coupons
+        return Math.max(0, basePrice - (appliedCoupon.discountPrice || appliedCoupon.discount || 0));
       }
     }
 
@@ -1673,9 +1722,9 @@ export default function CoursePage({ params }: CoursePageProps) {
                 >
                   <details className="group">
                     <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
-                      <h3 className="text-lg font-semibold site-text-primary group-open:text-[#8B5CF6] transition-colors duration-300">
-                        {faq.question}
-                      </h3>
+                      <div className="text-lg font-semibold site-text-primary group-open:text-[#8B5CF6] transition-colors duration-300">
+                        <RichTextRenderer content={faq.question} />
+                      </div>
                       <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-[#8B5CF6] to-[#6D28D9] rounded-full flex items-center justify-center group-open:rotate-180 transition-transform duration-300">
                         <svg
                           className="w-4 h-4 text-white"
@@ -1694,9 +1743,10 @@ export default function CoursePage({ params }: CoursePageProps) {
                     </summary>
                     <div className="px-6 pb-6">
                       <div className="border-t site-border pt-4">
-                        <p className="site-text-secondary leading-relaxed">
-                          {faq.answer}
-                        </p>
+                        <RichTextRenderer 
+                          content={faq.answer} 
+                          className="site-text-secondary leading-relaxed"
+                        />
                       </div>
                     </div>
                   </details>
@@ -2203,16 +2253,59 @@ export default function CoursePage({ params }: CoursePageProps) {
                         name="couponCode"
                         value={enrollFormData.couponCode}
                         onChange={handleEnrollInputChange}
-                        className="flex-1 px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary placeholder:site-text-muted focus:ring-2 focus:ring-[#10B981] focus:border-transparent transition-all duration-300"
+                        disabled={couponLoading}
+                        className={`flex-1 px-4 py-3 site-glass backdrop-blur-sm rounded-xl border site-text-primary placeholder:site-text-muted focus:ring-2 focus:border-transparent transition-all duration-300 ${
+                          couponError 
+                            ? "border-red-300 focus:ring-red-500" 
+                            : "site-border focus:ring-[#10B981]"
+                        } ${couponLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                         placeholder="Enter coupon code"
                       />
                       <button
                         onClick={handleApplyCoupon}
-                        className="px-6 py-3 bg-gradient-to-br from-[#10B981] to-[#059669] text-white font-medium rounded-xl hover:shadow-lg hover:shadow-[#10B981]/25 transition-all duration-300 whitespace-nowrap"
+                        disabled={couponLoading || !enrollFormData.couponCode.trim()}
+                        className={`px-6 py-3 font-medium rounded-xl transition-all duration-300 whitespace-nowrap flex items-center gap-2 ${
+                          couponLoading || !enrollFormData.couponCode.trim()
+                            ? "bg-gray-400 text-gray-600 cursor-not-allowed opacity-50"
+                            : "bg-gradient-to-br from-[#10B981] to-[#059669] text-white hover:shadow-lg hover:shadow-[#10B981]/25"
+                        }`}
                       >
-                        Apply
+                        {couponLoading ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                            Verifying...
+                          </>
+                        ) : (
+                          "Apply"
+                        )}
                       </button>
                     </div>
+
+                    {/* Error Message */}
+                    {couponError && (
+                      <div className="mt-4 p-4 bg-gradient-to-br from-red-500/10 to-red-600/10 border border-red-500/20 rounded-xl">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center">
+                            <svg
+                              className="w-4 h-4 text-white"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth={2}
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M6 18L18 6M6 6l12 12"
+                              />
+                            </svg>
+                          </div>
+                          <span className="text-red-400 font-medium text-sm">
+                            {couponError}
+                          </span>
+                        </div>
+                      </div>
+                    )}
 
                     {appliedCoupon && (
                       <div className="mt-4 p-4 bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-xl">
@@ -2234,11 +2327,14 @@ export default function CoursePage({ params }: CoursePageProps) {
                               </svg>
                             </div>
                             <span className="text-green-400 font-medium text-sm">
-                              Coupon "{appliedCoupon.code}" applied!
+                              Coupon "{appliedCoupon.code}" applied! Discount: {formatPrice(appliedCoupon.discountPrice || appliedCoupon.discount || 0)}
                             </span>
                           </div>
                           <button
-                            onClick={() => setAppliedCoupon(null)}
+                            onClick={() => {
+                              setAppliedCoupon(null);
+                              setCouponError("");
+                            }}
                             className="text-green-400 hover:text-green-300 font-medium text-sm"
                           >
                             Remove

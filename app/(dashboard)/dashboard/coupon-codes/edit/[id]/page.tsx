@@ -4,6 +4,8 @@ import React, { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { LoadingSpinner } from "@/app/components/LoadingSpinner";
+import CountryButton from "@/app/components/CountryButton";
+import { CountryData } from "@/app/context/LocationContext";
 import couponCodeService from "@/app/components/service/couponCode.service";
 import courseService from "@/app/components/service/course.service";
 import { formatDateForInput } from "@/app/utils/dateUtils";
@@ -40,18 +42,6 @@ function CouponCodeEditor({ couponId }: { couponId: string }) {
     expiryDate: formatDateForInput(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)),
     discountPrice: 0
   });
-
-  // Common country codes for dropdown
-  const countryCodes = [
-    { code: "IN", name: "India" },
-    { code: "US", name: "United States" },
-    { code: "GB", name: "United Kingdom" },
-    { code: "CA", name: "Canada" },
-    { code: "AU", name: "Australia" },
-    { code: "SG", name: "Singapore" },
-    { code: "AE", name: "United Arab Emirates" },
-    { code: "ALL", name: "All Countries" }
-  ];
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -135,6 +125,13 @@ function CouponCodeEditor({ couponId }: { couponId: string }) {
     }));
   };
 
+  const handleCountrySelect = (country: CountryData) => {
+    setFormData((prev) => ({
+      ...prev,
+      country: country.name
+    }));
+  };
+
   const prepareDataForSubmission = () => {
     // Create a clean object with only the fields needed for the update API
     const preparedData: any = {
@@ -212,6 +209,14 @@ function CouponCodeEditor({ couponId }: { couponId: string }) {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Find the country code for the selected country name
+  const getCountryCodeFromName = (countryName: string): string => {
+    // Import the countries data to find the code
+    const { COUNTRIES_DATA } = require("@/app/context/LocationContext");
+    const country = COUNTRIES_DATA.find((c: CountryData) => c.name === countryName);
+    return country ? country.code : "";
   };
 
   if (isLoadingCoupon || isLoadingCourses) {
@@ -293,29 +298,13 @@ function CouponCodeEditor({ couponId }: { couponId: string }) {
             </div>
 
             {/* Country selection */}
-            <div>
-              <label 
-                htmlFor="country" 
-                className="block text-sm font-medium text-[var(--foreground-muted)] mb-1"
-              >
-                Country *
-              </label>
-              <select
-                id="country"
-                name="country"
-                value={formData.country}
-                onChange={handleChange}
-                className="w-full px-4 py-2 bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] rounded-[var(--radius-md)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                required
-              >
-                <option value="">Select a country</option>
-                {countryCodes.map((country) => (
-                  <option key={country.code} value={country.code}>
-                    {country.name} ({country.code})
-                  </option>
-                ))}
-              </select>
-            </div>
+            <CountryButton
+              label="Country"
+              selectedCountryCode={getCountryCodeFromName(formData.country)}
+              onCountrySelect={handleCountrySelect}
+              placeholder="Select a country"
+              required
+            />
 
             {/* Discount code with generate button */}
             <div className="relative">
