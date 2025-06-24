@@ -188,7 +188,7 @@ export default function Footer() {
               © 2025 AccrediPeople Certifications. All Rights Reserved.
             </p>
             <div className="flex items-center gap-2">
-              <span className="text-gray-300 text-sm">Theme:</span>
+              {/* <span className="text-gray-300 text-sm">Theme:</span> */}
               <SiteThemeToggle />
             </div>
           </div>
