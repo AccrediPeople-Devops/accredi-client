@@ -156,7 +156,10 @@ export default function CoursePage({ params }: CoursePageProps) {
 
   // Helper function to get sample certificate URL
   const getSampleCertificateUrl = (course: Course) => {
-    if (course.upload?.courseSampleCertificate && course.upload.courseSampleCertificate.length > 0) {
+    if (
+      course.upload?.courseSampleCertificate &&
+      course.upload.courseSampleCertificate.length > 0
+    ) {
       const certificate = course.upload.courseSampleCertificate[0];
       // First check if we have a complete URL
       if (certificate.path?.startsWith("http")) {
@@ -359,7 +362,7 @@ export default function CoursePage({ params }: CoursePageProps) {
         ...prev,
         [name]: value,
       }));
-      
+
       // Clear coupon error when user types in coupon code field
       if (name === "couponCode" && couponError) {
         setCouponError("");
@@ -409,7 +412,7 @@ export default function CoursePage({ params }: CoursePageProps) {
       const scheduleId = selectedSchedule._id || selectedSchedule.id;
       console.log("Verifying coupon:", {
         discountCode: enrollFormData.couponCode,
-        scheduleId: scheduleId
+        scheduleId: scheduleId,
       });
 
       const response = await couponCodeService.verifyCoupon(
@@ -423,14 +426,20 @@ export default function CoursePage({ params }: CoursePageProps) {
         setAppliedCoupon({
           code: enrollFormData.couponCode,
           discountPrice: response.discountPrice,
-          type: "fixed"
+          type: "fixed",
         });
         setCouponError("");
-        
+
         // Show a note if we're using test coupons (fallback method)
-        if (enrollFormData.couponCode === "SAVE20" || enrollFormData.couponCode === "TEST20" || 
-            enrollFormData.couponCode === "SAVE50" || enrollFormData.couponCode === "TEST50") {
-          console.info("Note: Using test coupon codes while verification service is being set up");
+        if (
+          enrollFormData.couponCode === "SAVE20" ||
+          enrollFormData.couponCode === "TEST20" ||
+          enrollFormData.couponCode === "SAVE50" ||
+          enrollFormData.couponCode === "TEST50"
+        ) {
+          console.info(
+            "Note: Using test coupon codes while verification service is being set up"
+          );
         }
       } else {
         setCouponError("Invalid coupon code");
@@ -438,10 +447,7 @@ export default function CoursePage({ params }: CoursePageProps) {
       }
     } catch (error: any) {
       console.error("Coupon verification error:", error);
-      setCouponError(
-        error.message || 
-        "Failed to verify coupon code"
-      );
+      setCouponError(error.message || "Failed to verify coupon code");
       setAppliedCoupon(null);
     } finally {
       setCouponLoading(false);
@@ -582,7 +588,16 @@ export default function CoursePage({ params }: CoursePageProps) {
 
   // Currency formatting is now handled by LocationContext
 
+  // For API - always send original price
   const calculateTotal = () => {
+    if (!selectedSchedule) return 0;
+    // Always return the original price - let backend handle discount
+    const basePrice = selectedSchedule.earlyBirdPrice * quantity;
+    return basePrice;
+  };
+
+  // For UI Display - show discounted price
+  const calculateDisplayTotal = () => {
     if (!selectedSchedule) return 0;
 
     const basePrice = selectedSchedule.earlyBirdPrice * quantity;
@@ -592,11 +607,34 @@ export default function CoursePage({ params }: CoursePageProps) {
         return basePrice - (basePrice * appliedCoupon.discount) / 100;
       } else {
         // Use discountPrice for fixed amount coupons
-        return Math.max(0, basePrice - (appliedCoupon.discountPrice || appliedCoupon.discount || 0));
+        return Math.max(
+          0,
+          basePrice -
+            (appliedCoupon.discountPrice || appliedCoupon.discount || 0)
+        );
       }
     }
 
     return basePrice;
+  };
+
+  // Get original price for display
+  const getOriginalPrice = () => {
+    if (!selectedSchedule) return 0;
+    return selectedSchedule.earlyBirdPrice * quantity;
+  };
+
+  // Get discount amount for display
+  const getDiscountAmount = () => {
+    if (!appliedCoupon || !selectedSchedule) return 0;
+
+    const basePrice = selectedSchedule.earlyBirdPrice * quantity;
+
+    if (appliedCoupon.type === "percentage") {
+      return (basePrice * appliedCoupon.discount) / 100;
+    } else {
+      return appliedCoupon.discountPrice || appliedCoupon.discount || 0;
+    }
   };
 
   const getFilteredSchedules = () => {
@@ -1315,7 +1353,9 @@ export default function CoursePage({ params }: CoursePageProps) {
                 <div className="flex items-center gap-3 ml-4">
                   <StateButton
                     selectedCountryCode={currentCountry?.code}
-                    selectedStateCode={selectedState ? selectedState : undefined}
+                    selectedStateCode={
+                      selectedState ? selectedState : undefined
+                    }
                     onStateSelect={handleStateSelect}
                     placeholder="Any State"
                     variant="minimal"
@@ -1645,33 +1685,36 @@ export default function CoursePage({ params }: CoursePageProps) {
                             ENROLL NOW
                           </span>
                         </button>
-                        
+
                         {/* View Dates Button - Only for live-online and classroom with dates */}
-                        {(selectedMode === "live-online" || selectedMode === "classroom") && 
-                         schedule.startDate && schedule.endDate && schedule.days && (
-                          <button
-                            onClick={() => handleViewCalendar(schedule)}
-                            className="w-full mt-3 group px-6 py-3 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white font-semibold rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:shadow-[#4F46E5]/25"
-                          >
-                            <span className="flex items-center justify-center gap-2">
-                              <svg
-                                className="w-5 h-5 group-hover:scale-110 transition-transform duration-300"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth={2}
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                                />
-                              </svg>
-                              VIEW DATES
-                            </span>
-                          </button>
-                        )}
-                        
+                        {(selectedMode === "live-online" ||
+                          selectedMode === "classroom") &&
+                          schedule.startDate &&
+                          schedule.endDate &&
+                          schedule.days && (
+                            <button
+                              onClick={() => handleViewCalendar(schedule)}
+                              className="w-full mt-3 group px-6 py-3 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white font-semibold rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:shadow-[#4F46E5]/25"
+                            >
+                              <span className="flex items-center justify-center gap-2">
+                                <svg
+                                  className="w-5 h-5 group-hover:scale-110 transition-transform duration-300"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth={2}
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                  />
+                                </svg>
+                                VIEW DATES
+                              </span>
+                            </button>
+                          )}
+
                         {selectedMode === "live-online" && (
                           <div className="text-center mt-3">
                             <button className="text-sm site-text-secondary hover:text-[#4F46E5] transition-colors font-medium">
@@ -1743,8 +1786,8 @@ export default function CoursePage({ params }: CoursePageProps) {
                     </summary>
                     <div className="px-6 pb-6">
                       <div className="border-t site-border pt-4">
-                        <RichTextRenderer 
-                          content={faq.answer} 
+                        <RichTextRenderer
+                          content={faq.answer}
                           className="site-text-secondary leading-relaxed"
                         />
                       </div>
@@ -2044,6 +2087,7 @@ export default function CoursePage({ params }: CoursePageProps) {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Left Column - Course Summary */}
                 <div className="space-y-6">
+                  {/* Course Summary */}
                   <div className="site-glass backdrop-blur-xl rounded-3xl p-4 sm:p-6 shadow-xl border site-border">
                     <h4 className="text-lg font-semibold site-text-primary mb-4">
                       Course Summary
@@ -2103,11 +2147,47 @@ export default function CoursePage({ params }: CoursePageProps) {
                           </span>
                         </div>
                       )}
-                      <div className="flex justify-between font-bold text-lg border-t site-border pt-3 mt-4">
-                        <span className="site-text-primary">Total:</span>
-                        <span className="bg-gradient-to-r from-[#4F46E5] to-[#10B981] bg-clip-text text-transparent">
-                          {formatPrice(calculateTotal())}
-                        </span>
+
+                      {/* Price Breakdown */}
+                      <div className="border-t site-border pt-3 mt-4 space-y-2">
+                        <div className="flex justify-between">
+                          <span className="site-text-secondary text-sm">
+                            Original Price:
+                          </span>
+                          <span className="site-text-primary font-medium text-sm">
+                            {formatPrice(getOriginalPrice())}
+                          </span>
+                        </div>
+
+                        {appliedCoupon && (
+                          <div className="flex justify-between">
+                            <span className="site-text-secondary text-sm">
+                              Discount ({appliedCoupon.code}):
+                            </span>
+                            <span className="text-green-500 font-medium text-sm">
+                              -{formatPrice(getDiscountAmount())}
+                            </span>
+                          </div>
+                        )}
+
+                        <div className="flex justify-between font-bold text-lg border-t site-border pt-2">
+                          <span className="site-text-primary">Total:</span>
+                          <span
+                            className={`${
+                              appliedCoupon
+                                ? "text-green-500"
+                                : "bg-gradient-to-r from-[#4F46E5] to-[#10B981] bg-clip-text text-transparent"
+                            }`}
+                          >
+                            {formatPrice(calculateDisplayTotal())}
+                          </span>
+                        </div>
+
+                        {appliedCoupon && (
+                          <div className="text-xs site-text-muted text-center">
+                            You save {formatPrice(getDiscountAmount())}!
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -2255,15 +2335,19 @@ export default function CoursePage({ params }: CoursePageProps) {
                         onChange={handleEnrollInputChange}
                         disabled={couponLoading}
                         className={`flex-1 px-4 py-3 site-glass backdrop-blur-sm rounded-xl border site-text-primary placeholder:site-text-muted focus:ring-2 focus:border-transparent transition-all duration-300 ${
-                          couponError 
-                            ? "border-red-300 focus:ring-red-500" 
+                          couponError
+                            ? "border-red-300 focus:ring-red-500"
                             : "site-border focus:ring-[#10B981]"
-                        } ${couponLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                        } ${
+                          couponLoading ? "opacity-50 cursor-not-allowed" : ""
+                        }`}
                         placeholder="Enter coupon code"
                       />
                       <button
                         onClick={handleApplyCoupon}
-                        disabled={couponLoading || !enrollFormData.couponCode.trim()}
+                        disabled={
+                          couponLoading || !enrollFormData.couponCode.trim()
+                        }
                         className={`px-6 py-3 font-medium rounded-xl transition-all duration-300 whitespace-nowrap flex items-center gap-2 ${
                           couponLoading || !enrollFormData.couponCode.trim()
                             ? "bg-gray-400 text-gray-600 cursor-not-allowed opacity-50"
@@ -2327,7 +2411,12 @@ export default function CoursePage({ params }: CoursePageProps) {
                               </svg>
                             </div>
                             <span className="text-green-400 font-medium text-sm">
-                              Coupon "{appliedCoupon.code}" applied! Discount: {formatPrice(appliedCoupon.discountPrice || appliedCoupon.discount || 0)}
+                              Coupon "{appliedCoupon.code}" applied! Discount:{" "}
+                              {formatPrice(
+                                appliedCoupon.discountPrice ||
+                                  appliedCoupon.discount ||
+                                  0
+                              )}
                             </span>
                           </div>
                           <button
@@ -2381,7 +2470,9 @@ export default function CoursePage({ params }: CoursePageProps) {
                       </svg>
                       <span>
                         {isEnrollFormValid()
-                          ? `Pay with Stripe - ${formatPrice(calculateTotal())}`
+                          ? `Pay with Stripe - ${formatPrice(
+                              calculateDisplayTotal()
+                            )}`
                           : "Complete Required Fields to Continue"}
                       </span>
                     </span>
@@ -2409,7 +2500,9 @@ export default function CoursePage({ params }: CoursePageProps) {
                       </svg>
                       <span>
                         {isEnrollFormValid()
-                          ? `Pay with PayPal - ${formatPrice(calculateTotal())}`
+                          ? `Pay with PayPal - ${formatPrice(
+                              calculateDisplayTotal()
+                            )}`
                           : "Complete Required Fields to Continue"}
                       </span>
                     </span>
