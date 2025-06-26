@@ -12,8 +12,10 @@ export default function SchedulesPage() {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [activeTab, setActiveTab] = useState("active");
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [isRestoring, setIsRestoring] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [scheduleToDelete, setScheduleToDelete] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -102,7 +104,7 @@ export default function SchedulesPage() {
     fetchCourseNames();
   }, [schedules]);
 
-  // Filter schedules based on search and status
+  // Filter schedules based on search, status, and deleted state
   const filteredSchedules = schedules.filter((schedule) => {
     // Match search term
     const matchesSearch =
@@ -130,7 +132,12 @@ export default function SchedulesPage() {
         new Date(schedule.endDate) >= new Date()) ||
       (statusFilter === "completed" && new Date(schedule.endDate) < new Date());
 
-    return matchesSearch && matchesStatus;
+    // Filter based on active tab
+    const matchesTab =
+      (activeTab === "active" && !(schedule.isDeleted ?? false)) ||
+      (activeTab === "deleted" && (schedule.isDeleted ?? false));
+
+    return matchesSearch && matchesStatus && matchesTab;
   });
 
   // Format date for display
@@ -184,7 +191,7 @@ export default function SchedulesPage() {
     setShowDeleteModal(true);
   };
 
-  // Handle deleting a schedule
+  // Handle deleting a schedule (soft delete)
   const confirmDelete = async () => {
     if (!scheduleToDelete) return;
 
@@ -193,13 +200,14 @@ export default function SchedulesPage() {
     setSuccessMessage("");
 
     try {
-      console.log("Deleting schedule with ID:", scheduleToDelete);
-      await scheduleService.deleteSchedule(scheduleToDelete);
+      console.log("Soft deleting schedule with ID:", scheduleToDelete);
+      // Use updateSchedule to set isDeleted: true (soft delete)
+      await scheduleService.updateSchedule(scheduleToDelete, {
+        isDeleted: true,
+      });
 
-      // Remove the deleted schedule from the list
-      setSchedules(
-        schedules.filter((schedule) => schedule._id !== scheduleToDelete)
-      );
+      // Refresh the schedules data to get the latest state
+      await fetchSchedules();
 
       setSuccessMessage("Schedule deleted successfully");
       setShowDeleteModal(false);
@@ -212,6 +220,35 @@ export default function SchedulesPage() {
       setError(err.response?.data?.message || "Error deleting schedule");
     } finally {
       setIsDeleting(null);
+    }
+  };
+
+  // Handle restoring a schedule
+  const handleRestoreSchedule = async (scheduleId: string) => {
+    setIsRestoring(scheduleId);
+    setError("");
+    setSuccessMessage("");
+
+    try {
+      console.log("Restoring schedule with ID:", scheduleId);
+      // Use updateSchedule to set isDeleted: false (restore)
+      await scheduleService.updateSchedule(scheduleId, {
+        isDeleted: false,
+      });
+
+      // Refresh the schedules data to get the latest state
+      await fetchSchedules();
+
+      setSuccessMessage("Schedule restored successfully");
+
+      setTimeout(() => {
+        setSuccessMessage("");
+      }, 3000);
+    } catch (err: any) {
+      console.error("Error restoring schedule:", err);
+      setError(err.response?.data?.message || "Error restoring schedule");
+    } finally {
+      setIsRestoring(null);
     }
   };
 
@@ -260,6 +297,32 @@ export default function SchedulesPage() {
         </div>
       )}
 
+      {/* Tabs for Active/Deleted */}
+      <div className="border-b border-[var(--border)]">
+        <div className="flex space-x-4">
+          <button
+            onClick={() => setActiveTab("active")}
+            className={`pb-3 px-1 font-medium text-sm transition-colors ${
+              activeTab === "active"
+                ? "border-b-2 border-[var(--primary)] text-[var(--foreground)]"
+                : "text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
+            }`}
+          >
+            Active Schedules
+          </button>
+          <button
+            onClick={() => setActiveTab("deleted")}
+            className={`pb-3 px-1 font-medium text-sm transition-colors ${
+              activeTab === "deleted"
+                ? "border-b-2 border-[var(--primary)] text-[var(--foreground)]"
+                : "text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
+            }`}
+          >
+            Deleted Schedules
+          </button>
+        </div>
+      </div>
+
       {/* Search and Filter Controls */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="flex-1">
@@ -291,12 +354,15 @@ export default function SchedulesPage() {
       ) : filteredSchedules.length === 0 ? (
         <div className="mt-6 p-8 text-center border border-[var(--primary)]/10 rounded-[var(--radius-md)] shadow-[var(--shadow-sm)] bg-[var(--background)]">
           <h3 className="text-lg font-medium text-[var(--foreground)]/80">
-            No schedules found
+            {activeTab === "active" ? "No active schedules found" : "No deleted schedules found"}
           </h3>
           <p className="mt-2 text-[var(--foreground)]/60">
-            {searchTerm || statusFilter !== "all"
-              ? "Try adjusting your search or filters"
-              : "Add your first schedule to get started"}
+            {activeTab === "active" 
+              ? searchTerm || statusFilter !== "all"
+                ? "Try adjusting your search or filters"
+                : "Add your first schedule to get started"
+              : "No deleted schedules to show"
+            }
           </p>
         </div>
       ) : (
@@ -385,43 +451,76 @@ export default function SchedulesPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end space-x-2">
-                        <Link
-                          href={`/dashboard/schedules/edit/${schedule._id}`}
-                          className="text-[var(--primary)] hover:text-[var(--primary-hover)] transition-colors"
-                          title="Edit schedule"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-5 w-5"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
-                          >
-                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                          </svg>
-                        </Link>
-                        <button
-                          onClick={() => handleDeleteClick(schedule._id)}
-                          className="text-red-600 hover:text-red-900 transition-colors"
-                          title="Delete schedule"
-                          disabled={isDeleting === schedule._id}
-                        >
-                          {isDeleting === schedule._id ? (
-                            <LoadingSpinner size="small" />
-                          ) : (
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="h-5 w-5"
-                              viewBox="0 0 20 20"
-                              fill="currentColor"
+                        {activeTab === "active" ? (
+                          <>
+                            <Link
+                              href={`/dashboard/schedules/edit/${schedule._id}`}
+                              className="text-[var(--primary)] hover:text-[var(--primary-hover)] transition-colors"
+                              title="Edit schedule"
                             >
-                              <path
-                                fillRule="evenodd"
-                                d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                                clipRule="evenodd"
-                              />
-                            </svg>
-                          )}
-                        </button>
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-5 w-5"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                              >
+                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                              </svg>
+                            </Link>
+                            <button
+                              onClick={() => handleDeleteClick(schedule._id)}
+                              className="text-red-600 hover:text-red-900 transition-colors"
+                              title="Delete schedule"
+                              disabled={isDeleting === schedule._id}
+                            >
+                              {isDeleting === schedule._id ? (
+                                <LoadingSpinner size="small" />
+                              ) : (
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="h-5 w-5"
+                                  viewBox="0 0 20 20"
+                                  fill="currentColor"
+                                >
+                                  <path
+                                    fillRule="evenodd"
+                                    d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                    clipRule="evenodd"
+                                  />
+                                </svg>
+                              )}
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            onClick={() => handleRestoreSchedule(schedule._id)}
+                            className="text-[var(--success)] hover:text-[var(--success)]/80 transition-colors"
+                            title="Restore schedule"
+                            disabled={isRestoring === schedule._id}
+                          >
+                            {isRestoring === schedule._id ? (
+                              <LoadingSpinner size="small" />
+                            ) : (
+                              <div className="flex items-center">
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="h-5 w-5 mr-1"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                                  />
+                                </svg>
+                                Restore
+                              </div>
+                            )}
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -437,7 +536,7 @@ export default function SchedulesPage() {
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
         title="Delete Schedule"
-        description="Are you sure you want to delete this schedule? This action cannot be undone."
+        description="Are you sure you want to delete this schedule? This action can be undone by restoring it from the Deleted Schedules tab."
         confirmText="Delete"
         cancelText="Cancel"
         onConfirm={confirmDelete}
