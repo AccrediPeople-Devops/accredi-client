@@ -732,7 +732,7 @@ export default function CoursePage({ params }: CoursePageProps) {
                   (new Date(schedule.endDate).getTime() -
                     new Date(schedule.startDate).getTime()) /
                     (1000 * 3600 * 24)
-                )} Days`
+                )}`
               : "TBD",
           time: "9:00 AM - 5:00 PM CST",
           seatsLeft: Math.floor(Math.random() * 10) + 1, // Mock seats for now
@@ -764,7 +764,7 @@ export default function CoursePage({ params }: CoursePageProps) {
                   (new Date(schedule.endDate).getTime() -
                     new Date(schedule.startDate).getTime()) /
                     (1000 * 3600 * 24)
-                )} Days`
+                )}`
               : "TBD",
           time: "9:00 AM - 5:00 PM CST",
           seatsLeft: Math.floor(Math.random() * 10) + 1, // Mock seats for now
@@ -974,7 +974,7 @@ export default function CoursePage({ params }: CoursePageProps) {
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-stretch">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               {/* Key Features List */}
               <div className="site-glass backdrop-blur-xl rounded-3xl p-8 md:p-12 shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500">
                 <div className="space-y-6">
@@ -1007,51 +1007,55 @@ export default function CoursePage({ params }: CoursePageProps) {
 
               {/* Sample Certificate */}
               {getSampleCertificateUrl(course) && (
-                <div className="relative w-full h-full">
-                  <div className="site-glass backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500 group h-full">
-                    <div className="relative overflow-hidden h-full min-h-[400px]">
-                      <Image
-                        src={getSampleCertificateUrl(course) || ""}
-                        alt="Sample Certificate"
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-500"
-                        unoptimized
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
-                    </div>
-
-                    {/* Certificate Badge */}
-                    <div className="absolute top-4 left-4">
-                      <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-3 py-1.5">
-                        <div className="w-2 h-2 bg-[#F59E0B] rounded-full animate-pulse"></div>
-                        <span className="text-[#F59E0B] text-xs font-semibold uppercase tracking-wider">
-                          Sample Certificate
-                        </span>
+                <div className="flex justify-center items-center">
+                  <div className="relative w-full flex justify-center">
+                    <div className="site-glass backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500 group relative">
+                      <div className="relative overflow-hidden">
+                        <Image
+                          src={getSampleCertificateUrl(course) || ""}
+                          alt="Sample Certificate"
+                          width={0}
+                          height={0}
+                          sizes="100vw"
+                          className="w-auto h-auto max-w-full group-hover:scale-105 transition-transform duration-500"
+                          unoptimized
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
                       </div>
-                    </div>
 
-                    {/* Certificate Icon */}
-                    <div className="absolute top-4 right-4">
-                      <div className="w-10 h-10 bg-gradient-to-br from-[#F59E0B] to-[#EF4444] rounded-xl flex items-center justify-center shadow-lg">
-                        <svg
-                          className="w-5 h-5 text-white"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth={2}
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
-                          />
-                        </svg>
+                      {/* Certificate Badge */}
+                      <div className="absolute top-4 left-4">
+                        <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-3 py-1.5">
+                          <div className="w-2 h-2 bg-[#F59E0B] rounded-full animate-pulse"></div>
+                          <span className="text-[#F59E0B] text-xs font-semibold uppercase tracking-wider">
+                            Sample Certificate
+                          </span>
+                        </div>
                       </div>
-                    </div>
 
-                    {/* Decorative Elements */}
-                    <div className="absolute -top-4 -right-4 w-8 h-8 bg-[#F59E0B] rounded-full opacity-60 animate-pulse"></div>
-                    <div className="absolute -bottom-4 -left-4 w-6 h-6 bg-[#10B981] rounded-full opacity-60 animate-pulse delay-1000"></div>
+                      {/* Certificate Icon */}
+                      <div className="absolute top-4 right-4">
+                        <div className="w-10 h-10 bg-gradient-to-br from-[#F59E0B] to-[#EF4444] rounded-xl flex items-center justify-center shadow-lg">
+                          <svg
+                            className="w-5 h-5 text-white"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
+                            />
+                          </svg>
+                        </div>
+                      </div>
+
+                      {/* Decorative Elements */}
+                      <div className="absolute -top-4 -right-4 w-8 h-8 bg-[#F59E0B] rounded-full opacity-60 animate-pulse"></div>
+                      <div className="absolute -bottom-4 -left-4 w-6 h-6 bg-[#10B981] rounded-full opacity-60 animate-pulse delay-1000"></div>
+                    </div>
                   </div>
                 </div>
               )}
@@ -2117,15 +2121,7 @@ export default function CoursePage({ params }: CoursePageProps) {
                               Dates:
                             </span>
                             <span className="site-text-primary font-medium text-sm text-right flex-1 ml-2">
-                              {selectedSchedule.dates?.join(", ")}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="site-text-secondary text-sm">
-                              Duration:
-                            </span>
-                            <span className="site-text-primary font-medium text-sm">
-                              {selectedSchedule.duration}
+                              {selectedSchedule.dates?.join(" - ")}
                             </span>
                           </div>
                           <div className="flex justify-between">

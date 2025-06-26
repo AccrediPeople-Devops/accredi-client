@@ -10,8 +10,10 @@ import {
   HiOutlinePlay,
   HiOutlineBookOpen,
   HiOutlineGlobeAlt,
-  HiOutlineUsers
+  HiOutlineUsers,
+  HiOutlineRefresh
 } from "react-icons/hi";
+import userProfileService, { PurchasedCourse } from "@/app/components/user-dashboard/services/userProfile.service";
 
 interface EnrolledCourse {
   id: string;
@@ -28,102 +30,107 @@ interface EnrolledCourse {
   progress?: number; // percentage for in-progress courses
   instructor?: string;
   courseType: 'live' | 'self-paced';
+  courseId?: string;
+  scheduleId?: string;
+  purchaseDate?: string;
 }
 
 export default function EnrolledCoursesPage() {
   const [courses, setCourses] = useState<EnrolledCourse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'completed' | 'in-progress' | 'upcoming' | 'self-paced'>('all');
 
-  useEffect(() => {
-    // Simulate fetching enrolled courses data
-    const fetchEnrolledCourses = async () => {
-      setIsLoading(true);
-      try {
-        // Mock data based on the screenshot
-        const mockCourses: EnrolledCourse[] = [
-          {
-            id: '1',
-            title: 'PMP® Certification Training',
-            startDate: '2025-01-25',
-            endDate: '2025-02-02',
-            startTime: '9:00 AM',
-            endTime: '5:00 PM',
-            timezone: 'CST',
-            schedule: 'Weekend',
-            deliveryMethod: 'Instructor-Led Live Online',
-            status: 'completed',
-            courseType: 'live',
-            instructor: 'John Smith, PMP'
-          },
-          {
-            id: '2',
-            title: 'PMP® Certification Training',
-            startDate: '2025-01-25',
-            endDate: '2025-02-02',
-            startTime: '9:00 AM',
-            endTime: '5:00 PM',
-            timezone: 'CST',
-            schedule: 'Weekend',
-            deliveryMethod: 'Instructor-Led Live Online',
-            status: 'completed',
-            courseType: 'live',
-            instructor: 'Sarah Johnson, PMP'
-          },
-          {
-            id: '3',
-            title: 'PMP® Certification Training (Self-Paced Learning)',
-            startDate: '',
-            endDate: '',
-            startTime: '',
-            endTime: '',
-            timezone: '',
-            schedule: 'SELF-PACED LEARNING',
-            deliveryMethod: 'E-Learning',
-            status: 'self-paced',
-            courseType: 'self-paced',
-            accessDays: 365,
-            progress: 65
-          },
-          {
-            id: '4',
-            title: 'CAPM® Certification Training',
-            startDate: '2025-02-15',
-            endDate: '2025-02-23',
-            startTime: '10:00 AM',
-            endTime: '4:00 PM',
-            timezone: 'EST',
-            schedule: 'Weekdays',
-            deliveryMethod: 'Instructor-Led Live Online',
-            status: 'upcoming',
-            courseType: 'live',
-            instructor: 'Michael Brown, PMP'
-          },
-          {
-            id: '5',
-            title: 'Agile Project Management',
-            startDate: '2025-01-20',
-            endDate: '2025-01-27',
-            startTime: '2:00 PM',
-            endTime: '6:00 PM',
-            timezone: 'PST',
-            schedule: 'Evening',
-            deliveryMethod: 'Instructor-Led Live Online',
-            status: 'in-progress',
-            courseType: 'live',
-            progress: 40,
-            instructor: 'Lisa Davis, CSM'
-          }
-        ];
-
-        setCourses(mockCourses);
-      } catch (error) {
-        console.error('Error fetching enrolled courses:', error);
-      } finally {
-        setIsLoading(false);
+  /**
+   * Transform purchased course data to enrolled course format
+   */
+  const transformPurchasedCourse = (purchasedCourse: PurchasedCourse): EnrolledCourse => {
+    const { courseId, scheduleId } = purchasedCourse;
+    
+    // Determine course status based on schedule dates
+    const currentDate = new Date();
+    const startDate = scheduleId.startDate ? new Date(scheduleId.startDate) : null;
+    const endDate = scheduleId.endDate ? new Date(scheduleId.endDate) : null;
+    
+    let status: EnrolledCourse['status'] = 'upcoming';
+    if (scheduleId.scheduleType === 'self-paced') {
+      status = 'self-paced';
+    } else if (startDate && endDate) {
+      if (currentDate > endDate) {
+        status = 'completed';
+      } else if (currentDate >= startDate) {
+        status = 'in-progress';
+      } else {
+        status = 'upcoming';
       }
-    };
+    }
 
+    // Determine delivery method
+    let deliveryMethod = 'Instructor-Led Live Online';
+    if (scheduleId.scheduleType === 'online') {
+      deliveryMethod = 'Instructor-Led Live Online';
+    } else if (scheduleId.scheduleType === 'self-paced') {
+      deliveryMethod = 'E-Learning';
+    } else if (scheduleId.scheduleType === 'classroom') {
+      deliveryMethod = 'Classroom Training';
+    }
+
+    // Determine schedule type
+    let schedule = 'Weekdays';
+    if (scheduleId.type === 'weekend') {
+      schedule = 'Weekend';
+    } else if (scheduleId.type === 'weekday') {
+      schedule = 'Weekdays';
+    } else if (scheduleId.scheduleType === 'self-paced') {
+      schedule = 'SELF-PACED LEARNING';
+    }
+
+    return {
+      id: purchasedCourse._id,
+      title: courseId.title,
+      startDate: scheduleId.startDate,
+      endDate: scheduleId.endDate,
+      startTime: '9:00 AM', // Default time as API doesn't provide this
+      endTime: '5:00 PM',   // Default time as API doesn't provide this
+      timezone: 'UTC',      // Default timezone as API doesn't provide this
+      schedule,
+      deliveryMethod,
+      status,
+      accessDays: scheduleId.scheduleType === 'self-paced' ? parseInt(scheduleId.accessType) : undefined,
+      progress: status === 'in-progress' ? Math.floor(Math.random() * 50) + 25 : undefined, // Mock progress
+      instructor: scheduleId.instructorName,
+      courseType: scheduleId.scheduleType === 'self-paced' ? 'self-paced' : 'live',
+      courseId: courseId._id,
+      scheduleId: scheduleId._id,
+      purchaseDate: purchasedCourse.createdAt
+    };
+  };
+
+  const fetchEnrolledCourses = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      console.log("Fetching purchased courses...");
+      const response = await userProfileService.getPurchasedCourses();
+      console.log("Purchased courses response:", response);
+      
+      if (response.status && response.courses) {
+        const transformedCourses = response.courses.map(transformPurchasedCourse);
+        setCourses(transformedCourses);
+        console.log("Transformed courses:", transformedCourses);
+      } else {
+        setCourses([]);
+      }
+    } catch (error: any) {
+      console.error('Error fetching enrolled courses:', error);
+      setError(error.message || 'Failed to fetch enrolled courses');
+      setCourses([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchEnrolledCourses();
   }, []);
 
@@ -222,8 +229,33 @@ export default function EnrolledCoursesPage() {
     <div className="max-w-4xl mx-auto space-y-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-[var(--foreground)] mb-2">Purchased Courses</h1>
-        <p className="text-[var(--foreground-muted)]">View and manage your enrolled courses</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-[var(--foreground)] mb-2">Purchased Courses</h1>
+            <p className="text-[var(--foreground-muted)]">View and manage your enrolled courses</p>
+          </div>
+          <button
+            onClick={fetchEnrolledCourses}
+            disabled={isLoading}
+            className="flex items-center gap-2 px-4 py-2 bg-[var(--primary)] text-[var(--primary-text)] rounded-[var(--radius-md)] hover:bg-[var(--primary-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+          >
+            <HiOutlineRefresh className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+            Refresh
+          </button>
+        </div>
+        
+        {error && (
+          <div className="mt-4 p-4 bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-800 rounded-[var(--radius-md)] text-red-800 dark:text-red-200">
+            <p className="font-medium">Error loading courses</p>
+            <p className="text-sm mt-1">{error}</p>
+            <button
+              onClick={fetchEnrolledCourses}
+              className="mt-2 text-sm underline hover:no-underline"
+            >
+              Try again
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Filter Tabs */}
@@ -254,10 +286,25 @@ export default function EnrolledCoursesPage() {
         {filteredCourses.length === 0 ? (
           <div className="text-center py-12">
             <HiOutlineAcademicCap className="w-12 h-12 text-[var(--foreground-muted)] mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-[var(--foreground)] mb-2">No courses found</h3>
-            <p className="text-[var(--foreground-muted)]">
-              {filter === 'all' ? 'You have not enrolled in any courses yet.' : `No ${filter.replace('-', ' ')} courses found.`}
+            <h3 className="text-lg font-medium text-[var(--foreground)] mb-2">
+              {error ? 'Unable to load courses' : 'No courses found'}
+            </h3>
+            <p className="text-[var(--foreground-muted)] mb-4">
+              {error 
+                ? 'There was an error loading your purchased courses. Please try refreshing the page.'
+                : filter === 'all' 
+                  ? 'You have not purchased any courses yet. Browse our course catalog to get started!'
+                  : `No ${filter.replace('-', ' ')} courses found. Try selecting a different filter.`
+              }
             </p>
+            {!error && filter === 'all' && (
+              <button
+                onClick={() => window.location.href = '/courses'}
+                className="px-6 py-2 bg-[var(--primary)] text-[var(--primary-text)] rounded-[var(--radius-md)] hover:bg-[var(--primary-hover)] transition-colors duration-200"
+              >
+                Browse Courses
+              </button>
+            )}
           </div>
         ) : (
           filteredCourses.map((course) => (
@@ -321,6 +368,19 @@ export default function EnrolledCoursesPage() {
                         Instructor: {course.instructor}
                       </div>
                     )}
+
+                    {/* Additional Course Info */}
+                    <div className="flex flex-wrap items-center gap-4 text-xs text-[var(--foreground-muted)] mt-3 pt-3 border-t border-[var(--border)]">
+                      {course.courseId && (
+                        <span>Course ID: {course.courseId}</span>
+                      )}
+                      {course.scheduleId && (
+                        <span>Schedule ID: {course.scheduleId}</span>
+                      )}
+                      {course.purchaseDate && (
+                        <span>Purchased: {new Date(course.purchaseDate).toLocaleDateString()}</span>
+                      )}
+                    </div>
 
                     {/* Progress Bar for in-progress and self-paced courses */}
                     {(course.status === 'in-progress' || course.status === 'self-paced') && course.progress && (

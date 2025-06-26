@@ -52,6 +52,8 @@ export interface Transaction {
     courseName: string;
     courseType: string;
     quantity: number;
+    courseId: string;
+    scheduleId: string;
   };
   paymentMethod: string;
   invoiceUrl?: string;

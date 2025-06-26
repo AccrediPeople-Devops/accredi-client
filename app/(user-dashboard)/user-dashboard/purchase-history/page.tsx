@@ -11,9 +11,10 @@ import {
   HiOutlineDownload,
   HiOutlineCheckCircle,
   HiOutlineXCircle,
-  HiOutlineClock
+  HiOutlineClock,
+  HiOutlineRefresh
 } from "react-icons/hi";
-import UserProfileService from "@/app/components/user-dashboard/services/userProfile.service";
+import UserProfileService, { NewPurchaseHistoryResponse, PurchaseHistoryItem } from "@/app/components/user-dashboard/services/userProfile.service";
 import { Transaction, SortField, SortOrder } from "@/app/types/purchaseHistory";
 
 export default function PurchaseHistoryPage() {
@@ -27,66 +28,68 @@ export default function PurchaseHistoryPage() {
   const [sortField, setSortField] = useState<SortField>('paymentDate');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
 
-  useEffect(() => {
-    const fetchPurchaseHistory = async () => {
-      console.log("🔍 PURCHASE HISTORY: Fetching purchase history from API...");
-      setIsLoading(true);
-      setError('');
+  const fetchPurchaseHistory = async () => {
+    console.log("🔍 PURCHASE HISTORY: Fetching purchase history from API...");
+    setIsLoading(true);
+    setError('');
+    
+    try {
+      const response = await UserProfileService.getPurchaseHistory();
+      console.log("📡 PURCHASE HISTORY: API Response:", response);
       
-      try {
-        const response = await UserProfileService.getPurchaseHistory();
-        console.log("📡 PURCHASE HISTORY: API Response:", response);
-        
-        if (response.status && response.history) {
-          // Transform backend data to match frontend interface
-          const transformedTransactions: Transaction[] = response.history.map((item) => ({
-            id: item._id,
-            transactionId: item.paymentIntentId || item.sessionId,
-            amountPaid: item.amountTotal,
-            currency: item.currency.toUpperCase(),
-            paymentStatus: item.paymentStatus === 'paid' ? 'completed' : 
-                          item.status === 'complete' ? 'completed' : 
-                          item.paymentStatus as Transaction['paymentStatus'],
-            paymentDate: item.createdAt,
-            orderDetails: {
-              courseName: `Course - ${item.courseId}`, // This would need course name lookup
-              courseType: item.scheduleType === 'online' ? 'Instructor-Led Live Online' : 'Classroom Training',
-              quantity: 1
-            },
-            paymentMethod: 'Card Payment', // Default as not provided in response
-            customerInfo: {
-              name: item.customerName,
-              email: item.customerEmail,
-              phone: item.customerPhone
-            },
-            billingAddress: {
-              line1: item.billingAddress.line1,
-              line2: item.billingAddress.line2,
-              city: item.billingAddress.city,
-              state: item.billingAddress.state,
-              country: item.billingAddress.country,
-              postalCode: item.billingAddress.postal_code
-            }
-          }));
+      if (response.status && response.history) {
+        // Transform backend data to match frontend interface
+        const transformedTransactions: Transaction[] = response.history.map((item) => ({
+          id: item._id,
+          transactionId: item.paymentIntentId || item.sessionId,
+          amountPaid: item.amountTotal,
+          currency: item.currency.toUpperCase(),
+          paymentStatus: item.paymentStatus === 'paid' ? 'completed' : 
+                        item.status === 'complete' ? 'completed' : 
+                        item.paymentStatus as Transaction['paymentStatus'],
+          paymentDate: item.createdAt,
+          orderDetails: {
+            courseName: `Course - ${item.courseId}`, // This would need course name lookup
+            courseType: item.scheduleType === 'online' ? 'Instructor-Led Live Online' : 'Classroom Training',
+            quantity: 1,
+            courseId: item.courseId,
+            scheduleId: item.scheduleId
+          },
+          paymentMethod: 'Card Payment', // Default as not provided in response
+          customerInfo: {
+            name: item.customerName,
+            email: item.customerEmail,
+            phone: item.customerPhone
+          },
+          billingAddress: {
+            line1: item.billingAddress.line1,
+            line2: item.billingAddress.line2,
+            city: item.billingAddress.city,
+            state: item.billingAddress.state,
+            country: item.billingAddress.country,
+            postalCode: item.billingAddress.postal_code
+          }
+        }));
 
-          console.log("✅ PURCHASE HISTORY: Transformed data:", transformedTransactions);
-          setTransactions(transformedTransactions);
-          setFilteredTransactions(transformedTransactions);
-        } else {
-          console.log("⚠️ PURCHASE HISTORY: No history data found");
-          setTransactions([]);
-          setFilteredTransactions([]);
-        }
-      } catch (error: any) {
-        console.error("❌ PURCHASE HISTORY: Error fetching data:", error);
-        setError(error.response?.data?.message || error.message || "Failed to load purchase history");
+        console.log("✅ PURCHASE HISTORY: Transformed data:", transformedTransactions);
+        setTransactions(transformedTransactions);
+        setFilteredTransactions(transformedTransactions);
+      } else {
+        console.log("⚠️ PURCHASE HISTORY: No history data found");
         setTransactions([]);
         setFilteredTransactions([]);
-      } finally {
-        setIsLoading(false);
       }
-    };
+    } catch (error: any) {
+      console.error("❌ PURCHASE HISTORY: Error fetching data:", error);
+      setError(error.response?.data?.message || error.message || "Failed to load purchase history");
+      setTransactions([]);
+      setFilteredTransactions([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchPurchaseHistory();
   }, []);
 
@@ -249,8 +252,20 @@ export default function PurchaseHistoryPage() {
     <div className="max-w-6xl mx-auto space-y-6">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-[var(--foreground)] mb-2">Payments History</h1>
-        <p className="text-[var(--foreground-muted)]">View your transaction history and download invoices</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-[var(--foreground)] mb-2">Payments History</h1>
+            <p className="text-[var(--foreground-muted)]">View your transaction history and download invoices</p>
+          </div>
+          <button
+            onClick={fetchPurchaseHistory}
+            disabled={isLoading}
+            className="flex items-center gap-2 px-4 py-2 bg-[var(--primary)] text-[var(--primary-text)] rounded-[var(--radius-md)] hover:bg-[var(--primary-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+          >
+            <HiOutlineRefresh className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+            Refresh
+          </button>
+        </div>
       </div>
 
       {/* Controls */}
@@ -347,8 +362,27 @@ export default function PurchaseHistoryPage() {
               {currentTransactions.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="text-center py-12">
-                    <div className="text-blue-600 dark:text-blue-400 text-sm">
-                      {searchTerm ? 'No transactions found matching your search.' : 'No purchase history available.'}
+                    <div className="text-center">
+                      <HiOutlineXCircle className="w-12 h-12 text-[var(--foreground-muted)] mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-[var(--foreground)] mb-2">
+                        {error ? 'Unable to load purchase history' : 'No transactions found'}
+                      </h3>
+                      <p className="text-[var(--foreground-muted)] mb-4">
+                        {error 
+                          ? 'There was an error loading your purchase history. Please try refreshing the page.'
+                          : searchTerm 
+                            ? 'No transactions found matching your search criteria. Try adjusting your search terms.'
+                            : 'You have not made any purchases yet. Browse our courses to get started!'
+                        }
+                      </p>
+                      {!error && !searchTerm && (
+                        <button
+                          onClick={() => window.location.href = '/courses'}
+                          className="px-6 py-2 bg-[var(--primary)] text-[var(--primary-text)] rounded-[var(--radius-md)] hover:bg-[var(--primary-hover)] transition-colors duration-200"
+                        >
+                          Browse Courses
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -384,6 +418,10 @@ export default function PurchaseHistoryPage() {
                         </div>
                         <div className="text-[var(--foreground-muted)] text-xs">
                           {transaction.paymentMethod}
+                        </div>
+                        <div className="text-[var(--foreground-muted)] text-xs mt-1 pt-1 border-t border-[var(--border)]">
+                          <div>Course ID: {transaction.orderDetails.courseId}</div>
+                          <div>Schedule ID: {transaction.orderDetails.scheduleId}</div>
                         </div>
                       </div>
                     </td>

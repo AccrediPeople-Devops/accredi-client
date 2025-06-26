@@ -10,6 +10,7 @@ import {
   HiOutlineUsers,
   HiOutlineExternalLink
 } from "react-icons/hi";
+import userProfileService, { UserLink } from "@/app/components/user-dashboard/services/userProfile.service";
 
 interface Session {
   id: string;
@@ -22,80 +23,92 @@ interface Session {
   time?: string;
   duration?: string;
   instructor?: string;
+  courseId?: string;
+  scheduleId?: string;
+  name?: string;
 }
 
 export default function SessionDetailsPage() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string>("");
   const [filter, setFilter] = useState<'all' | 'active' | 'upcoming' | 'completed'>('all');
 
-  useEffect(() => {
-    // Simulate fetching session data
-    const fetchSessions = async () => {
-      setIsLoading(true);
-      try {
-        // Mock data based on the screenshot
-        const mockSessions: Session[] = [
-          {
-            id: '1',
-            type: 'google-drive',
-            title: 'Google Drive - Recordings',
-            url: 'https://drive.google.com/drive/folders/1owoX_VndjZyTChwVlsM_aehjVjEy-nAE?usp=drive_link',
-            status: 'active',
-            date: '2024-01-15',
-            time: '10:00 AM',
-            duration: '2 hours'
-          },
-          {
-            id: '2',
-            type: 'google-drive',
-            title: 'Google Drive - Recordings',
-            url: 'https://drive.google.com/drive/folders/1owoX_VndjZyTChwVlsM_aehjVjEy-nAE?usp=drive_link',
-            status: 'active',
-            date: '2024-01-16',
-            time: '2:00 PM',
-            duration: '1.5 hours'
-          },
-          {
-            id: '3',
-            type: 'zoom-meeting',
-            title: 'Zoom Meeting Link',
-            url: 'https://us06web.zoom.us/meeting/register/UtfX55psTFS8lVl4Ue6N8A',
-            status: 'upcoming',
-            date: '2024-01-20',
-            time: '11:00 AM',
-            duration: '3 hours',
-            instructor: 'John Smith'
-          },
-          {
-            id: '4',
-            type: 'zoom-meeting',
-            title: 'Zoom Meeting Link',
-            url: 'https://us06web.zoom.us/meeting/register/UtfX55psTFS8lVl4Ue6N8A',
-            status: 'upcoming',
-            date: '2024-01-22',
-            time: '9:00 AM',
-            duration: '2.5 hours',
-            instructor: 'Jane Doe'
-          },
-          {
-            id: '5',
-            type: 'self-paced',
-            title: 'PMP Self-Paced Course Access',
-            url: 'https://drive.google.com/drive/folders/1DpCThspdrZs1-Fkf6kKhPnsJ3pzwjwqd?usp=sharing',
-            status: 'active',
-            description: 'Access to all course materials and resources'
-          }
-        ];
+  // Transform UserLink to Session
+  const transformLinkToSession = (link: UserLink): Session => {
+    // Determine session type based on link name or URL
+    let type: Session['type'] = 'live-session';
+    if (link.name.toLowerCase().includes('drive') || link.link.includes('drive.google.com')) {
+      type = 'google-drive';
+    } else if (link.name.toLowerCase().includes('zoom') || link.link.includes('zoom.us')) {
+      type = 'zoom-meeting';
+    } else if (link.name.toLowerCase().includes('self') || link.name.toLowerCase().includes('paced')) {
+      type = 'self-paced';
+    } else if (link.link.includes('meet.google.com')) {
+      type = 'zoom-meeting'; // Treat Google Meet as similar to Zoom
+    }
 
-        setSessions(mockSessions);
-      } catch (error) {
-        console.error('Error fetching sessions:', error);
-      } finally {
-        setIsLoading(false);
+    // Determine status based on isActive and other factors
+    let status: Session['status'] = link.isActive ? 'active' : 'completed';
+    
+    // Format title based on name and type
+    let title = link.name || 'Session Link';
+    if (type === 'google-drive') {
+      title = title.includes('Drive') ? title : `${title} - Google Drive`;
+    } else if (type === 'zoom-meeting') {
+      if (link.link.includes('meet.google.com')) {
+        title = title.includes('Meet') ? title : `${title} - Google Meet`;
+      } else {
+        title = title.includes('Zoom') ? title : `${title} - Zoom Meeting`;
       }
+    }
+    
+    return {
+      id: link._id,
+      type,
+      title: title,
+      url: link.link,
+      status,
+      courseId: link.courseId,
+      scheduleId: link.scheduleId,
+      name: link.name,
+      date: new Date(link.createdAt).toISOString().split('T')[0],
+      description: `Created on ${new Date(link.createdAt).toLocaleDateString()}`,
     };
+  };
 
+  // Fetch sessions function
+  const fetchSessions = async () => {
+    setIsLoading(true);
+    setError("");
+    try {
+      console.log("Fetching user session links...");
+      const response = await userProfileService.getUserLinks();
+      
+      if (response.status && response.links) {
+        console.log("Received links:", response.links);
+        
+        // Transform API data to Session format
+        const transformedSessions = response.links
+          .filter(link => !link.isDeleted) // Filter out deleted links
+          .map(transformLinkToSession);
+        
+        setSessions(transformedSessions);
+        console.log("Transformed sessions:", transformedSessions);
+      } else {
+        console.warn("Unexpected response format:", response);
+        setSessions([]);
+      }
+    } catch (error: any) {
+      console.error('Error fetching sessions:', error);
+      setError(error.response?.data?.message || error.message || "Failed to load sessions");
+      setSessions([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchSessions();
   }, []);
 
@@ -158,11 +171,53 @@ export default function SessionDetailsPage() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="max-w-4xl mx-auto space-y-8">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-[var(--foreground)] mb-2">Session Details</h1>
+          <p className="text-[var(--foreground-muted)]">Access your course sessions, recordings, and meeting links</p>
+        </div>
+        
+        <div className="bg-[var(--card-bg)] border border-red-200 rounded-[var(--radius-lg)] shadow-sm p-6">
+          <div className="text-center py-12">
+            <HiOutlineCalendar className="w-12 h-12 text-red-500 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-[var(--foreground)] mb-2">Error Loading Sessions</h3>
+            <p className="text-red-600 mb-4">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-[var(--primary-text)] font-medium rounded-[var(--radius-md)] transition-colors duration-200"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-[var(--foreground)] mb-2">Session Details</h1>
+        <div className="flex items-center justify-between mb-2">
+          <h1 className="text-2xl font-bold text-[var(--foreground)]">Session Details</h1>
+          <button
+            onClick={fetchSessions}
+            disabled={isLoading}
+            className="flex items-center gap-2 px-4 py-2 bg-[var(--input-bg)] hover:bg-[var(--border)] text-[var(--foreground)] border border-[var(--border)] rounded-[var(--radius-md)] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <svg
+              className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            {isLoading ? 'Refreshing...' : 'Refresh'}
+          </button>
+        </div>
         <p className="text-[var(--foreground-muted)]">Access your course sessions, recordings, and meeting links</p>
       </div>
 
@@ -225,7 +280,7 @@ export default function SessionDetailsPage() {
                     </div>
 
                     {/* Session Details */}
-                    {(session.date || session.time || session.duration || session.instructor) && (
+                    {(session.date || session.time || session.duration || session.instructor || session.courseId || session.scheduleId) && (
                       <div className="flex flex-wrap items-center gap-4 mb-4 text-sm text-[var(--foreground-muted)]">
                         {session.date && (
                           <div className="flex items-center gap-1">
@@ -249,6 +304,18 @@ export default function SessionDetailsPage() {
                           <div className="flex items-center gap-1">
                             <HiOutlineUsers className="w-4 h-4" />
                             <span>{session.instructor}</span>
+                          </div>
+                        )}
+                        {session.courseId && (
+                          <div className="flex items-center gap-1">
+                            <HiOutlineFolder className="w-4 h-4" />
+                            <span>Course: {session.courseId.slice(-8)}</span>
+                          </div>
+                        )}
+                        {session.scheduleId && (
+                          <div className="flex items-center gap-1">
+                            <HiOutlineCalendar className="w-4 h-4" />
+                            <span>Schedule: {session.scheduleId.slice(-8)}</span>
                           </div>
                         )}
                       </div>

@@ -28,69 +28,12 @@ export default function PracticeTestsPage() {
   const [filter, setFilter] = useState<'all' | 'not-started' | 'in-progress' | 'completed'>('all');
 
   useEffect(() => {
-    // Simulate fetching practice test data
+    // Simulate fetching practice test data - currently no tests available
     const fetchPracticeTests = async () => {
       setIsLoading(true);
       try {
-        // Mock data based on the screenshot
-        const mockTests: PracticeTest[] = [
-          {
-            id: '1',
-            title: 'PMP® Practice Test 1',
-            duration: 230,
-            totalQuestions: 180,
-            completedQuestions: 45,
-            status: 'in-progress',
-            lastAttempted: '2024-01-15',
-            attempts: 1,
-            maxAttempts: 3
-          },
-          {
-            id: '2',
-            title: 'PMP® Practice Test 2',
-            duration: 230,
-            totalQuestions: 180,
-            completedQuestions: 67,
-            status: 'in-progress',
-            lastAttempted: '2024-01-14',
-            attempts: 1,
-            maxAttempts: 3
-          },
-          {
-            id: '3',
-            title: 'PMP® Practice Test 3',
-            duration: 230,
-            totalQuestions: 181,
-            completedQuestions: 23,
-            status: 'in-progress',
-            lastAttempted: '2024-01-13',
-            attempts: 1,
-            maxAttempts: 3
-          },
-          {
-            id: '4',
-            title: 'PMP® Practice Test 4',
-            duration: 230,
-            totalQuestions: 180,
-            status: 'not-started',
-            attempts: 0,
-            maxAttempts: 3
-          },
-          {
-            id: '5',
-            title: 'PMP® Practice Test 5',
-            duration: 230,
-            totalQuestions: 180,
-            completedQuestions: 180,
-            status: 'completed',
-            score: 85,
-            lastAttempted: '2024-01-10',
-            attempts: 2,
-            maxAttempts: 3
-          }
-        ];
-
-        setPracticeTests(mockTests);
+        // No practice tests available yet
+        setPracticeTests([]);
       } catch (error) {
         console.error('Error fetching practice tests:', error);
       } finally {
@@ -218,9 +161,9 @@ export default function PracticeTestsPage() {
           {filteredTests.length === 0 ? (
             <div className="text-center py-12">
               <HiOutlineClipboardList className="w-12 h-12 text-[var(--foreground-muted)] mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-[var(--foreground)] mb-2">No practice tests found</h3>
+              <h3 className="text-lg font-medium text-[var(--foreground)] mb-2">No Practice Tests Yet</h3>
               <p className="text-[var(--foreground-muted)]">
-                {filter === 'all' ? 'No practice tests available at the moment.' : `No ${filter.replace('-', ' ')} tests found.`}
+                Practice tests are not available at the moment. They will be added soon!
               </p>
             </div>
           ) : (
