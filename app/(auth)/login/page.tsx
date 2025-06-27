@@ -216,9 +216,9 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
       {/* Left column with logo and quote */}
-      <div className="w-full md:w-1/2 bg-[#4F46E5] flex flex-col items-center justify-center p-8 relative">
+      <div className="w-full md:w-1/2 bg-[#4F46E5] flex flex-col items-center justify-center p-4 relative">
         <div className="max-w-md w-full flex flex-col items-center">
-          <div className="relative w-96 h-40 mb-12">
+          <div className="relative w-96 h-40 mb-6">
             <Image
               src="/Logo/Only_Transperent/full_trimmed_transparent_white.png"
               alt="Accredipeople Logo"
@@ -229,9 +229,9 @@ export default function LoginPage() {
             />
           </div>
           <div className="text-white text-center">
-            <h2 className="text-2xl font-semibold mb-6">Certification Excellence</h2>
+            <h2 className="text-2xl font-semibold mb-6">Empowering Professionals, One Certification at a Time.</h2>
             <p className="text-lg opacity-80">
-              "Elevating professionals through industry-recognized certifications and verified credentials."
+              "We’re committed to delivering world-class, instructor-led training programs that help professionals upskill, grow in their careers, and stay ahead in today’s competitive landscape."
             </p>
           </div>
         </div>
@@ -277,11 +277,11 @@ export default function LoginPage() {
                   autoComplete="current-password"
                 />
 
-                <div className="flex justify-end">
+                {/* <div className="flex justify-end">
                   <Link href="/forgot-password" className="auth-link text-sm">
                     Forgot password?
                   </Link>
-                </div>
+                </div> */}
 
                 <Button type="submit" fullWidth disabled={isLoading} className="py-3 bg-[#4F46E5] hover:bg-[#4338CA]">
                   {isLoading ? "Signing in..." : "Sign In"}

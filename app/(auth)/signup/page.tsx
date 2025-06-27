@@ -291,13 +291,13 @@ export default function SignupPage() {
             />
           </div>
           <div className="text-white text-center">
-            <h2 className="text-2xl font-semibold mb-6">Start Your Professional Journey Today</h2>
+            <h2 className="text-2xl font-semibold mb-6">Empowering Professionals, One Certification at a Time.</h2>
             <p className="text-lg opacity-90">
-              "Join thousands of professionals who have advanced their careers through our industry-leading certification programs. Your success story begins here."
+              "We’re committed to delivering world-class, instructor-led training programs that help professionals upskill, grow in their careers, and stay ahead in today’s competitive landscape."
             </p>
             
             {/* Feature highlights */}
-            <div className="mt-8 space-y-4">
+            {/* <div className="mt-8 space-y-4">
               <div className="flex items-center text-left">
                 <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
                   <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -333,7 +333,7 @@ export default function SignupPage() {
                 </div>
                 <span className="text-white/90">Career advancement support</span>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
