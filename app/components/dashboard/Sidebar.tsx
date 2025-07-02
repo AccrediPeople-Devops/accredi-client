@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "../../context/ThemeContext";
@@ -11,6 +11,20 @@ interface SidebarProps {
 export default function Sidebar({ isMobileOpen, toggleSidebar }: SidebarProps) {
   const pathname = usePathname();
   const { currentTheme } = useTheme();
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+
+  // Check if user is super admin
+  useEffect(() => {
+    const checkSuperAdminStatus = () => {
+      // TODO: Replace this with your actual super admin check
+      // This could come from your auth context, user profile, or token
+      const userRole = localStorage.getItem("userRole");
+      const isSuperAdminUser = userRole === "SUPER_ADMIN" || userRole === "super_admin";
+      setIsSuperAdmin(isSuperAdminUser);
+    };
+
+    checkSuperAdminStatus();
+  }, []);
 
   const menuSections = [
     {
@@ -241,6 +255,46 @@ export default function Sidebar({ isMobileOpen, toggleSidebar }: SidebarProps) {
       ],
     },
     {
+      title: "Finance",
+      items: [
+        {
+          title: "Payment Logs",
+          icon: (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4zM18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" />
+            </svg>
+          ),
+          path: "/dashboard/payment-logs",
+        },
+      ],
+    },
+    {
+      title: "Administration",
+      items: [
+        {
+          title: "Admin Audit Logs",
+          icon: (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path fillRule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2h-2.22l.123.489.804.804A1 1 0 0113 18H7a1 1 0 01-.707-1.707l.804-.804L7.22 15H5a2 2 0 01-2-2V5zm5.771 7H5V5h10v7H8.771z" clipRule="evenodd" />
+              <path d="M11 6a1 1 0 10-2 0v4a1 1 0 102 0V6zM9 10a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" />
+            </svg>
+          ),
+          path: "/dashboard/admin-audit-logs",
+          superAdminOnly: true,
+        },
+      ],
+    },
+    {
       title: "Account",
       items: [
         // {
@@ -283,6 +337,15 @@ export default function Sidebar({ isMobileOpen, toggleSidebar }: SidebarProps) {
     },
   ];
 
+  // Filter menu sections based on user role
+  const filteredMenuSections = menuSections.filter(section => {
+    // Show Administration section only to super admins
+    if (section.title === "Administration" && !isSuperAdmin) {
+      return false;
+    }
+    return true;
+  });
+
   return (
     <>
       {/* Mobile overlay */}
@@ -316,7 +379,7 @@ export default function Sidebar({ isMobileOpen, toggleSidebar }: SidebarProps) {
 
           {/* Menu */}
           <nav className="flex-1 px-3 py-6 overflow-y-auto overflow-x-hidden sidebar-menu">
-            {menuSections.map((section) => (
+            {filteredMenuSections.map((section) => (
               <div key={section.title} className="mb-8 last:mb-0">
                 <h3 className="px-4 mb-3 text-xs font-semibold text-[var(--foreground-muted)] uppercase tracking-wider">
                   {section.title}
