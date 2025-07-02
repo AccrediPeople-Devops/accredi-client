@@ -2,6 +2,7 @@ export interface Schedule {
   _id: string;
   courseId: string;
   country: string;
+  countryCode?: string;
   scheduleType: string;
   startDate: string;
   endDate: string;
@@ -10,6 +11,7 @@ export interface Schedule {
   instructorName: string;
   accessType: string;
   state: string;
+  stateCode?: string;
   city: string;
   standardPrice: number;
   offerPrice: number;

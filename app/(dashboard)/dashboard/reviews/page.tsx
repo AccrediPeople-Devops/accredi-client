@@ -41,28 +41,6 @@ export default function ReviewsPage() {
     }
   }, []);
 
-  const handleToggleActive = async (id: string, isActive: boolean) => {
-    try {
-      // Use the dedicated API for toggling active status
-      const res = await ReviewService.updateReviewStatus(id, isActive);
-      if (res) {
-        // Update the review in the list with the response data
-        setReviews(
-          reviews.map((review) =>
-            review._id === id
-              ? {
-                  ...review,
-                  isActive: res.review?.isActive || isActive,
-                }
-              : review
-          )
-        );
-      }
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Error updating review status");
-    }
-  };
-
   const handleDeleteClick = (id: string) => {
     setReviewToDelete(id);
     setShowDeleteModal(true);
@@ -103,9 +81,6 @@ export default function ReviewsPage() {
       setIsDeleting(false);
     }
   };
-
-  // Filter reviews to show only non-deleted items
-  const filteredReviews = reviews.filter((review) => !review.isDeleted);
 
   return (
     <div className="space-y-6">
@@ -151,7 +126,7 @@ export default function ReviewsPage() {
         <div className="flex justify-center items-center py-12">
           <LoadingSpinner size="large" text="Loading reviews..." />
         </div>
-      ) : filteredReviews.length === 0 ? (
+      ) : reviews.length === 0 ? (
         <div className="mt-6 p-8 text-center border border-[var(--primary)]/10 rounded-[var(--radius-md)] shadow-[var(--shadow-sm)] bg-[var(--background)]">
           <h3 className="text-lg font-medium text-[var(--foreground)]/80">
             No reviews have been added yet
@@ -162,12 +137,10 @@ export default function ReviewsPage() {
         </div>
       ) : (
         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredReviews.map((review) => (
+          {reviews.map((review) => (
             <div
               key={review._id}
-              className={`p-4 border border-[var(--primary)]/10 rounded-[var(--radius-md)] shadow-[var(--shadow-sm)] bg-[var(--background)] ${
-                !review.isActive && "opacity-70"
-              }`}
+              className="p-4 border border-[var(--primary)]/10 rounded-[var(--radius-md)] shadow-[var(--shadow-sm)] bg-[var(--background)]"
             >
               <div className="flex items-start justify-between">
                 <div className="flex items-center space-x-3">
@@ -209,27 +182,8 @@ export default function ReviewsPage() {
 
                 <div className="flex space-x-1">
                   <Link
-                    href={`/dashboard/reviews/${review._id}`}
-                    className="p-1 rounded-full hover:bg-[var(--primary)]/10 text-[var(--foreground)]/70 hover:text-[var(--primary)] transition-colors"
-                    title="View review details"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                      <path
-                        fillRule="evenodd"
-                        d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </Link>
-                  <Link
-                    href={`/dashboard/reviews/edit/${review._id}`}
-                    className="p-1 rounded-full hover:bg-[var(--primary)]/10 text-[var(--foreground)]/70 hover:text-[var(--primary)] transition-colors"
+                    href={`/dashboard/reviews/${review._id}/edit`}
+                    className="p-2 rounded-full hover:bg-[var(--primary)]/10 text-[var(--foreground)]/70 hover:text-[var(--primary)] transition-colors"
                     title="Edit review"
                   >
                     <svg
@@ -242,7 +196,7 @@ export default function ReviewsPage() {
                     </svg>
                   </Link>
                   <button
-                    className="p-1 rounded-full hover:bg-red-100 text-[var(--foreground)]/70 hover:text-red-600 transition-colors"
+                    className="p-2 rounded-full hover:bg-red-100 text-[var(--foreground)]/70 hover:text-red-600 transition-colors"
                     onClick={() => handleDeleteClick(review._id)}
                     title="Delete review"
                   >
@@ -268,26 +222,8 @@ export default function ReviewsPage() {
                 </p>
               </div>
 
-              <div className="mt-4 flex items-center justify-between">
-                <div className="text-sm text-[var(--foreground)]/70">
-                  {new Date(review.createdAt).toLocaleDateString()}
-                </div>
-
-                <div className="flex items-center">
-                  <span className="text-sm text-[var(--foreground)]/70 mr-2">
-                    {review.isActive ? "Active" : "Inactive"}
-                  </span>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      className="sr-only peer"
-                      checked={review.isActive}
-                      onChange={() => handleToggleActive(review._id, !review.isActive)}
-                      aria-label={`Toggle active state for ${review.name}`}
-                    />
-                    <div className="w-9 h-5 bg-[var(--input-bg)] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[var(--primary)]/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[var(--primary)]"></div>
-                  </label>
-                </div>
+              <div className="mt-4 text-sm text-[var(--foreground)]/70">
+                {new Date(review.createdAt).toLocaleDateString()}
               </div>
             </div>
           ))}
@@ -295,41 +231,17 @@ export default function ReviewsPage() {
       )}
 
       {/* Delete Confirmation Modal */}
-      {showDeleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-[var(--background)] rounded-[var(--radius-lg)] p-6 max-w-md w-full">
-            <h3 className="text-lg font-medium text-[var(--foreground)]">Confirm Delete</h3>
-            <p className="mt-2 text-[var(--foreground-muted)]">
-              Are you sure you want to delete this review? This action cannot be undone.
-            </p>
-            <div className="mt-4 flex space-x-2 justify-end">
-              <button
-                onClick={() => {
-                  setShowDeleteModal(false);
-                  setReviewToDelete(null);
-                }}
-                className="px-4 py-2 bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] rounded-[var(--radius-md)] hover:bg-[var(--input-bg)] transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmDelete}
-                disabled={isDeleting}
-                className="px-4 py-2 bg-[var(--error)] text-white rounded-[var(--radius-md)] hover:bg-[var(--error)]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-              >
-                {isDeleting ? (
-                  <>
-                    <LoadingSpinner size="small" />
-                    Deleting...
-                  </>
-                ) : (
-                  "Delete"
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Modal 
+        isOpen={showDeleteModal} 
+        onClose={() => setShowDeleteModal(false)}
+        title="Delete Review"
+        description="Are you sure you want to delete this review? This action cannot be undone."
+        confirmText={isDeleting ? "Deleting..." : "Delete"}
+        cancelText="Cancel"
+        onConfirm={confirmDelete}
+        isConfirming={isDeleting}
+        variant="danger"
+      />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import Breadcrumb from "@/app/components/site/Breadcrumb";
+import { referEarnService, ReferEarnFormData } from "@/app/components/service/referEarn.service";
 
 export default function ReferEarnPage() {
   const [formData, setFormData] = useState({
@@ -11,7 +12,11 @@ export default function ReferEarnPage() {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<{
+    type: 'success' | 'error' | null;
+    message: string;
+  }>({ type: null, message: '' });
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -27,28 +32,79 @@ export default function ReferEarnPage() {
         [name]: value
       }));
     }
+    
+    // Clear validation errors when user starts typing
+    if (validationErrors.length > 0) {
+      setValidationErrors([]);
+    }
+    
+    // Clear status messages when user modifies form
+    if (submitStatus.type) {
+      setSubmitStatus({ type: null, message: '' });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    setIsSubmitting(false);
-    setSubmitted(true);
-    
-    // Reset form after success
-    setTimeout(() => {
-      setSubmitted(false);
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        message: ''
+    setValidationErrors([]);
+    setSubmitStatus({ type: null, message: '' });
+
+    try {
+      // Sanitize and prepare form data
+      const sanitizedData = referEarnService.sanitizeFormData(formData);
+      
+      // Validate form data
+      const validation = referEarnService.validateFormData(sanitizedData);
+      
+      if (!validation.isValid) {
+        setValidationErrors(validation.errors);
+        setSubmitStatus({
+          type: 'error',
+          message: 'Please correct the errors below and try again.'
+        });
+        return;
+      }
+
+      // Submit form data
+      const response = await referEarnService.submitReferEarnForm(sanitizedData);
+
+      if (response.success) {
+        setSubmitStatus({
+          type: 'success',
+          message: 'Message Sent Successfully!'
+        });
+        
+        // Reset form on successful submission
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          message: ''
+        });
+        
+        // Scroll to success message
+        setTimeout(() => {
+          const element = document.getElementById('form-status');
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 100);
+      } else {
+        setSubmitStatus({
+          type: 'error',
+          message: response.message
+        });
+      }
+    } catch (error) {
+      console.error('Unexpected error during form submission:', error);
+      setSubmitStatus({
+        type: 'error',
+        message: 'An unexpected error occurred. Please try again later.'
       });
-    }, 3000);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const breadcrumbItems = [
@@ -227,14 +283,56 @@ export default function ReferEarnPage() {
 
             {/* Form */}
             <div className="site-glass backdrop-blur-xl rounded-3xl p-8 shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500">
-              {submitted ? (
+              
+              {/* Status Messages */}
+              <div id="form-status">
+                {/* Validation Errors */}
+                {validationErrors.length > 0 && (
+                  <div className="mb-6 p-6 bg-gradient-to-r from-[#EF4444]/20 to-[#DC2626]/20 border border-[#EF4444]/30 rounded-2xl">
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 bg-[#EF4444] rounded-full flex items-center justify-center flex-shrink-0">
+                        <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-[#EF4444] text-lg mb-2">Please correct the following errors:</h3>
+                        <ul className="list-disc list-inside space-y-1">
+                          {validationErrors.map((error, index) => (
+                            <li key={index} className="text-sm site-text-secondary">{error}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Error Message */}
+                {submitStatus.type === 'error' && (
+                  <div className="mb-6 p-6 bg-gradient-to-r from-[#EF4444]/20 to-[#DC2626]/20 border border-[#EF4444]/30 rounded-2xl">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-[#EF4444] rounded-full flex items-center justify-center">
+                        <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-[#EF4444] text-lg">Submission Failed</h3>
+                        <p className="site-text-secondary">{submitStatus.message}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {submitStatus.type === 'success' ? (
                 <div className="text-center py-16">
                   <div className="w-20 h-20 bg-gradient-to-br from-[#10B981] to-[#059669] rounded-full flex items-center justify-center mx-auto mb-6">
                     <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <h4 className="text-2xl font-bold site-text-primary mb-4">Message Sent Successfully!</h4>
+                  <h4 className="text-2xl font-bold site-text-primary mb-4">{submitStatus.message}</h4>
                   <p className="site-text-secondary">We'll get back to you within 24 hours with your referral information.</p>
                 </div>
               ) : (
@@ -299,10 +397,7 @@ export default function ReferEarnPage() {
                   >
                     {isSubmitting ? (
                       <div className="flex items-center justify-center gap-3">
-                        <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                        </svg>
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                         Sending Message...
                       </div>
                     ) : (

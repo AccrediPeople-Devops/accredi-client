@@ -1,26 +1,31 @@
 "use client";
 import React, { useState } from "react";
+import { becomeInstructorService, BecomeInstructorFormData } from "@/app/components/service/becomeInstructor.service";
 
 export default function BecomeInstructorPage() {
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    phone: '',
-    email: '',
-    city: '',
-    country: '',
+    firstName: "",
+    lastName: "",
+    phone: "",
+    email: "",
+    city: "",
+    country: "",
     cv: null as File | null,
-    message: ''
+    message: ""
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<'success' | 'error' | null>(null);
-
+  const [submitStatus, setSubmitStatus] = useState<{
+    type: "success" | "error" | null;
+    message: string;
+  }>({ type: null, message: "" });
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [isUploadingResume, setIsUploadingResume] = useState(false);
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    if (name === 'phone') {
+    if (name === "phone") {
       // Allow only numbers, +, and . and limit to 13 characters
-      const numericValue = value.replace(/[^0-9+.]/g, '').replace(/(\..*)\./g, '$1').slice(0, 13);
+      const numericValue = value.replace(/[^0-9+.]/g, "").replace(/(..*)./g, "$1").slice(0, 13);
       setFormData(prev => ({
         ...prev,
         [name]: numericValue
@@ -31,52 +36,159 @@ export default function BecomeInstructorPage() {
         [name]: value
       }));
     }
+    
+    // Clear validation errors when user starts typing
+    if (validationErrors.length > 0) {
+      setValidationErrors([]);
+    }
+    
+    // Clear status messages when user modifies form
+    if (submitStatus.type) {
+      setSubmitStatus({ type: null, message: "" });
+    }
   };
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
-    if (file && file.type !== 'application/pdf') {
-      alert('Please upload a PDF file only.');
-      e.target.value = '';
+    if (file && file.type !== "application/pdf") {
+      setValidationErrors(["Please upload a PDF file only."]);
+      e.target.value = "";
       return;
     }
+    
+    // Check file size (5MB limit)
+    if (file && file.size > 5 * 1024 * 1024) {
+      setValidationErrors(["Resume file size must be less than 5MB."]);
+      e.target.value = "";
+      return;
+    }
+    
     setFormData(prev => ({
       ...prev,
       cv: file
     }));
+    
+    // Clear validation errors when valid file is selected
+    if (validationErrors.length > 0) {
+      setValidationErrors([]);
+    }
+    
+    // Clear status messages
+    if (submitStatus.type) {
+      setSubmitStatus({ type: null, message: "" });
+    }
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setSubmitStatus(null);
+    setValidationErrors([]);
+    setSubmitStatus({ type: null, message: "" });
 
     try {
-      // Simulate form submission
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      console.log('Instructor application submitted:', formData);
-      setSubmitStatus('success');
-      setFormData({
-        firstName: '',
-        lastName: '',
-        phone: '',
-        email: '',
-        city: '',
-        country: '',
-        cv: null,
-        message: ''
-      });
-      
-      // Reset file input
-      const fileInput = document.getElementById('cv') as HTMLInputElement;
-      if (fileInput) fileInput.value = '';
-      
+      // Validate form data first
+      const validation = becomeInstructorService.validateFormData(
+        {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phoneNumber: formData.phone,
+          country: formData.country,
+          city: formData.city,
+          message: formData.message
+        },
+        formData.cv || undefined
+      );
+
+      if (!validation.isValid) {
+        setValidationErrors(validation.errors);
+        setSubmitStatus({
+          type: "error",
+          message: "Please correct the errors below and try again."
+        });
+        return;
+      }
+
+      // Upload resume first
+      let resumeData = null;
+      if (formData.cv) {
+        setIsUploadingResume(true);
+        const uploadResponse = await becomeInstructorService.uploadResume(formData.cv);
+        
+        if (!uploadResponse.success) {
+          setSubmitStatus({
+            type: "error",
+            message: uploadResponse.message
+          });
+          return;
+        }
+        
+        resumeData = {
+          _id: uploadResponse.data._id || "",
+          path: uploadResponse.data.path,
+          key: uploadResponse.data.key
+        };
+      }
+
+      setIsUploadingResume(false);
+
+      // Prepare data for API submission
+      const apiFormData: BecomeInstructorFormData = {
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
+        email: formData.email.trim(),
+        phoneNumber: formData.phone.trim(),
+        country: formData.country.trim(),
+        city: formData.city.trim(),
+        resume: resumeData!,
+        message: formData.message.trim()
+      };
+
+      // Submit form data
+      const response = await becomeInstructorService.submitBecomeInstructorForm(apiFormData);
+
+      if (response.success) {
+        setSubmitStatus({
+          type: "success",
+          message: response.message
+        });
+        
+        // Reset form on successful submission
+        setFormData({
+          firstName: "",
+          lastName: "",
+          phone: "",
+          email: "",
+          city: "",
+          country: "",
+          cv: null,
+          message: ""
+        });
+        
+        // Reset file input
+        const fileInput = document.getElementById("cv") as HTMLInputElement;
+        if (fileInput) fileInput.value = "";
+        
+        // Scroll to success message
+        setTimeout(() => {
+          const element = document.getElementById("form-status");
+          if (element) {
+            element.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+        }, 100);
+      } else {
+        setSubmitStatus({
+          type: "error",
+          message: response.message
+        });
+      }
     } catch (error) {
-      console.error('Submission error:', error);
-      setSubmitStatus('error');
+      console.error("Unexpected error during form submission:", error);
+      setSubmitStatus({
+        type: "error",
+        message: "An unexpected error occurred. Please try again later."
+      });
     } finally {
       setIsSubmitting(false);
+      setIsUploadingResume(false);
     }
   };
 
@@ -107,7 +219,8 @@ export default function BecomeInstructorPage() {
               </span>
             </h1>
             <p className="text-xl site-text-secondary font-medium leading-relaxed max-w-2xl mx-auto">
-              Fill up this form to join with us and start making a difference in professionals' careers worldwide
+              <span className="font-bold">Ready to Share Your Expertise? Join Our Team!</span><br/>
+              <span>Fill out the form below to get started.</span>
             </p>
           </div>
         </div>
@@ -123,39 +236,63 @@ export default function BecomeInstructorPage() {
         <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="site-glass backdrop-blur-xl rounded-3xl p-8 md:p-12 shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500">
             
-            {/* Success Message */}
-            {submitStatus === 'success' && (
-              <div className="mb-8 p-6 bg-gradient-to-r from-[#10B981]/20 to-[#059669]/20 border border-[#10B981]/30 rounded-2xl">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-[#10B981] rounded-full flex items-center justify-center">
-                    <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-[#10B981] text-lg">Application Submitted Successfully!</h3>
-                    <p className="site-text-secondary">Thank you for your interest. We'll review your application and get back to you soon.</p>
+            {/* Status Messages */}
+            <div id="form-status">
+              {/* Validation Errors */}
+              {validationErrors.length > 0 && (
+                <div className="mb-6 p-6 bg-gradient-to-r from-[#EF4444]/20 to-[#DC2626]/20 border border-[#EF4444]/30 rounded-2xl">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 bg-[#EF4444] rounded-full flex items-center justify-center flex-shrink-0">
+                      <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-[#EF4444] text-lg mb-2">Please correct the following errors:</h3>
+                      <ul className="list-disc list-inside space-y-1">
+                        {validationErrors.map((error, index) => (
+                          <li key={index} className="text-sm site-text-secondary">{error}</li>
+                        ))}
+                      </ul>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Error Message */}
-            {submitStatus === 'error' && (
-              <div className="mb-8 p-6 bg-gradient-to-r from-[#EF4444]/20 to-[#DC2626]/20 border border-[#EF4444]/30 rounded-2xl">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-[#EF4444] rounded-full flex items-center justify-center">
-                    <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-[#EF4444] text-lg">Submission Failed</h3>
-                    <p className="site-text-secondary">There was an error submitting your application. Please try again.</p>
+              {/* Success Message */}
+              {submitStatus.type === 'success' && (
+                <div className="mb-8 p-6 bg-gradient-to-r from-[#10B981]/20 to-[#059669]/20 border border-[#10B981]/30 rounded-2xl">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-[#10B981] rounded-full flex items-center justify-center">
+                      <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-[#10B981] text-lg">Application Submitted Successfully!</h3>
+                      <p className="site-text-secondary">{submitStatus.message}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+
+              {/* Error Message */}
+              {submitStatus.type === 'error' && (
+                <div className="mb-8 p-6 bg-gradient-to-r from-[#EF4444]/20 to-[#DC2626]/20 border border-[#EF4444]/30 rounded-2xl">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-[#EF4444] rounded-full flex items-center justify-center">
+                      <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-[#EF4444] text-lg">Submission Failed</h3>
+                      <p className="site-text-secondary">{submitStatus.message}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
 
             <form onSubmit={handleSubmit} className="space-y-8">
               {/* Personal Information */}
@@ -332,13 +469,18 @@ export default function BecomeInstructorPage() {
               <div className="flex justify-center pt-6">
                 <button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isUploadingResume}
                   className="group relative px-8 py-4 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#7C3AED] hover:to-[#6D28D9] text-white font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:shadow-[#4F46E5]/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none min-w-[200px]"
                 >
-                  {isSubmitting ? (
+                  {isUploadingResume ? (
                     <span className="flex items-center justify-center gap-3">
                       <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                      Submitting...
+                      Uploading Resume...
+                    </span>
+                  ) : isSubmitting ? (
+                    <span className="flex items-center justify-center gap-3">
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      Submitting Application...
                     </span>
                   ) : (
                     <span className="flex items-center justify-center gap-3">

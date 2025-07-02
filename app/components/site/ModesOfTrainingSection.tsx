@@ -20,14 +20,14 @@ export default function ModesOfTrainingSection() {
             <span className="text-emerald-400 site-light:text-emerald-600 text-sm font-bold uppercase tracking-wider">Mode of Delivering the training</span>
           </div>
           
-          <h2 className="text-4xl lg:text-6xl font-black mb-6 leading-tight site-text-primary">
+          <h2 className="text-4xl lg:text-5xl font-black mb-6 leading-tight site-text-primary">
             Your Learning, Your Way: <br />
             <span className="bg-gradient-to-r from-[#4F46E5] via-[#B39DDB] to-[#10B981] bg-clip-text text-transparent">
-              Instructor-Led, Self-Paced, & Classroom
+              Instructor-Led, Self-Paced & Classroom
             </span>
           </h2>
           
-          <p className="text-lg site-text-secondary max-w-4xl mx-auto leading-relaxed mb-12">
+          <p className="text-xl site-text-secondary max-w-4xl mx-auto leading-relaxed mb-12">
             At AccrediPeopleCertifications, we believe that learning should fit your goals, your schedule, and your lifestyle. That's why we offer flexible training modes, each designed to give you the best experience—no matter how you choose to learn.
           </p>
         </div>
@@ -65,7 +65,7 @@ export default function ModesOfTrainingSection() {
               <div className="relative">
                 <div className="site-glass backdrop-blur-sm rounded-3xl p-6 shadow-2xl">
                   <Image
-                    src="https://goldstandardcertifications.com/assets/img/attend-live.png"
+                    src="/Website Images/ Instructor-LedLiveVirtual/AdobeStock_577867447.jpeg"
                     alt="Instructor-Led Live Virtual Classes"
                     width={600}
                     height={400}
@@ -93,7 +93,7 @@ export default function ModesOfTrainingSection() {
               <div className="relative">
                 <div className="site-glass backdrop-blur-sm rounded-3xl p-6 shadow-2xl">
                   <Image
-                    src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
+                    src="/Website Images/ClassroomTraining/AdobeStock_70013013.jpeg"
                     alt="Classroom Training"
                     width={600}
                     height={400}
@@ -168,7 +168,7 @@ export default function ModesOfTrainingSection() {
               <div className="relative">
                 <div className="site-glass backdrop-blur-sm rounded-3xl p-6 shadow-2xl">
                   <Image
-                    src="https://goldstandardcertifications.com/assets/Jump right in with ready-made courses.jpeg"
+                    src="/Website Images/Self -Paced Learning/AdobeStock_383123341.jpeg"
                     alt="Self-Paced Online Learning"
                     width={600}
                     height={400}
@@ -196,7 +196,7 @@ export default function ModesOfTrainingSection() {
               <div className="relative">
                 <div className="site-glass backdrop-blur-sm rounded-3xl p-6 shadow-2xl">
                   <Image
-                    src="https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
+                    src="/Website Images/Onsite Training/AdobeStock_490229029.jpeg"
                     alt="Onsite Corporate Training"
                     width={600}
                     height={400}
@@ -258,12 +258,12 @@ export default function ModesOfTrainingSection() {
           </div>
 
           {/* Professional Excellence Badge */}
-          <div className="inline-flex items-center gap-3 site-glass backdrop-blur-sm rounded-full px-8 py-4">
+          {/* <div className="inline-flex items-center gap-3 site-glass backdrop-blur-sm rounded-full px-8 py-4">
             <span className="text-2xl">🌟</span>
             <span className="text-xl font-black bg-gradient-to-r from-[#4F46E5] to-[#10B981] bg-clip-text text-transparent">
               What Sets Us Apart - Professional Excellence
             </span>
-          </div>
+          </div> */}
         </div>
       </section>
     </div>

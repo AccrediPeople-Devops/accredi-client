@@ -1,9 +1,10 @@
 "use client";
 import Image from "next/image";
 import React, { useState, useEffect } from "react";
-import courseCategoryService from "@/app/components/service/courseCategory.service";
+import siteCourseService from "./siteCourse.service";
 import config from "@/app/components/config/config";
 import { CourseCategory } from "@/app/types/courseCategory";
+import Link from "next/link";
 
 export default function CertificationsSection() {
   const [categories, setCategories] = useState<CourseCategory[]>([]);
@@ -16,7 +17,7 @@ export default function CertificationsSection() {
       setError("");
       
       try {
-        const response = await courseCategoryService.getAllCourseCategories();
+        const response = await siteCourseService.getPublicCourseCategories();
         if (response?.courseCategories) {
           // Filter active and non-deleted categories
           const activeCategories = response.courseCategories.filter(
@@ -24,9 +25,15 @@ export default function CertificationsSection() {
           );
           setCategories(activeCategories);
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error("Error fetching course categories:", err);
+        // If it's an authentication error, just show empty state
+        if (err.response?.status === 401 || err.message === "Authentication required") {
+          console.warn("Authentication failed, showing empty categories");
+          setCategories([]);
+        } else {
         setError("Failed to load categories");
+        }
       } finally {
         setIsLoading(false);
       }
@@ -59,9 +66,9 @@ export default function CertificationsSection() {
     <div className="relative">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-10 left-10 w-32 h-32 bg-[#4F46E5]/10 site-light:bg-[#4F46E5]/20 rounded-full blur-2xl animate-pulse"></div>
-        <div className="absolute bottom-10 right-10 w-40 h-40 bg-[#B39DDB]/10 site-light:bg-[#B39DDB]/20 rounded-full blur-2xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/3 w-24 h-24 bg-[#10B981]/10 site-light:bg-[#10B981]/20 rounded-full blur-2xl animate-pulse delay-2000"></div>
+        <div className="absolute top-10 left-10 w-32 h-32 bg-[#4F46E5]/5 site-light:bg-[#4F46E5]/10 rounded-full blur-2xl animate-pulse"></div>
+        <div className="absolute bottom-10 right-10 w-40 h-40 bg-[#F59E0B]/5 site-light:bg-[#F59E0B]/10 rounded-full blur-2xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/3 w-24 h-24 bg-[#7C3AED]/5 site-light:bg-[#7C3AED]/10 rounded-full blur-2xl animate-pulse delay-2000"></div>
       </div>
 
       {/* Premium Glassmorphism Container */}
@@ -74,15 +81,15 @@ export default function CertificationsSection() {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-6 py-3 mb-6 hover:bg-white/20 site-light:hover:bg-white/60 transition-all duration-300">
-            <div className="w-2 h-2 bg-[#10B981] rounded-full animate-pulse"></div>
+            <div className="w-2 h-2 bg-[#F59E0B] rounded-full animate-pulse"></div>
             <span className="site-text-primary text-sm font-bold uppercase tracking-wider">Certification Categories Offered</span>
           </div>
           <h2 className="text-3xl lg:text-4xl font-black site-text-primary mb-4 leading-tight">
             Expert-Led Courses.  
-            <span className="block bg-gradient-to-r from-[#4F46E5] via-[#B39DDB] to-[#10B981] bg-clip-text text-transparent">
+            <span className="block site-text-primary">
             Industry-Relevant Certifications.
             </span>
-            Real Career Impact.
+            <span className="block text-[#F59E0B]">Real Career Impact.</span>
           </h2>
           <p className="site-text-secondary text-lg max-w-2xl mx-auto leading-relaxed">
           Instructor-led live and On-Demand courses
@@ -95,7 +102,7 @@ export default function CertificationsSection() {
             // Loading State
             <div className="flex items-center justify-center py-12">
               <div className="flex items-center gap-4">
-                <div className="w-8 h-8 border-4 border-[#4F46E5]/30 border-t-[#4F46E5] rounded-full animate-spin"></div>
+                <div className="w-8 h-8 border-4 border-[#7C3AED]/30 border-t-[#7C3AED] rounded-full animate-spin"></div>
                 <span className="site-text-primary text-lg font-medium">Loading categories...</span>
               </div>
             </div>
@@ -122,7 +129,7 @@ export default function CertificationsSection() {
           <div className="flex items-center gap-8 animate-scroll-x-smooth">
                 {[...categories, ...categories].map((category, i) => (
                   <div key={category._id + i} className="flex-shrink-0 group/cert">
-                    <div className="flex flex-col items-center gap-4 p-6 rounded-2xl bg-white/20 site-light:bg-white/60 backdrop-blur-sm border border-white/30 site-light:border-slate-200 hover:bg-white/30 site-light:hover:bg-white/80 hover:border-white/50 site-light:hover:border-slate-300 transition-all duration-300 min-w-[140px] hover:scale-105 hover:shadow-xl hover:shadow-white/20">
+                    <div className="flex flex-col items-center gap-4 p-6 rounded-2xl site-glass backdrop-blur-sm site-border border hover:bg-white/30 site-light:hover:bg-white/80 transition-all duration-300 min-w-[140px] hover:scale-105 hover:shadow-xl">
                       {/* Category Image Container */}
                       <div className="w-20 h-20 relative p-3 bg-white rounded-2xl shadow-lg group-hover/cert:scale-110 group-hover/cert:shadow-2xl transition-all duration-300">
                     <Image 
@@ -134,7 +141,7 @@ export default function CertificationsSection() {
                     />
                   </div>
                       {/* Category Name */}
-                      <div className="text-sm site-text-primary text-center font-semibold truncate max-w-[120px] group-hover/cert:text-[#4F46E5] transition-colors duration-300">
+                      <div className="text-sm site-text-primary text-center font-semibold truncate max-w-[120px] group-hover/cert:text-[#F59E0B] transition-colors duration-300">
                         {category.name}
                   </div>
                 </div>
@@ -149,33 +156,34 @@ export default function CertificationsSection() {
           )}
         </div>
 
-        {/* Enhanced Stats Row */}
+        {/* Enhanced Stats Row - Professional Colors */}
         <div className="grid grid-cols-3 gap-6 mt-8 pt-8 site-border border-t">
           <div className="text-center group/stat">
-            <div className="text-3xl font-black bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] bg-clip-text text-transparent mb-2 group-hover/stat:scale-110 transition-transform duration-300">
+            <div className="text-3xl font-black text-[#7C3AED] mb-2 group-hover/stat:scale-110 transition-transform duration-300">
               {categories.length}+
             </div>
             <div className="text-sm site-text-muted font-medium">Categories</div>
           </div>
           <div className="text-center group/stat">
-            <div className="text-3xl font-black bg-gradient-to-r from-[#10B981] to-[#059669] bg-clip-text text-transparent mb-2 group-hover/stat:scale-110 transition-transform duration-300">98%</div>
+            <div className="text-3xl font-black text-[#F59E0B] mb-2 group-hover/stat:scale-110 transition-transform duration-300">98%</div>
             <div className="text-sm site-text-muted font-medium">Pass Rate</div>
           </div>
           <div className="text-center group/stat">
-            <div className="text-3xl font-black bg-gradient-to-r from-[#F59E0B] to-[#D97706] bg-clip-text text-transparent mb-2 group-hover/stat:scale-110 transition-transform duration-300">Global</div>
+            <div className="text-3xl font-black site-text-primary mb-2 group-hover/stat:scale-110 transition-transform duration-300">Global</div>
             <div className="text-sm site-text-muted font-medium">Recognition</div>
           </div>
         </div>
 
-        {/* Call to Action */}
+        {/* Call to Action - Professional Button */}
         <div className="text-center mt-8">
-          <button className="group/cta relative overflow-hidden bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-[#4F46E5]/25">
-            <span className="relative z-10">View All Certifications</span>
-            <div className="absolute inset-0 bg-gradient-to-r from-[#7C3AED] to-[#4F46E5] opacity-0 group-hover/cta:opacity-100 transition-opacity duration-300"></div>
-            <svg className="inline-block w-5 h-5 ml-2 group-hover/cta:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
+          <Link href="/courses">
+            <button className="group/cta relative overflow-hidden bg-[#7C3AED] hover:bg-[#6D28D9] text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-[#7C3AED]/25">
+              <span className="relative z-10">View All Certifications</span>
+              <svg className="inline-block w-5 h-5 ml-2 group-hover/cta:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </Link>
         </div>
       </div>
 

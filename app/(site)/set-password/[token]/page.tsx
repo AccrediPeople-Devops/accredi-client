@@ -99,7 +99,7 @@ export default function SetPasswordPage({ params }: SetPasswordPageProps) {
       const response = await fetch(
         `${
           process.env.NEXT_PUBLIC_API_URL ||
-          "http://api.accredipeoplecertifications.com"
+          "https://api.accredipeoplecertifications.com"
         }/api/auth/v1/set-password-with-token`,
         {
           method: "POST",

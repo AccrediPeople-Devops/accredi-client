@@ -7,33 +7,32 @@ import { BsTwitterX } from "react-icons/bs";
 
 export default function ContactCTASection() {
   const socialLinks = [
-    { icon: FaLinkedin, href: "https://linkedin.com/company/accredi", color: "text-blue-400 hover:text-blue-300" },
-    { icon: FaFacebook, href: "https://facebook.com/accredi", color: "text-blue-500 hover:text-blue-400" },
-    { icon: FaInstagram, href: "https://instagram.com/accredi", color: "text-pink-400 hover:text-pink-300" },
-    { icon: BsTwitterX, href: "https://twitter.com/accredi", color: "text-gray-300 hover:text-white" },
+    { icon: FaLinkedin, href: "/", color: "text-blue-400 hover:text-blue-300" },
+    { icon: FaFacebook, href: "/", color: "text-blue-500 hover:text-blue-400" },
+    { icon: FaInstagram, href: "/", color: "text-pink-400 hover:text-pink-300" },
+    { icon: BsTwitterX, href: "/", color: "text-gray-300 hover:text-white" },
   ];
 
   const paymentMethods = [
     { name: "PayPal", src: "https://www.paypalobjects.com/webstatic/mktg/Logo/pp-logo-100px.png" },
-    { name: "American Express", src: "https://logos-world.net/wp-content/uploads/2020/09/American-Express-Logo.png" },
-    { name: "Mastercard", src: "https://logoeps.com/wp-content/uploads/2013/03/mastercard-vector-logo.png" },
+    { name: "American Express", src: "https://www.aexp-static.com/cdaas/one/statics/axp-static-assets/1.8.0/package/dist/img/logos/dls-logo-bluebox-solid.svg" },
+    { name: "Mastercard", src: "https://www.mastercard.co.in/content/dam/public/mastercardcom/in/en/logos/mc-logo-52.svg" },
     { name: "Visa", src: "https://logos-world.net/wp-content/uploads/2020/04/Visa-Logo.png" },
-    { name: "Afterpay", src: "https://logos-world.net/wp-content/uploads/2021/03/Afterpay-Logo.png" },
   ];
 
   const globalContacts = [
     {
       country: "USA",
       flag: "🇺🇸",
-      numbers: ["+1-469-442-0620", "+1-832-684-0080"],
+      numbers: ["+1 253-400-8265"],
       showNumbers: true
     },
-    {
-      country: "India",
-      flag: "🇮🇳",
-      numbers: ["1800-121-9232"],
-      showNumbers: true
-    },
+    // {
+    //   country: "India",
+    //   flag: "🇮🇳",
+    //   numbers: ["1800-121-9232"],
+    //   showNumbers: true
+    // },
     // {
     //   country: "UK",
     //   flag: "🇬🇧",
@@ -94,23 +93,26 @@ export default function ContactCTASection() {
       </div>
       
       <div className="relative px-5 md:px-16 w-full 2xl:max-w-7xl mx-auto z-10">
+        {/* Centered Contact Section - Above Grid */}
+        <div className="text-center mb-12">
+          {/* Contact Label - Centered between both columns */}
+          <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-6 py-3 mb-6 justify-center">
+            <div className="w-2 h-2 bg-purple-400 site-light:bg-purple-600 rounded-full animate-pulse"></div>
+            <span className="text-purple-400 site-light:text-purple-600 text-sm font-semibold uppercase tracking-wider">Contact</span>
+          </div>
+          
+          {/* Main Heading - Centered between both columns */}
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-8 leading-tight">
+            Contact us
+          </h2>
+        </div>
+
         {/* 2-Column Grid Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
           {/* Left Column - Contact Section */}
-          <div className="text-center lg:text-left">
-            {/* Contact Label */}
-            <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-6 py-3 mb-6">
-              <div className="w-2 h-2 bg-purple-400 site-light:bg-purple-600 rounded-full animate-pulse"></div>
-              <span className="text-purple-400 site-light:text-purple-600 text-sm font-semibold uppercase tracking-wider">Contact</span>
-            </div>
-            
-            {/* Main Heading */}
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-8 leading-tight">
-              Contact us
-            </h2>
-
+          <div className="text-center">
             {/* We're Here to Help Section */}
-            <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-6 mb-8 border border-white/20 shadow-2xl">
+            <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-6 mb-8 border border-white/20 shadow-2xl text-left">
               <h3 className="text-white font-bold text-xl mb-4 flex items-center gap-2">
                 💡 We're Here to Help
               </h3>
@@ -121,12 +123,6 @@ export default function ContactCTASection() {
             
             {/* Description */}
             <div className="mb-12">
-              <p className="text-gray-300 text-lg leading-relaxed mb-6">
-                Whether you're exploring your first certification or ready to level up your entire team, we're 
-                here to help. Our training advisors are just one click away—ready to guide you on the best 
-                path forward in <span className="text-white font-semibold bg-gradient-to-r from-[#4F46E5] to-[#B39DDB] bg-clip-text text-transparent">PMP®, Agile, Six Sigma, Cloud, and more</span>.
-              </p>
-              
               {/* Serving location with enhanced design */}
               <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/20">
                 <span className="text-3xl">🌍</span>
@@ -135,7 +131,7 @@ export default function ContactCTASection() {
             </div>
             
             {/* Contact Button */}
-            <div className="flex justify-center lg:justify-start mb-12">
+            <div className="flex justify-center mb-12">
               <Link 
                 href="/contact" 
                 className="group inline-flex items-center gap-3 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#7C3AED] hover:to-[#4F46E5] text-white font-bold text-lg px-10 py-5 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-[#4F46E5]/25"
@@ -146,7 +142,7 @@ export default function ContactCTASection() {
             </div>
             
             {/* Enhanced feature indicators */}
-            <div className="flex items-center justify-center lg:justify-start gap-8 text-sm flex-wrap">
+            <div className="flex items-center justify-center gap-8 text-sm flex-wrap">
               <div className="flex items-center gap-3 bg-white/5 backdrop-blur-sm rounded-xl px-4 py-2 border border-white/10">
                 <div className="w-3 h-3 bg-[#10B981] rounded-full animate-pulse"></div>
                 <span className="text-gray-300">Available 24/7</span>
@@ -162,7 +158,7 @@ export default function ContactCTASection() {
             </div>
           </div>
 
-          {/* Right Column - Connect & Payment Info */}
+          {/* Right Column - Connect & Payment Info - Aligned with We're Here to Help */}
           <div className="space-y-8">
             {/* Connect with us */}
             <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-6 border border-white/20 shadow-2xl">

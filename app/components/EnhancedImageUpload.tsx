@@ -82,38 +82,92 @@ export default function EnhancedImageUpload({
     setShowEmojiPicker(false);
   };
 
-  const handleEmojiSelect = (emoji: string) => {
-    // Create a canvas to convert emoji to image with transparent background
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = 256;  // Higher resolution
-    canvas.height = 256;
-    
-    if (ctx) {
-      // Clear canvas (transparent background)
-      ctx.clearRect(0, 0, 256, 256);
+  const handleEmojiSelect = async (emoji: string) => {
+    try {
+      // Create a canvas to convert emoji to image with transparent background
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = 256;  // Higher resolution
+      canvas.height = 256;
       
-      // Draw emoji with high quality settings
-      ctx.font = '180px Arial';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(emoji, 128, 128);
-    }
-    
-    // Convert to PNG with transparency
-    const dataUrl = canvas.toDataURL('image/png');
-    setPreview(dataUrl);
-    
-    const uniqueKey = `emoji-${Date.now()}-${emoji}`;
-    
-    const emojiFile = {
-      url: dataUrl,
-      key: uniqueKey,
-      isEmoji: true,
-    };
+      if (ctx) {
+        // Clear canvas (transparent background)
+        ctx.clearRect(0, 0, 256, 256);
+        
+        // Draw emoji with high quality settings
+        ctx.font = '180px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(emoji, 128, 128);
+      }
+      
+      // Convert canvas to blob
+      const blob = await new Promise<Blob>((resolve) => {
+        canvas.toBlob((blob) => {
+          resolve(blob!);
+        }, 'image/png');
+      });
+      
+      // Create file from blob
+      const fileName = `emoji-${emoji}-${Date.now()}.png`;
+      const file = new File([blob], fileName, { type: 'image/png' });
+      
+      // Show preview immediately
+      const dataUrl = canvas.toDataURL('image/png');
+      setPreview(dataUrl);
+      setShowEmojiPicker(false);
+      
+      // Upload to server
+      const uploadResponse = await uploadService.uploadImage(file);
+      
+      if (uploadResponse && uploadResponse.upload && uploadResponse.upload[0]) {
+        const uploadedFile = uploadResponse.upload[0];
+        const path = uploadedFile.path;
+        const key = uploadedFile.key || path;
+        
+        const emojiFile = {
+          url: `${process.env.NEXT_PUBLIC_IMAGE_URL || 'http://api.accredipeoplecertifications.com'}${path}`,
+          key: key,
+          path: path,
+          isEmoji: true,
+        };
+        
+        // Update preview with server URL
+        setPreview(emojiFile.url);
+        onChange(emojiFile);
+      } else {
+        throw new Error('Failed to upload emoji');
+      }
+    } catch (error) {
+      console.error('Error uploading emoji:', error);
+      // Fallback to data URL if upload fails
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = 256;
+      canvas.height = 256;
+      
+      if (ctx) {
+        ctx.clearRect(0, 0, 256, 256);
+        ctx.font = '180px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(emoji, 128, 128);
+      }
+      
+      const dataUrl = canvas.toDataURL('image/png');
+      setPreview(dataUrl);
+      
+      const uniqueKey = `emoji-${Date.now()}-${emoji}`;
+      
+      const emojiFile = {
+        url: dataUrl,
+        key: uniqueKey,
+        isEmoji: true,
+      };
 
-    onChange(emojiFile);
-    setShowEmojiPicker(false);
+      onChange(emojiFile);
+      setShowEmojiPicker(false);
+    }
   };
 
   const triggerFileInput = () => {

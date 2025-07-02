@@ -9,8 +9,11 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
+    "@types/js-cookie": "^3.0.6",
     "axios": "^1.9.0",
     "joi": "^17.13.3",
+    "js-cookie": "^3.0.5",
     "next": "15.3.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

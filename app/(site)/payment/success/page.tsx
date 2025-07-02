@@ -47,21 +47,17 @@ export default function PaymentSuccessPage() {
               <h1 className="text-4xl font-black site-text-primary mb-4">
                 Payment Successful!
               </h1>
-              <p className="site-text-secondary text-xl mb-8">
-                Thank you for your purchase. Your payment has been processed
-                successfully and your account has been upgraded!
-              </p>
             </div>
 
             {/* Success Message */}
             <div className="mb-8 p-6 bg-gradient-to-br from-[#10B981]/10 to-[#059669]/5 rounded-2xl border border-[#10B981]/20">
               <div className="text-center">
                 <h3 className="text-lg font-semibold text-[#10B981] mb-3">
-                  🎉 Welcome to Premium!
+                  🎉 Welcome to AccrediPeople Certifications!
                 </h3>
                 <p className="site-text-secondary text-sm">
-                  Your premium features are now active and ready to use. Enjoy
-                  your enhanced experience!
+                  Your order is confirmed and you’ll receive your onboarding
+                  instructions shortly.
                 </p>
               </div>
             </div>

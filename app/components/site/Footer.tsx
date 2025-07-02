@@ -3,35 +3,39 @@ import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { HiChevronDown } from "react-icons/hi";
+import { useLocation } from "@/app/context/LocationContext";
+import CountrySelectionModal from "@/app/components/CountrySelectionModal";
+import SiteThemeToggle from "./SiteThemeToggle";
 
 export default function Footer() {
-  const [countryDropdownOpen, setCountryDropdownOpen] = useState(false);
+  const [showCountryModal, setShowCountryModal] = useState(false);
+  
+  const { currentCountry, geolocationLoading } = useLocation();
 
   const quickLinks = [
     { name: "Home", href: "/" },
     { name: "About Us", href: "/about" },
-    { name: "Our Approach", href: "/approach" },
+    { name: "Our Approach", href: "/#our-approach" },
     { name: "Contact Us", href: "/contact" },
-    { name: "Blogs", href: "/blogs" },
+
   ];
 
   const policies = [
-    { name: "Rescheduling Policy", href: "/policies/rescheduling" },
-    { name: "Refund policy", href: "/policies/refund" },
-    { name: "Our Privacy Policy", href: "/policies/privacy" },
-    { name: "Terms & Conditions", href: "/policies/terms" },
-    { name: "100% Money Back Guarantee on PMP Training", href: "/policies/money-back-guarantee" },
+    { name: "Rescheduling Policy", href: "/rescheduling-policy" },
+    { name: "Refund policy", href: "/refund-policy" },
+    { name: "Our Privacy Policy", href: "/privacy-policy" },
+    { name: "Terms & Conditions", href: "/terms-conditions" },
   ];
 
   const discounts = [
-    { name: "Refer & Earn", href: "/discounts/refer-earn" },
-    { name: "Mil/Vet Discount", href: "/discounts/military-veteran" },
-    { name: "Unemployed Discount", href: "/discounts/unemployed" },
+    { name: "Refer & Earn", href: "/refer-earn" },
+    { name: "Mil/Vet Discount", href: "/mil-vet-discount" },
+    { name: "Unemployed Discount", href: "/unemployed-discount" },
   ];
 
   const workWithUs = [
-    { name: "Become Instructor", href: "/careers/instructor" },
-    { name: "Blog As a Guest", href: "/careers/guest-blog" },
+    { name: "Become Instructor", href: "/become-instructor" },
+
   ];
 
   const forBusiness = [
@@ -150,35 +154,27 @@ export default function Footer() {
             <h3 className="text-[#4F46E5] font-bold text-sm uppercase tracking-wider mb-6">
               CHOOSE COUNTRY
             </h3>
-            <div className="relative">
               <button
-                onClick={() => setCountryDropdownOpen(!countryDropdownOpen)}
-                className="flex items-center gap-2 bg-white/10 backdrop-blur-sm hover:bg-white/20 px-4 py-2 rounded-lg border border-white/20 transition-colors duration-300 w-full"
-              >
-                <span className="text-xl">🇺🇸</span>
-                <span className="text-sm text-gray-300 flex-1 text-left">United States</span>
-                <HiChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-300 ${countryDropdownOpen ? 'rotate-180' : ''}`} />
-              </button>
-              
-              {countryDropdownOpen && (
-                <div className="absolute bottom-full mb-2 left-0 right-0 bg-white/10 backdrop-blur-xl border border-white/20 rounded-lg shadow-lg z-10">
-                  <div className="p-2">
-                    <button className="flex items-center gap-2 w-full px-3 py-2 hover:bg-white/20 rounded text-sm">
-                      <span className="text-xl">🇺🇸</span>
-                      <span className="text-gray-300">United States</span>
-                    </button>
-                    <button className="flex items-center gap-2 w-full px-3 py-2 hover:bg-white/20 rounded text-sm">
-                      <span className="text-xl">🇨🇦</span>
-                      <span className="text-gray-300">Canada</span>
-                    </button>
-                    <button className="flex items-center gap-2 w-full px-3 py-2 hover:bg-white/20 rounded text-sm">
-                      <span className="text-xl">🇬🇧</span>
-                      <span className="text-gray-300">United Kingdom</span>
-                    </button>
+              onClick={() => setShowCountryModal(true)}
+              disabled={geolocationLoading}
+              className="flex items-center gap-2 bg-white/10 backdrop-blur-sm hover:bg-white/20 px-4 py-3 rounded-lg border border-white/20 transition-colors duration-300 w-full disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {geolocationLoading ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  <span className="text-sm text-gray-300 flex-1 text-left">Loading...</span>
+                </>
+              ) : (
+                <>
+                  <span className="text-xl">{currentCountry?.flag || "🌍"}</span>
+                  <div className="flex-1 text-left">
+                    <div className="text-sm text-gray-300">{currentCountry?.name || "Unknown"}</div>
+                    <div className="text-xs text-gray-400">{currentCountry?.currencyCode || "USD"}</div>
                   </div>
-                </div>
+                </>
               )}
-            </div>
+              <HiChevronDown className="w-4 h-4 text-gray-400" />
+            </button>
           </div>
         </div>
       </div>
@@ -186,11 +182,15 @@ export default function Footer() {
       {/* Bottom Section */}
       <div className="border-t border-white/20 relative z-10">
         <div className="px-5 md:px-16 w-full 2xl:max-w-7xl mx-auto py-8">
-          {/* Copyright */}
-          <div className="text-center mb-6">
+          {/* Copyright and Theme Toggle */}
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
             <p className="text-white font-medium text-sm">
               © 2025 AccrediPeople Certifications. All Rights Reserved.
             </p>
+            <div className="flex items-center gap-2">
+              {/* <span className="text-gray-300 text-sm">Theme:</span> */}
+              <SiteThemeToggle />
+            </div>
           </div>
 
           {/* Disclaimer */}
@@ -212,6 +212,12 @@ export default function Footer() {
           </div>
         </div>
       </div>
+
+      {/* Country Selection Modal */}
+      <CountrySelectionModal 
+        isOpen={showCountryModal} 
+        onClose={() => setShowCountryModal(false)} 
+      />
     </footer>
   );
 }

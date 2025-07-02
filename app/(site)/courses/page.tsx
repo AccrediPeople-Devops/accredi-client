@@ -6,9 +6,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { Course } from "@/app/types/course";
 import { CourseCategory } from "@/app/types/courseCategory";
-import courseService from "@/app/components/service/course.service";
-import courseCategoryService from "@/app/components/service/courseCategory.service";
+import siteCourseService from "@/app/components/site/siteCourse.service";
 import config from "@/app/components/config/config";
+import { createCourseSlug, stripHtml } from "@/app/utils/textUtils";
+import RichTextRenderer from "@/app/components/RichTextRenderer";
 
 interface CategoryWithCourses extends CourseCategory {
   courses: Course[];
@@ -35,7 +36,7 @@ export default function CoursesPage() {
         console.log("Fetching categories and courses...");
         
         // Fetch courses only - categories are embedded in course objects
-        const coursesResponse = await courseService.getAllCourses();
+        const coursesResponse = await siteCourseService.getPublicCourses();
 
         console.log("Courses response:", coursesResponse);
 
@@ -43,13 +44,19 @@ export default function CoursesPage() {
 
         // Handle courses response - support different response formats
         if (coursesResponse?.status && coursesResponse?.courses) {
-          coursesData = coursesResponse.courses; // Don't filter by isActive/isDeleted as they don't exist in API
+          coursesData = coursesResponse.courses.filter((course: Course) => 
+            course.isActive !== false && !course.isDeleted
+          );
         } else if (Array.isArray(coursesResponse)) {
           // Handle direct array response
-          coursesData = coursesResponse;
+          coursesData = coursesResponse.filter((course: Course) => 
+            course.isActive !== false && !course.isDeleted
+          );
         } else if (coursesResponse?.data && Array.isArray(coursesResponse.data)) {
           // Handle data wrapper response
-          coursesData = coursesResponse.data;
+          coursesData = coursesResponse.data.filter((course: Course) => 
+            course.isActive !== false && !course.isDeleted
+          );
         }
 
         console.log("Processed courses:", coursesData.length);
@@ -349,7 +356,7 @@ export default function CoursesPage() {
                   {filteredCourses.map(course => (
                     <Link
                       key={course._id}
-                      href={`/courses/${course._id}`}
+                      href={`/courses/${createCourseSlug(course.title)}`}
                       className="group block"
                     >
                       {viewMode === "grid" ? (
@@ -375,9 +382,9 @@ export default function CoursesPage() {
                               {course.title}
                             </h3>
                             {course.shortDescription && (
-                              <p className="text-gray-300 text-sm mb-4 line-clamp-3">
-                                {course.shortDescription}
-                              </p>
+                              <div className="text-gray-300 text-sm mb-4 line-clamp-3">
+                                {stripHtml(course.shortDescription)}
+                              </div>
                             )}
                             <div className="flex items-center justify-between">
                               <span className="text-[#10B981] font-medium text-sm">
@@ -415,9 +422,9 @@ export default function CoursesPage() {
                                 </span>
                               </div>
                               {course.shortDescription && (
-                                <p className="text-gray-300 text-sm mb-4 line-clamp-2">
-                                  {course.shortDescription}
-                                </p>
+                                <div className="text-gray-300 text-sm mb-4 line-clamp-2">
+                                  {stripHtml(course.shortDescription)}
+                                </div>
                               )}
                               <div className="flex items-center justify-between">
                                 <span className="text-[#10B981] font-medium text-sm">

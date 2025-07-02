@@ -14,7 +14,7 @@ class CourseService {
    */
   async getAllCourses() {
     try {
-      const response = await axiosInstance.get("/courses");
+      const response = await axiosInstance.get("/courses/v1");
       return response.data;
     } catch (error) {
       throw error;
@@ -30,15 +30,24 @@ class CourseService {
     try {
       console.log("CourseService: Fetching course with ID:", id);
       
-      // Fetch all courses from the /courses endpoint
+      // Skip the direct endpoint call that was causing 404 errors
+      // and go straight to fetching all courses and finding the matching one
+      console.log("CourseService: Using fallback method - fetch all courses");
       const allResponse = await this.getAllCourses();
       
-      if (allResponse && allResponse.status && allResponse.courses && Array.isArray(allResponse.courses)) {
-        const foundCourse = allResponse.courses.find((course: any) => course._id === id);
+      let courses = [];
+      if (allResponse && allResponse.courses && Array.isArray(allResponse.courses)) {
+        courses = allResponse.courses;
+      } else if (Array.isArray(allResponse)) {
+        courses = allResponse;
+      } else if (allResponse && allResponse.data && Array.isArray(allResponse.data)) {
+        courses = allResponse.data;
+      }
+      
+      const foundCourse = courses.find((course: any) => course._id === id);
       if (foundCourse) {
-          console.log("CourseService: Found course:", foundCourse);
+        console.log("CourseService: Found course in all courses:", foundCourse);
         return { status: true, course: foundCourse };
-        }
       }
       
       // Return a not found error if we couldn't find the course
@@ -64,18 +73,39 @@ class CourseService {
    */
   async getCoursesByCategory(categoryId: string) {
     try {
-      // Get all courses and filter by category
+      try {
+        // First try the direct endpoint
+        const response = await axiosInstance.get(`/courses/v1/category/${categoryId}`);
+        return response.data;
+      } catch (directError: any) {
+        console.log("Direct category endpoint failed:", directError.message);
+        
+        // Fallback: get all courses and filter by category
+        console.log("Using fallback method - fetch all courses and filter by category");
         const allResponse = await this.getAllCourses();
         
-      if (allResponse && allResponse.status && allResponse.courses && Array.isArray(allResponse.courses)) {
+        let allCourses = [];
+        if (allResponse && allResponse.courses && Array.isArray(allResponse.courses)) {
+          allCourses = allResponse.courses;
+        } else if (Array.isArray(allResponse)) {
+          allCourses = allResponse;
+        } else if (allResponse && allResponse.data && Array.isArray(allResponse.data)) {
+          allCourses = allResponse.data;
+        }
+        
+        // Log the first course to see its structure
+        if (allCourses.length > 0) {
+          console.log("First course structure:", JSON.stringify(allCourses[0], null, 2));
+        }
+        
         // Filter courses by categoryId
-        const filteredCourses = allResponse.courses.filter((course: any) => {
+        const filteredCourses = allCourses.filter((course: any) => {
           // Check different possible field names for the category ID
           return (
             course.categoryId === categoryId || 
             course.category === categoryId ||
-            (course.categoryId && course.categoryId._id === categoryId) ||
-            (course.category && course.category._id === categoryId)
+            (course.category && course.category._id === categoryId) ||
+            (course.categoryDetails && course.categoryDetails._id === categoryId)
           );
         });
         
@@ -85,8 +115,6 @@ class CourseService {
           courses: filteredCourses 
         };
       }
-      
-      return { status: false, courses: [] };
     } catch (error) {
       console.error("Error getting courses by category:", error);
       return { status: false, courses: [] };
@@ -115,43 +143,70 @@ class CourseService {
    */
   async updateCourse(id: string, data: any) {
     try {
-      console.log('Updating course with ID:', id);
-      console.log('Update data:', JSON.stringify(data, null, 2));
+      console.log('=== COURSE UPDATE DEBUG ===');
+      console.log('Course ID:', id);
+      console.log('Update data structure:', JSON.stringify(data, null, 2));
+      console.log('Data keys:', Object.keys(data));
+      console.log('Upload structure:', data.upload ? JSON.stringify(data.upload, null, 2) : 'No upload data');
+      console.log('Components length:', data.components ? data.components.length : 'No components');
+      console.log('Key features length:', data.keyFeatures ? data.keyFeatures.length : 'No key features');
       
-      // Try multiple endpoint formats and HTTP methods
+      // Try different data formats to see which one works
       try {
-        console.log('Trying PUT to /courses/v1/update/{id}');
-        const response = await axiosInstance.put(`/courses/v1/update/${id}`, data);
+        console.log('Trying direct data format...');
+        const response = await axiosInstance.put(`/courses/v1/${id}`, data);
+        console.log('Update successful with direct format:', response.data);
         return response.data;
-      } catch (firstError) {
-        console.log('First attempt failed, trying standard PUT...');
+      } catch (directError: any) {
+        console.log('Direct format failed, trying wrapped format...');
+        
+        // Try wrapping the data in a 'course' object
         try {
-          console.log('Trying PUT to /courses/v1/{id}');
-          const response = await axiosInstance.put(`/courses/v1/${id}`, data);
+          const wrappedData = { course: data };
+          console.log('Trying wrapped data:', JSON.stringify(wrappedData, null, 2));
+          const response = await axiosInstance.put(`/courses/v1/${id}`, wrappedData);
+          console.log('Update successful with wrapped format:', response.data);
           return response.data;
-        } catch (secondError) {
-          console.log('Second attempt failed, trying with course wrapper...');
-          try {
-            console.log('Trying PUT with course wrapper');
-            const response = await axiosInstance.put(`/courses/v1/${id}`, { course: data });
-            return response.data;
-          } catch (thirdError) {
-            console.log('Third attempt failed, trying POST method...');
-            // Try POST method as some APIs use POST for updates
-            const response = await axiosInstance.post(`/courses/v1/${id}/update`, data);
-            return response.data;
-          }
+        } catch (wrappedError: any) {
+          console.log('Wrapped format also failed, trying minimal data...');
+          
+          // Try with only essential fields
+          const minimalData = {
+            title: data.title,
+            categoryId: data.categoryId,
+            shortDescription: data.shortDescription,
+            description: data.description
+          };
+          console.log('Trying minimal data:', JSON.stringify(minimalData, null, 2));
+          const response = await axiosInstance.put(`/courses/v1/${id}`, minimalData);
+          console.log('Update successful with minimal format:', response.data);
+          return response.data;
         }
       }
     } catch (error: any) {
-      console.error('Course update error:', error);
+      console.error('=== COURSE UPDATE ERROR ===');
+      console.error('Course update error:', error.message);
       
       // Log more detailed error information
       if (error.response) {
-        console.error('Error response data:', error.response.data);
         console.error('Error response status:', error.response.status);
+        console.error('Error response data:', error.response.data);
         console.error('Error response headers:', error.response.headers);
+        
+        // Try to get more details from the error
+        if (error.response.data) {
+          console.error('Error message:', error.response.data.message);
+          console.error('Error details:', error.response.data.details);
+          console.error('Validation errors:', error.response.data.errors);
+        }
+      } else if (error.request) {
+        console.error('No response received:', error.request);
+      } else {
+        console.error('Request setup error:', error.message);
       }
+      
+      console.error('Error config:', error.config);
+      console.error('=== END ERROR DEBUG ===');
       
       throw error;
     }

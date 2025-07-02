@@ -3,9 +3,16 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Input from "@/app/components/Input";
+import { DashboardInput, DashboardSelect, DashboardCheckbox } from "@/app/components/DashboardInput";
+import SearchableDropdown from "@/app/components/SearchableDropdown";
+import CountryButton from "@/app/components/CountryButton";
+import StateButton from "@/app/components/StateButton";
 import scheduleService from "@/app/components/service/schedule.service";
 import courseService from "@/app/components/service/course.service";
+import locationService from "@/app/components/service/location.service";
+import { WORLD_COUNTRIES } from "@/app/components/service/worldLocationData";
+import { CountryData } from "@/app/context/LocationContext";
+import { StateData } from "@/app/components/service/enhancedLocationData";
 import { LoadingSpinner } from "@/app/components/LoadingSpinner";
 
 interface Course {
@@ -18,6 +25,7 @@ interface Course {
 interface ScheduleFormData {
   courseId: string;
   country: string;
+  countryCode: string;
   scheduleType: string;
   startDate: string;
   endDate: string;
@@ -26,6 +34,7 @@ interface ScheduleFormData {
   instructorName: string;
   accessType: string;
   state: string;
+  stateCode: string;
   city: string;
   standardPrice: number;
   offerPrice: number;
@@ -42,6 +51,7 @@ export default function AddSchedulePage() {
   const [formData, setFormData] = useState<ScheduleFormData>({
     courseId: "",
     country: "",
+    countryCode: "",
     scheduleType: "self-paced",
     startDate: "",
     endDate: "",
@@ -50,6 +60,7 @@ export default function AddSchedulePage() {
     instructorName: "",
     accessType: "90",
     state: "",
+    stateCode: "",
     city: "",
     standardPrice: 0,
     offerPrice: 0,
@@ -75,6 +86,7 @@ export default function AddSchedulePage() {
     { value: "weekday", label: "Weekday" },
     { value: "weekend", label: "Weekend" },
     { value: "all", label: "All Days" },
+    { value: "manual", label: "Manual" },
   ];
 
   // All days of the week
@@ -130,6 +142,29 @@ export default function AddSchedulePage() {
         ...prev,
         [name]: parseFloat(value) || 0,
       }));
+    } else if (name === "type") {
+      // Handle week type change and auto-select days
+      let selectedDays: string[] = [];
+      
+      switch (value) {
+        case "weekday":
+          selectedDays = ["1", "2", "3", "4", "5"]; // Monday to Friday
+          break;
+        case "weekend":
+          selectedDays = ["6", "7"]; // Saturday and Sunday
+          break;
+        case "all":
+          selectedDays = ["1", "2", "3", "4", "5", "6", "7"]; // All days
+          break;
+        default:
+          selectedDays = [];
+      }
+      
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+        days: selectedDays,
+      }));
     } else {
       setFormData((prev) => ({
         ...prev,
@@ -146,23 +181,124 @@ export default function AddSchedulePage() {
     }));
   };
 
+  // Helper function to determine week type based on selected days
+  const getWeekTypeFromDays = (days: string[]): string => {
+    const sortedDays = [...days].sort();
+    
+    // Check if it matches weekday pattern (Mon-Fri)
+    if (sortedDays.length === 5 && 
+        sortedDays.every(day => ["1", "2", "3", "4", "5"].includes(day))) {
+      return "weekday";
+    }
+    
+    // Check if it matches weekend pattern (Sat-Sun)
+    if (sortedDays.length === 2 && 
+        sortedDays.every(day => ["6", "7"].includes(day))) {
+      return "weekend";
+    }
+    
+    // Check if it matches all days pattern
+    if (sortedDays.length === 7 && 
+        sortedDays.every(day => ["1", "2", "3", "4", "5", "6", "7"].includes(day))) {
+      return "all";
+    }
+    
+    // If it doesn't match any pattern, it's manual
+    return "manual";
+  };
+
   const handleDayChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value, checked } = e.target;
     
+    let newDays: string[];
     if (checked) {
       // Add day to array if checked
-      setFormData((prev) => ({
-        ...prev,
-        days: [...prev.days, value],
-      }));
+      newDays = [...formData.days, value];
     } else {
       // Remove day from array if unchecked
-      setFormData((prev) => ({
-        ...prev,
-        days: prev.days.filter((day) => day !== value),
-      }));
+      newDays = formData.days.filter((day) => day !== value);
     }
+    
+    // Determine the appropriate week type based on the new day selection
+    const newWeekType = getWeekTypeFromDays(newDays);
+    
+    setFormData((prev) => ({
+      ...prev,
+      days: newDays,
+      type: newWeekType,
+    }));
   };
+
+  // Location dropdown handlers
+  const handleCountryChange = (value: string, code?: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      country: value,
+      countryCode: code || "",
+      state: "",
+      stateCode: "",
+      city: "",
+    }));
+  };
+
+  // Country button handler
+  const handleCountrySelect = (country: CountryData) => {
+    setFormData((prev) => ({
+      ...prev,
+      country: country.name,
+      countryCode: country.code,
+      state: "",
+      stateCode: "",
+      city: "",
+    }));
+  };
+
+  // State button handler
+  const handleStateSelect = (state: StateData) => {
+    setFormData((prev) => ({
+      ...prev,
+      state: state.name,
+      stateCode: state.code,
+      city: "",
+    }));
+  };
+
+  const handleCityChange = (value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      city: value,
+    }));
+  };
+
+  // City input handler
+  const handleCityInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData((prev) => ({
+      ...prev,
+      city: e.target.value,
+    }));
+  };
+
+  // Get location options - using comprehensive world database
+  const countryOptions = WORLD_COUNTRIES.map(country => ({
+    value: country.name,
+    label: country.name,
+    code: country.code
+  }));
+
+  const stateOptions = formData.countryCode 
+    ? locationService.getStatesByCountry(formData.countryCode).map(state => ({
+        value: state.name,
+        label: state.name,
+        code: state.code
+      }))
+    : [];
+
+  const cityOptions = formData.countryCode && formData.stateCode
+    ? locationService.getCitiesByState(formData.countryCode, formData.stateCode).map(city => ({
+        value: city,
+        label: city
+      }))
+    : [];
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -259,6 +395,7 @@ export default function AddSchedulePage() {
         setFormData({
           courseId: "",
           country: "",
+          countryCode: "",
           scheduleType: "self-paced",
           startDate: "",
           endDate: "",
@@ -267,6 +404,7 @@ export default function AddSchedulePage() {
           instructorName: "",
           accessType: "90",
           state: "",
+          stateCode: "",
           city: "",
           standardPrice: 0,
           offerPrice: 0,
@@ -329,74 +467,56 @@ export default function AddSchedulePage() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Course Selection */}
-        <div>
-          <label htmlFor="courseId" className="block text-sm font-medium text-[var(--foreground)] mb-1">
-            Course<span className="text-red-500"> *</span>
-          </label>
-          <select
-            id="courseId"
-            name="courseId"
-            value={formData.courseId}
-            onChange={handleChange}
-            className="w-full rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--input-bg)] text-[var(--foreground)] p-2.5 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-            required
-          >
-            <option value="">Select a course</option>
-            {isLoadingCourses ? (
-              <option value="" disabled>Loading courses...</option>
-            ) : (
-              courses.map((course) => (
-                <option key={course._id} value={course._id}>
-                  {course.title}
-                </option>
-              ))
-            )}
-          </select>
-        </div>
+        <DashboardSelect
+          label="Course"
+          name="courseId"
+          value={formData.courseId}
+          onChange={handleChange}
+          required
+        >
+          <option value="">Select a course</option>
+          {isLoadingCourses ? (
+            <option value="" disabled>Loading courses...</option>
+          ) : (
+            courses.map((course) => (
+              <option key={course._id} value={course._id}>
+                {course.title}
+              </option>
+            ))
+          )}
+        </DashboardSelect>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Schedule Type */}
-          <div>
-            <label htmlFor="scheduleType" className="block text-sm font-medium text-[var(--foreground)] mb-1">
-              Schedule Type<span className="text-red-500"> *</span>
-            </label>
-            <select
-              id="scheduleType"
-              name="scheduleType"
-              value={formData.scheduleType}
+          <DashboardSelect
+            label="Schedule Type"
+            name="scheduleType"
+            value={formData.scheduleType}
+            onChange={handleChange}
+            required
+          >
+            {scheduleTypes.map((type) => (
+              <option key={type.value} value={type.value}>
+                {type.label}
+              </option>
+            ))}
+          </DashboardSelect>
+
+          {/* Access Type - Only for self-paced */}
+          {formData.scheduleType === "self-paced" && (
+            <DashboardSelect
+              label="Access Duration"
+              name="accessType"
+              value={formData.accessType}
               onChange={handleChange}
-              className="w-full rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--input-bg)] text-[var(--foreground)] p-2.5 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
               required
             >
-              {scheduleTypes.map((type) => (
+              {accessTypes.map((type) => (
                 <option key={type.value} value={type.value}>
                   {type.label}
                 </option>
               ))}
-            </select>
-          </div>
-
-          {/* Access Type - Only for self-paced */}
-          {formData.scheduleType === "self-paced" && (
-            <div>
-              <label htmlFor="accessType" className="block text-sm font-medium text-[var(--foreground)] mb-1">
-                Access Duration<span className="text-red-500"> *</span>
-              </label>
-              <select
-                id="accessType"
-                name="accessType"
-                value={formData.accessType}
-                onChange={handleChange}
-                className="w-full rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--input-bg)] text-[var(--foreground)] p-2.5 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                required
-              >
-                {accessTypes.map((type) => (
-                  <option key={type.value} value={type.value}>
-                    {type.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+            </DashboardSelect>
           )}
         </div>
 
@@ -405,47 +525,33 @@ export default function AddSchedulePage() {
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Start Date */}
-              <div>
-                <label htmlFor="startDate" className="block text-sm font-medium text-[var(--foreground)] mb-1">
-                  Start Date<span className="text-red-500"> *</span>
-                </label>
-                <Input
-                  id="startDate"
-                  name="startDate"
-                  type="date"
-                  value={formData.startDate}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
+              <DashboardInput
+                label="Start Date"
+                name="startDate"
+                type="date"
+                value={formData.startDate}
+                onChange={handleChange}
+                required
+              />
 
               {/* End Date */}
-              <div>
-                <label htmlFor="endDate" className="block text-sm font-medium text-[var(--foreground)] mb-1">
-                  End Date<span className="text-red-500"> *</span>
-                </label>
-                <Input
-                  id="endDate"
-                  name="endDate"
-                  type="date"
-                  value={formData.endDate}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
+              <DashboardInput
+                label="End Date"
+                name="endDate"
+                type="date"
+                value={formData.endDate}
+                onChange={handleChange}
+                required
+              />
             </div>
 
             {/* Week Type */}
             <div>
-              <label htmlFor="type" className="block text-sm font-medium text-[var(--foreground)] mb-1">
-                Week Type<span className="text-red-500"> *</span>
-              </label>
-              <select
-                id="type"
+              <DashboardSelect
+                label="Week Type"
                 name="type"
                 value={formData.type}
                 onChange={handleChange}
-                className="w-full rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--input-bg)] text-[var(--foreground)] p-2.5 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                 required
               >
                 {weekdayTypes.map((type) => (
@@ -453,7 +559,15 @@ export default function AddSchedulePage() {
                     {type.label}
                   </option>
                 ))}
-              </select>
+              </DashboardSelect>
+              <p className="mt-1 text-sm text-[var(--foreground)]/60">
+                Days will be automatically selected: 
+                <span className="font-medium"> Weekday</span> (Mon-Fri), 
+                <span className="font-medium"> Weekend</span> (Sat-Sun), 
+                <span className="font-medium"> All Days</span> (Mon-Sun).
+                <br />
+                <span className="font-medium">Manual</span> selection will be set automatically when you customize the days.
+              </p>
             </div>
 
             {/* Days Selection */}
@@ -482,124 +596,88 @@ export default function AddSchedulePage() {
             </div>
 
             {/* Instructor Name */}
-            <div>
-              <label htmlFor="instructorName" className="block text-sm font-medium text-[var(--foreground)] mb-1">
-                Instructor Name<span className="text-red-500"> *</span>
-              </label>
-              <Input
-                id="instructorName"
-                name="instructorName"
-                value={formData.instructorName}
-                onChange={handleChange}
-                placeholder="Enter instructor name"
-                required
-              />
-            </div>
+            <DashboardInput
+              label="Instructor Name"
+              name="instructorName"
+              value={formData.instructorName}
+              onChange={handleChange}
+              placeholder="Enter instructor name"
+              required
+            />
           </>
         )}
 
         {/* Country field - shown for all types */}
-        <div>
-          <label htmlFor="country" className="block text-sm font-medium text-[var(--foreground)] mb-1">
-            Country<span className="text-red-500"> *</span>
-          </label>
-          <Input
-            id="country"
-            name="country"
-            value={formData.country}
-            onChange={handleChange}
-            placeholder="Enter country"
-            required
-          />
-        </div>
+        <CountryButton
+          label="Country"
+          selectedCountryCode={formData.countryCode}
+          onCountrySelect={handleCountrySelect}
+          placeholder="Select a country"
+          required
+        />
 
         {/* State and City - Only for classroom */}
         {formData.scheduleType === "classroom" && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* State */}
-            <div>
-              <label htmlFor="state" className="block text-sm font-medium text-[var(--foreground)] mb-1">
-                State<span className="text-red-500"> *</span>
-              </label>
-              <Input
-                id="state"
-                name="state"
-                value={formData.state}
-                onChange={handleChange}
-                placeholder="Enter state"
-                required
-              />
-            </div>
+            <StateButton
+              label="State"
+              selectedCountryCode={formData.countryCode}
+              selectedStateCode={formData.stateCode}
+              onStateSelect={handleStateSelect}
+              placeholder="Select a state"
+              disabled={!formData.countryCode}
+              required
+            />
 
             {/* City */}
-            <div>
-              <label htmlFor="city" className="block text-sm font-medium text-[var(--foreground)] mb-1">
-                City<span className="text-red-500"> *</span>
-              </label>
-              <Input
-                id="city"
-                name="city"
-                value={formData.city}
-                onChange={handleChange}
-                placeholder="Enter city"
-                required
-              />
-            </div>
+            <DashboardInput
+              label="City"
+              name="city"
+              value={formData.city}
+              onChange={handleCityInputChange}
+              placeholder={!formData.stateCode ? "Select a state first" : "Enter city name"}
+              disabled={!formData.stateCode}
+              required
+            />
           </div>
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Standard Price */}
-          <div>
-            <label htmlFor="standardPrice" className="block text-sm font-medium text-[var(--foreground)] mb-1">
-              Standard Price<span className="text-red-500"> *</span>
-            </label>
-            <Input
-              id="standardPrice"
-              name="standardPrice"
-              type="number"
-              min="0"
-              step="0.01"
-              value={formData.standardPrice}
-              onChange={handleChange}
-              placeholder="Enter standard price"
-              required
-            />
-          </div>
+          <DashboardInput
+            label="Standard Price"
+            name="standardPrice"
+            type="number"
+            min="0"
+            step="0.01"
+            value={formData.standardPrice}
+            onChange={handleChange}
+            placeholder="Enter standard price"
+            required
+          />
 
           {/* Offer Price */}
-          <div>
-            <label htmlFor="offerPrice" className="block text-sm font-medium text-[var(--foreground)] mb-1">
-              Offer Price<span className="text-red-500"> *</span>
-            </label>
-            <Input
-              id="offerPrice"
-              name="offerPrice"
-              type="number"
-              min="0"
-              step="0.01"
-              value={formData.offerPrice}
-              onChange={handleChange}
-              placeholder="Enter offer price"
-              required
-            />
-          </div>
+          <DashboardInput
+            label="Offer Price"
+            name="offerPrice"
+            type="number"
+            min="0"
+            step="0.01"
+            value={formData.offerPrice}
+            onChange={handleChange}
+            placeholder="Enter offer price"
+            required
+          />
         </div>
 
         {/* Active Status */}
-        <div className="flex items-center">
-          <input
-            id="isActive"
-            name="isActive"
-            type="checkbox"
-            checked={formData.isActive}
-            onChange={handleCheckboxChange}
-            className="h-4 w-4 rounded border-[var(--border)] text-[var(--primary)] focus:ring-[var(--primary)]"
-          />
-          <label htmlFor="isActive" className="ml-2 block text-sm text-[var(--foreground)]">
-            Active
-          </label>
-        </div>
+        <DashboardCheckbox
+          name="isActive"
+          checked={formData.isActive}
+          onChange={handleCheckboxChange}
+          label="Active"
+        />
 
         {/* Form Actions */}
         <div className="flex items-center justify-end space-x-4 mt-8">

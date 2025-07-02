@@ -3,6 +3,8 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Breadcrumb from "@/app/components/site/Breadcrumb";
+import { enterpriseService, EnterpriseFormData } from "@/app/components/service/enterprise.service";
+import { LoadingSpinner } from "@/app/components/LoadingSpinner";
 
 export default function EnterprisesPage() {
   const [formData, setFormData] = useState({
@@ -12,6 +14,13 @@ export default function EnterprisesPage() {
     phone: '',
     message: ''
   });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<{
+    type: 'success' | 'error' | null;
+    message: string;
+  }>({ type: null, message: '' });
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
   const breadcrumbItems = [
     { label: "Home", href: "/" },
@@ -33,14 +42,86 @@ export default function EnterprisesPage() {
         [name]: value
       }));
     }
+
+    // Clear validation errors when user starts typing
+    if (validationErrors.length > 0) {
+      setValidationErrors([]);
+    }
+    
+    // Clear status messages when user modifies form
+    if (submitStatus.type) {
+      setSubmitStatus({ type: null, message: '' });
+    }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Quote request submitted:', formData);
-    // Handle form submission logic here
-    alert('Quote request submitted successfully!');
-    setFormData({ name: '', email: '', company: '', phone: '', message: '' });
+    setIsSubmitting(true);
+    setValidationErrors([]);
+    setSubmitStatus({ type: null, message: '' });
+
+    try {
+      // Prepare data in the format expected by the API
+      const apiFormData: EnterpriseFormData = {
+        fullName: formData.name.trim(),
+        email: formData.email.trim(),
+        companyName: formData.company.trim(),
+        phoneNumber: formData.phone.replace(/\D/g, ''), // Remove any non-digits
+        trainingDetails: formData.message.trim() || 'No specific training details provided'
+      };
+
+      // Validate form data
+      const validation = enterpriseService.validateFormData(apiFormData);
+      
+      if (!validation.isValid) {
+        setValidationErrors(validation.errors);
+        setSubmitStatus({
+          type: 'error',
+          message: 'Please correct the errors below and try again.'
+        });
+        return;
+      }
+
+      // Submit form data
+      const response = await enterpriseService.submitEnterpriseForm(apiFormData);
+
+      if (response.success) {
+        setSubmitStatus({
+          type: 'success',
+          message: response.message
+        });
+        
+        // Reset form on successful submission
+        setFormData({ 
+          name: '', 
+          email: '', 
+          company: '', 
+          phone: '', 
+          message: '' 
+        });
+        
+        // Scroll to success message
+        setTimeout(() => {
+          const element = document.getElementById('form-status');
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 100);
+      } else {
+        setSubmitStatus({
+          type: 'error',
+          message: response.message
+        });
+      }
+    } catch (error) {
+      console.error('Unexpected error during form submission:', error);
+      setSubmitStatus({
+        type: 'error',
+        message: 'An unexpected error occurred. Please try again later.'
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const keyBenefits = [
@@ -80,40 +161,57 @@ export default function EnterprisesPage() {
 
   return (
     <div className="min-h-screen site-section-bg">
-      {/* Hero Section */}
-      <section className="relative  overflow-hidden site-section-bg">
-        {/* Background Elements */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-20 left-20 w-96 h-96 bg-[#4F46E5]/5 site-light:bg-[#4F46E5]/10 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-20 right-20 w-80 h-80 bg-[#10B981]/5 site-light:bg-[#10B981]/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+      {/* Hero Section with Blurred Image Background */}
+      <section className="relative overflow-hidden">
+        {/* Full-width Blurred Hero Image Background */}
+        <div className="absolute inset-0">
+          <Image
+            src="/Website Images/EnterprisePage/AdobeStock_1266838187.jpeg"
+            alt="Corporate Training Solutions"
+            fill
+            className="object-cover object-center blur-sm"
+            priority
+            quality={95}
+          />
+          {/* Strong overlay for perfect text readability */}
+          <div className="absolute inset-0 bg-black/50"></div>
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Breadcrumb */}
-          <div className="mb-8">
-            <Breadcrumb items={breadcrumbItems} />
+        {/* Content Overlay */}
+        <div className="relative z-10">
+          {/* Background Elements */}
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute top-20 left-20 w-96 h-96 bg-[#4F46E5]/5 site-light:bg-[#4F46E5]/10 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute bottom-20 right-20 w-80 h-80 bg-[#10B981]/5 site-light:bg-[#10B981]/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
           </div>
 
-          <div className="text-center">
-            <div className="inline-flex items-center gap-3 site-glass backdrop-blur-sm rounded-full px-8 py-4 mb-8 hover:bg-white/20 site-light:hover:bg-white/60 transition-all duration-300">
-              <div className="w-3 h-3 bg-[#4F46E5] rounded-full animate-pulse"></div>
-              <span className="site-text-accent font-bold text-sm uppercase tracking-wider">💼 For Business</span>
-              <div className="w-3 h-3 bg-[#10B981] rounded-full animate-pulse delay-500"></div>
+          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+            {/* Breadcrumb */}
+            <div className="mb-8">
+              <Breadcrumb items={breadcrumbItems} />
             </div>
 
-            <h1 className="text-4xl lg:text-5xl xl:text-6xl font-black mb-6 leading-tight">
-              <span className="bg-gradient-to-r from-[#4F46E5] to-[#10B981] bg-clip-text text-transparent">
-                Customized Corporate Training Solutions
-              </span>
-            </h1>
+            <div className="text-center">
+              <div className="inline-flex items-center gap-3 site-glass backdrop-blur-sm rounded-full px-8 py-4 mb-8 hover:bg-white/20 site-light:hover:bg-white/60 transition-all duration-300">
+                <div className="w-3 h-3 bg-[#4F46E5] rounded-full animate-pulse"></div>
+                <span className="text-white font-bold text-sm uppercase tracking-wider">💼 For Business</span>
+                <div className="w-3 h-3 bg-[#10B981] rounded-full animate-pulse delay-500"></div>
+              </div>
 
-            <h2 className="text-2xl lg:text-3xl font-bold site-text-primary mb-8">
-              Empower Your Workforce with Tailored Learning Experiences
-            </h2>
+              <h1 className="text-4xl lg:text-5xl xl:text-6xl font-black mb-6 leading-tight">
+                <span className="bg-gradient-to-r from-[#4F46E5] to-[#10B981] bg-clip-text text-transparent drop-shadow-lg">
+                  Customized Corporate Training Solutions
+                </span>
+              </h1>
 
-            <p className="text-lg site-text-secondary max-w-4xl mx-auto leading-relaxed mb-12">
-              At AccrediPeople Certifications, we specialize in delivering customized corporate training programs designed to meet your organization's unique needs. Our approach ensures that your team acquires the skills necessary to drive performance and achieve strategic objectives.
-            </p>
+              <h2 className="text-2xl lg:text-3xl font-bold text-white mb-8 drop-shadow-lg">
+                Empower Your Workforce with Tailored Learning Experiences
+              </h2>
+
+              <p className="text-lg text-white/90 max-w-4xl mx-auto leading-relaxed mb-12 drop-shadow-md">
+                At AccrediPeople Certifications, we specialize in delivering customized corporate training programs designed to meet your organization's unique needs. Our approach ensures that your team acquires the skills necessary to drive performance and achieve strategic objectives.
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -330,6 +428,43 @@ export default function EnterprisesPage() {
             </div>
 
             <div className="site-glass backdrop-blur-sm rounded-2xl p-6">
+              {/* Status Messages */}
+              {submitStatus.type && (
+                <div id="form-status" className={`mb-6 p-4 rounded-2xl ${
+                  submitStatus.type === 'success' 
+                    ? 'bg-green-500/10 border border-green-500/20 text-green-500' 
+                    : 'bg-red-500/10 border border-red-500/20 text-red-500'
+                }`}>
+                  <div className="flex items-center gap-3">
+                    {submitStatus.type === 'success' ? (
+                      <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                    )}
+                    <span className="font-medium">{submitStatus.message}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Validation Errors */}
+              {validationErrors.length > 0 && (
+                <div className="mb-6 p-4 rounded-2xl bg-red-500/10 border border-red-500/20">
+                  <h4 className="text-red-500 font-medium mb-2">Please fix the following errors:</h4>
+                  <ul className="space-y-1">
+                    {validationErrors.map((error, index) => (
+                      <li key={index} className="text-red-500 text-sm flex items-start gap-2">
+                        <span className="w-1 h-1 bg-red-500 rounded-full mt-2 flex-shrink-0"></span>
+                        {error}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>

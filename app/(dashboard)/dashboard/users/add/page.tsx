@@ -1,15 +1,17 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { UserFormData } from "@/app/types/user";
+import { User, UserFormData } from "@/app/types/user";
 import UserService from "@/app/components/service/user.service";
+import AuthService from "@/app/components/service/auth.service";
 import uploadService from "@/app/components/service/upload.service";
 
 export default function AddUserPage() {
   const router = useRouter();
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [formData, setFormData] = useState<UserFormData>({
     fullName: "",
     email: "",
@@ -24,7 +26,79 @@ export default function AddUserPage() {
     null
   );
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingUser, setIsLoadingUser] = useState(true);
   const [error, setError] = useState("");
+
+  const fetchCurrentUser = async () => {
+    setIsLoadingUser(true);
+    try {
+      // Get the token to extract user info
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.log("No token found");
+        setIsLoadingUser(false);
+        return;
+      }
+
+      // Try to decode the token to get user email (if it's a JWT)
+      try {
+        const tokenPayload = JSON.parse(atob(token.split('.')[1]));
+        console.log("Token payload:", tokenPayload);
+        
+        // Fetch users and find the one matching the token
+        const res = await UserService.getAllUsers();
+        if (res?.users) {
+          const foundUser = res.users.find((user: User) => 
+            user.email === tokenPayload.email || 
+            user._id === tokenPayload.userId ||
+            user._id === tokenPayload.id
+          );
+          
+          if (foundUser) {
+            setCurrentUser(foundUser);
+            console.log("Found current user:", foundUser);
+          } else {
+            console.log("User not found in users list");
+          }
+        }
+      } catch (tokenError) {
+        console.error("Error decoding token:", tokenError);
+      }
+    } catch (err: any) {
+      console.error("Error fetching current user:", err);
+    } finally {
+      setIsLoadingUser(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCurrentUser();
+  }, []);
+
+  const canCreateRole = (role: string): boolean => {
+    console.log("canCreateRole check:", { currentUser: currentUser?.role, targetRole: role });
+    
+    if (!currentUser) {
+      console.log("No current user, returning false");
+      return false;
+    }
+    
+    // Only superadmin can create admins (there's only one superadmin created by backend)
+    if (role === "admin") {
+      const canCreate = currentUser.role === "superadmin";
+      console.log(`Can create ${role}:`, canCreate);
+      return canCreate;
+    }
+    
+    // Both admin and superadmin can create users
+    if (role === "user") {
+      const canCreate = currentUser.role === "admin" || currentUser.role === "superadmin";
+      console.log(`Can create ${role}:`, canCreate);
+      return canCreate;
+    }
+    
+    return false;
+  };
 
   const handleInputChange = (
     e: React.ChangeEvent<
@@ -127,6 +201,18 @@ export default function AddUserPage() {
     }
   };
 
+  // Show loading state while fetching current user data
+  if (isLoadingUser) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-[var(--foreground-muted)]">Loading user permissions...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -158,6 +244,13 @@ export default function AddUserPage() {
           Back to Users
         </Link>
       </div>
+
+      {/* Current user debug info */}
+      {process.env.NODE_ENV === "development" && (
+        <div className="p-4 bg-blue-100 border border-blue-400 text-blue-700 rounded-[var(--radius-md)]">
+          <p><strong>Debug:</strong> Current user role: {currentUser?.role || "Not loaded"}</p>
+        </div>
+      )}
 
       {/* Error message */}
       {error && (
@@ -297,8 +390,8 @@ export default function AddUserPage() {
                 className="w-full px-4 py-2 bg-[var(--input-bg)] text-[var(--foreground)] border border-[var(--border)] rounded-[var(--radius-md)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                 required
               >
-                <option value="user">User</option>
-                <option value="admin">Admin</option>
+                {canCreateRole("user") && <option value="user">User</option>}
+                {canCreateRole("admin") && <option value="admin">Admin</option>}
               </select>
             </div>
           </div>

@@ -8,6 +8,7 @@ import {
 } from "../../types/courseCategory";
 import { getCategoryPlaceholderImage } from "../../utils/imageUtils";
 import uploadService from "../service/upload.service";
+import EnhancedImageUpload from "../EnhancedImageUpload";
 import config from "../config/config";
 
 interface CourseCategoryFormProps {
@@ -37,11 +38,9 @@ export default function CourseCategoryForm({
     isActive: true,
   });
   const [errors, setErrors] = useState<ValidationError[]>([]);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [imagePath, setImagePath] = useState<string | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [currentImageData, setCurrentImageData] = useState<{ url: string; key: string; path?: string; isEmoji?: boolean } | null>(null);
 
   useEffect(() => {
     if (initialData) {
@@ -57,8 +56,11 @@ export default function CourseCategoryForm({
         const previewUrl = initialData.image[0].path
           ? `${config.imageUrl}${initialData.image[0].path}`
           : initialData.image[0].url || '';
-        setImagePreview(previewUrl);
-        setImagePath(initialData.image[0].key);
+        setCurrentImageData({
+          url: previewUrl,
+          key: initialData.image[0].key,
+          path: initialData.image[0].path,
+        });
       }
     } else if (initialCategory) {
       setFormData({
@@ -73,8 +75,11 @@ export default function CourseCategoryForm({
         const previewUrl = initialCategory.image[0].path
           ? `${config.imageUrl}${initialCategory.image[0].path}`
           : initialCategory.image[0].url || '';
-        setImagePreview(previewUrl);
-        setImagePath(initialCategory.image[0].key);
+        setCurrentImageData({
+          url: previewUrl,
+          key: initialCategory.image[0].key,
+          path: initialCategory.image[0].path,
+        });
       }
     }
   }, [initialData, initialCategory]);
@@ -94,87 +99,105 @@ export default function CourseCategoryForm({
     setFormData({ ...formData, [name]: checked });
   };
 
-  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files && files.length > 0) {
-      const file = files[0];
-      setImageFile(file);
+  const handleImageChange = async (imageData: { url: string; key: string; path?: string; isEmoji?: boolean }) => {
+    // Handle image removal
+    if (!imageData.url || imageData.url === "") {
+      setCurrentImageData(null);
+      setFormData((prev) => ({
+        ...prev,
+        image: [],
+      }));
+      setErrors(errors.filter((error) => error.field !== "image"));
+      return;
+    }
+
+    // If the file already has a path (uploaded from EnhancedImageUpload emoji or already uploaded), just update form data
+    if (imageData.path) {
+      setCurrentImageData(imageData);
+      setFormData((prev) => ({
+        ...prev,
+        image: [
+          {
+            path: imageData.path!,
+            key: imageData.key,
+            _id: undefined,
+          },
+        ],
+      }));
+      setErrors(errors.filter((error) => error.field !== "image"));
+      return;
+    }
+
+    // For regular image files that don't have a path yet, upload them immediately
+    if (!imageData.isEmoji && imageData.url && !imageData.path) {
       setIsUploadingImage(true);
 
       try {
-        // Upload image to server
-        const uploadResponse = await uploadService.uploadImage(file);
-        console.log("Upload response:", uploadResponse);
+        // Extract actual File object from the url (which is a Blob URL)
+        const response = await fetch(imageData.url);
+        const blob = await response.blob();
+        const fileExtension = imageData.url.split(".").pop() || "jpg";
+        const actualFile = new File([blob], `upload.${fileExtension}`, {
+          type: blob.type,
+        });
 
-        if (
-          uploadResponse &&
-          uploadResponse.upload &&
-          uploadResponse.upload[0] &&
-          uploadResponse.upload[0].path
-        ) {
-          // Get the path from the response
-          const path = uploadResponse.upload[0].path;
-          const key = uploadResponse.upload[0].key || path;
-          const imageBaseUrl = config.imageUrl;
-          const fullImageUrl = `${imageBaseUrl}${path}`;
+        // Upload to server
+        const uploadResponse = await uploadService.uploadImage(actualFile);
 
-          // Store the path in state for later deletion
-          setImagePath(path);
+        if (uploadResponse && uploadResponse.upload && uploadResponse.upload[0]) {
+          const uploadedFile = uploadResponse.upload[0];
+          const path = uploadedFile.path;
+          const key = uploadedFile.key || path;
 
-          // Store the path and key in the form data according to ImageItem interface
-          setFormData((prev) => ({
-            ...prev,
-            image: [
-              {
-                path: path,
-                key: key,
-                _id: undefined,
-              },
-            ],
-          }));
+          // Create a new file object with the server response
+          const serverFile = {
+            url: `${config.imageUrl}${path}`,
+            key: key,
+            path: path,
+            isEmoji: false,
+          };
 
-          // Update image preview with the constructed URL
-          setImagePreview(fullImageUrl);
+                     // Update current image data and form data
+           setCurrentImageData(serverFile);
+           setFormData((prev) => ({
+             ...prev,
+             image: [
+               {
+                 path: serverFile.path!,
+                 key: serverFile.key,
+                 _id: undefined,
+               },
+             ],
+           }));
         } else {
-          throw new Error("Invalid upload response");
+          throw new Error("Failed to upload image");
         }
-
-        // Clear errors
-        setErrors(errors.filter((error) => error.field !== "image"));
-      } catch (error) {
-        console.error("Error uploading image:", error);
-        setErrors((prev) => [
-          ...prev.filter((e) => e.field !== "image"),
-          {
-            field: "image",
-            message: "Failed to upload image. Please try again.",
-          },
+      } catch (err) {
+        console.error("Error uploading image:", err);
+        setErrors([
+          ...errors.filter((error) => error.field !== "image"),
+          { field: "image", message: "Failed to upload image. Please try again." },
         ]);
       } finally {
         setIsUploadingImage(false);
       }
+    } else {
+      // For other cases (like emojis that are already processed), just update the data
+      setCurrentImageData(imageData);
+      setFormData((prev) => ({
+        ...prev,
+        image: [
+          {
+            path: imageData.path || imageData.key || "",
+            key: imageData.key,
+            _id: undefined,
+          },
+        ],
+      }));
     }
-  };
 
-  const handleClearImage = async () => {
-    if (imagePath) {
-      try {
-        // Call the delete API with the stored path
-        await uploadService.deleteImage(imagePath);
-        console.log("Image deleted successfully");
-      } catch (error) {
-        console.error("Error deleting image:", error);
-      }
-    }
-
-    // Clear states regardless of API success
-    setImagePreview(null);
-    setImageFile(null);
-    setImagePath(null);
-    setFormData((prev) => ({
-      ...prev,
-      image: [],
-    }));
+    // Clear errors
+    setErrors(errors.filter((error) => error.field !== "image"));
   };
 
   const validateForm = (): boolean => {
@@ -191,7 +214,7 @@ export default function CourseCategoryForm({
       });
     }
 
-    if (!imageFile && (!initialData?.image || initialData.image.length === 0)) {
+    if (!currentImageData && (!initialData?.image || initialData.image.length === 0)) {
       newErrors.push({ field: "image", message: "Image is required" });
     }
 
@@ -211,46 +234,8 @@ export default function CourseCategoryForm({
     try {
       let updatedFormData = { ...formData };
 
-      // Only try to upload a new image if we have an image file and it wasn't already uploaded
-      if (imageFile && (!formData.image || formData.image.length === 0)) {
-        try {
-          setIsUploadingImage(true);
-          const uploadResponse = await uploadService.uploadImage(imageFile);
-
-          if (
-            uploadResponse &&
-            uploadResponse.upload &&
-            uploadResponse.upload[0] &&
-            uploadResponse.upload[0].path
-          ) {
-            const imagePath = uploadResponse.upload[0].path;
-            const key = uploadResponse.upload[0].key || imagePath;
-            const imageBaseUrl = config.imageUrl;
-            const fullImageUrl = `${imageBaseUrl}${imagePath}`;
-
-            updatedFormData.image = [
-              {
-                path: imagePath,
-                key: key,
-                _id: undefined,
-              },
-            ];
-
-            // Update image preview with the constructed URL
-            setImagePreview(fullImageUrl);
-          } else {
-            throw new Error("Invalid upload response");
-          }
-        } catch (uploadError) {
-          console.error(
-            "Error uploading image during submission:",
-            uploadError
-          );
-          throw new Error("Failed to upload image. Please try again.");
-        } finally {
-          setIsUploadingImage(false);
-        }
-      }
+      // Image data is already handled by the enhanced upload component
+      // No additional upload logic needed here as EnhancedImageUpload handles it
 
       // If editing, preserve the ID and other fields
       if (initialData) {
@@ -336,112 +321,19 @@ export default function CourseCategoryForm({
         </div>
 
         <div>
-          <label
-            htmlFor="image"
-            className="block text-sm font-medium text-[var(--foreground)]"
-          >
-            Image
+          <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
+            Category Image / Emoji *
           </label>
-          <div className="mt-1 flex items-center">
-            <input
-              type="file"
-              id="image"
-              name="image"
-              accept="image/*"
+          <EnhancedImageUpload
+            value={currentImageData || { url: "", key: "" }}
               onChange={handleImageChange}
-              className="sr-only"
-              disabled={isUploadingImage}
-            />
-            {imagePreview ? (
-              <div className="relative h-32 w-32 mr-4 rounded-[var(--radius-md)] overflow-hidden">
-                <img
-                  src={imagePreview}
-                  alt="Category preview"
-                  className="h-full w-full object-cover"
-                />
-                <button
-                  type="button"
-                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
-                  onClick={handleClearImage}
-                  disabled={isUploadingImage}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </button>
-              </div>
-            ) : isUploadingImage ? (
-              <div className="flex flex-col items-center justify-center h-32 w-32 border-2 border-dashed border-[var(--primary)]/30 rounded-[var(--radius-md)]">
-                <svg
-                  className="animate-spin h-8 w-8 text-[var(--primary)]"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
-                <span className="mt-2 text-sm text-[var(--foreground)]/70">
-                  Uploading...
-                </span>
-              </div>
-            ) : (
-              <label
-                htmlFor="image"
-                className="flex flex-col items-center justify-center h-32 w-32 border-2 border-dashed border-[var(--primary)]/30 rounded-[var(--radius-md)] cursor-pointer hover:border-[var(--primary)]/60 transition-colors"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-10 w-10 text-[var(--primary)]/50"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                  />
-                </svg>
-                <span className="mt-2 text-sm text-[var(--foreground)]/70">
-                  Upload image
-                </span>
-              </label>
-            )}
-            {!imagePreview && !isUploadingImage && (
-              <label
-                htmlFor="image"
-                className="ml-4 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-[var(--radius-md)] text-[var(--background)] bg-[var(--primary)] hover:bg-[var(--primary)]/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--primary)]"
-                tabIndex={0}
-              >
-                Browse
-              </label>
-            )}
+            isLoading={isUploadingImage}
+            allowEmoji={true}
+            error={getError("image") || undefined}
+          />
+          <div className="mt-1 text-xs text-[var(--foreground-muted)]">
+            💡 Upload an image or choose an emoji. Emojis are automatically converted to high-quality images with transparent backgrounds.
           </div>
-          {getError("image") && (
-            <p className="mt-1 text-sm text-red-500">{getError("image")}</p>
-          )}
         </div>
 
         <div className="flex items-center">

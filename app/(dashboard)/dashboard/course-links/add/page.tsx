@@ -39,7 +39,7 @@ interface CourseLinkFormData {
 // Predefined link types that match backend validation
 const LINK_TYPES = [
   { value: "google", label: "Google" },
-  { value: "zoom", label: "Zoom" }
+  { value: "zoom", label: "Zoom" },
 ];
 
 export default function AddCourseLinkPage() {
@@ -98,7 +98,9 @@ export default function AddCourseLinkPage() {
 
       try {
         setIsLoadingSchedules(true);
-        const response = await scheduleService.getSchedulesByCourseId(formData.courseId);
+        const response = await scheduleService.getSchedulesByCourseId(
+          formData.courseId
+        );
 
         if (response && response.status && response.schedules) {
           // Filter schedules that are active and not deleted
@@ -127,13 +129,13 @@ export default function AddCourseLinkPage() {
     >
   ) => {
     const { name, value } = e.target;
-    
+
     // If changing course, reset scheduleId
-    if (name === 'courseId') {
+    if (name === "courseId") {
       setFormData((prev) => ({
         ...prev,
         [name]: value,
-        scheduleId: ""
+        scheduleId: "",
       }));
     } else {
       setFormData((prev) => ({
@@ -153,18 +155,19 @@ export default function AddCourseLinkPage() {
 
   // Format schedule display name
   const formatScheduleName = (schedule: Schedule) => {
-    const dateInfo = schedule.startDate 
-      ? new Date(schedule.startDate).toLocaleDateString() 
-      : 'Self-paced';
-    
-    const locationInfo = schedule.city && schedule.country
-      ? `${schedule.city}, ${schedule.country}`
-      : schedule.country || schedule.city || 'Online';
-    
+    const dateInfo = schedule.startDate
+      ? new Date(schedule.startDate).toLocaleDateString()
+      : "Self-paced";
+
+    const locationInfo =
+      schedule.city && schedule.country
+        ? `${schedule.city}, ${schedule.country}`
+        : schedule.country || schedule.city || "Online";
+
     const instructorInfo = schedule.instructorName
       ? `(${schedule.instructorName})`
-      : '';
-    
+      : "";
+
     return `${dateInfo} - ${locationInfo} ${instructorInfo}`.trim();
   };
 
@@ -205,7 +208,7 @@ export default function AddCourseLinkPage() {
 
       if (response && (response.status || response._id)) {
         setSuccessMessage("Course link created successfully!");
-        
+
         // Reset form
         setFormData({
           courseId: "",
@@ -224,7 +227,9 @@ export default function AddCourseLinkPage() {
       }
     } catch (error: any) {
       console.error("Error creating course link:", error);
-      setError(error.message || "An error occurred while creating the course link");
+      setError(
+        error.message || "An error occurred while creating the course link"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -255,7 +260,9 @@ export default function AddCourseLinkPage() {
         </Link>
       </div>
 
-      <h1 className="text-2xl font-bold text-[var(--foreground)] mb-6">Add New Course Link</h1>
+      <h1 className="text-2xl font-bold text-[var(--foreground)] mb-6">
+        Add New Course Link
+      </h1>
 
       {error && (
         <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-md">
@@ -272,7 +279,10 @@ export default function AddCourseLinkPage() {
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Course Selection */}
         <div>
-          <label htmlFor="courseId" className="block text-sm font-medium text-[var(--foreground)] mb-1">
+          <label
+            htmlFor="courseId"
+            className="block text-sm font-medium text-[var(--foreground)] mb-1"
+          >
             Course<span className="text-red-500"> *</span>
           </label>
           <select
@@ -285,7 +295,9 @@ export default function AddCourseLinkPage() {
           >
             <option value="">Select a course</option>
             {isLoadingCourses ? (
-              <option value="" disabled>Loading courses...</option>
+              <option value="" disabled>
+                Loading courses...
+              </option>
             ) : (
               courses.map((course) => (
                 <option key={course._id} value={course._id}>
@@ -298,7 +310,10 @@ export default function AddCourseLinkPage() {
 
         {/* Name Input */}
         <div>
-          <label htmlFor="name" className="block text-sm font-medium text-[var(--foreground)] mb-1">
+          <label
+            htmlFor="name"
+            className="block text-sm font-medium text-[var(--foreground)] mb-1"
+          >
             Link Type<span className="text-red-500"> *</span>
           </label>
           <select
@@ -320,7 +335,10 @@ export default function AddCourseLinkPage() {
 
         {/* Schedule Selection */}
         <div>
-          <label htmlFor="scheduleId" className="block text-sm font-medium text-[var(--foreground)] mb-1">
+          <label
+            htmlFor="scheduleId"
+            className="block text-sm font-medium text-[var(--foreground)] mb-1"
+          >
             Schedule<span className="text-red-500"> *</span>
           </label>
           <select
@@ -334,7 +352,9 @@ export default function AddCourseLinkPage() {
           >
             <option value="">Select a schedule</option>
             {isLoadingSchedules ? (
-              <option value="" disabled>Loading schedules...</option>
+              <option value="" disabled>
+                Loading schedules...
+              </option>
             ) : schedules.length > 0 ? (
               schedules.map((schedule) => (
                 <option key={schedule._id} value={schedule._id}>
@@ -342,14 +362,19 @@ export default function AddCourseLinkPage() {
                 </option>
               ))
             ) : formData.courseId ? (
-              <option value="" disabled>No schedules available for this course</option>
+              <option value="" disabled>
+                No schedules available for this course
+              </option>
             ) : null}
           </select>
         </div>
 
         {/* Link Input */}
         <div>
-          <label htmlFor="link" className="block text-sm font-medium text-[var(--foreground)] mb-1">
+          <label
+            htmlFor="link"
+            className="block text-sm font-medium text-[var(--foreground)] mb-1"
+          >
             Link URL<span className="text-red-500"> *</span>
           </label>
           <Input
@@ -372,7 +397,10 @@ export default function AddCourseLinkPage() {
             onChange={handleCheckboxChange}
             className="h-4 w-4 rounded border-[var(--border)] text-[var(--primary)] focus:ring-[var(--primary)]"
           />
-          <label htmlFor="isActive" className="ml-2 block text-sm text-[var(--foreground)]">
+          <label
+            htmlFor="isActive"
+            className="ml-2 block text-sm text-[var(--foreground)]"
+          >
             Active
           </label>
         </div>
@@ -394,7 +422,7 @@ export default function AddCourseLinkPage() {
           >
             {isLoading ? (
               <div className="flex items-center">
-                <LoadingSpinner size="small" /> 
+                <LoadingSpinner size="small" />
                 <span className="ml-2">Creating...</span>
               </div>
             ) : (
@@ -405,4 +433,4 @@ export default function AddCourseLinkPage() {
       </form>
     </div>
   );
-} 
+}

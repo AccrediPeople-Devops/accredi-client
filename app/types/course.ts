@@ -74,7 +74,7 @@ export interface Course {
   upload: {
     courseImage: FileUpload[];
     courseSampleCertificate?: FileUpload[];
-    courseBadge?: FileUpload;
+    courseBadge?: FileUpload[];
   };
   keyFeatures?: string[];
   isActive?: boolean;
@@ -97,7 +97,7 @@ export interface CourseFormData {
   upload: {
     courseImage: FileUpload[];
     courseSampleCertificate: FileUpload[];
-    courseBadge: FileUpload;
+    courseBadge: FileUpload[];
   };
   keyFeatures: string[];
   isActive: boolean;

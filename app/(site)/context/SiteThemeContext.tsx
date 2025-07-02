@@ -13,7 +13,7 @@ interface SiteThemeContextType {
 const SiteThemeContext = createContext<SiteThemeContextType | undefined>(undefined);
 
 export function SiteThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<SiteTheme>('system');
+  const [theme, setTheme] = useState<SiteTheme>('dark');
   const [resolvedTheme, setResolvedTheme] = useState<ResolvedSiteTheme>('dark');
 
   // Check system preference
@@ -32,10 +32,10 @@ export function SiteThemeProvider({ children }: { children: React.ReactNode }) {
     return currentTheme;
   };
 
-  // Initialize theme from localStorage or system
+  // Initialize theme from localStorage or default to dark
   useEffect(() => {
     const savedTheme = localStorage.getItem('site-theme') as SiteTheme;
-    const initialTheme = savedTheme || 'system';
+    const initialTheme = savedTheme || 'dark';
     setTheme(initialTheme);
     setResolvedTheme(resolveTheme(initialTheme));
   }, []);

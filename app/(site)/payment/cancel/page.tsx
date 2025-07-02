@@ -1,10 +1,11 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import Breadcrumb from "@/app/components/site/Breadcrumb";
 
-export default function PaymentCancelPage() {
+// Component that uses useSearchParams - wrapped in Suspense
+function PaymentCancelContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
@@ -264,5 +265,45 @@ export default function PaymentCancelPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Loading component for Suspense fallback
+function PaymentCancelLoading() {
+  return (
+    <div className="min-h-screen site-section-bg flex items-center justify-center">
+      <div className="site-glass backdrop-blur-xl rounded-3xl p-8 shadow-2xl max-w-lg w-full mx-4">
+        <div className="text-center">
+          <div className="w-20 h-20 bg-gradient-to-br from-[#EF4444] to-[#DC2626] rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
+            <svg
+              className="w-10 h-10 text-white"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </div>
+          <h1 className="text-3xl font-black site-text-primary mb-4">
+            Loading Payment Status...
+          </h1>
+          <div className="animate-spin w-8 h-8 border-4 border-[#4F46E5] border-t-transparent rounded-full mx-auto"></div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Main component with Suspense wrapper
+export default function PaymentCancelPage() {
+  return (
+    <Suspense fallback={<PaymentCancelLoading />}>
+      <PaymentCancelContent />
+    </Suspense>
   );
 }
