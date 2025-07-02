@@ -131,7 +131,7 @@ export default function SetPasswordPage({ params }: SetPasswordPageProps) {
         setSuccess(true);
         // Redirect to dashboard after 3 seconds since user is now authenticated
         setTimeout(() => {
-          router.push("/dashboard");
+          router.push("/home");
         }, 3000);
       } else {
         // Handle specific error cases
