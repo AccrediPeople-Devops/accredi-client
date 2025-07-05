@@ -14,6 +14,7 @@ import { WORLD_COUNTRIES } from "@/app/components/service/worldLocationData";
 import { CountryData } from "@/app/context/LocationContext";
 import { StateData } from "@/app/components/service/enhancedLocationData";
 import { LoadingSpinner } from "@/app/components/LoadingSpinner";
+import { formatDateForInput, parseDateLocal } from "@/app/utils/dateUtils";
 
 interface Course {
   _id: string;
@@ -339,7 +340,7 @@ export default function AddSchedulePage() {
         return;
       }
 
-      if (new Date(formData.startDate) > new Date(formData.endDate)) {
+      if (parseDateLocal(formData.startDate)! > parseDateLocal(formData.endDate)!) {
         setError("Start date cannot be later than end date");
         setIsLoading(false);
         return;

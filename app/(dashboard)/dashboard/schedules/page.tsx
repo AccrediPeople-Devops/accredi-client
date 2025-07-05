@@ -7,6 +7,7 @@ import courseService from "@/app/components/service/course.service";
 import { Schedule } from "@/app/types/schedule";
 import { LoadingSpinner } from "@/app/components/LoadingSpinner";
 import Modal from "@/app/components/Modal";
+import { formatDate, parseDateLocal } from "@/app/utils/dateUtils";
 
 export default function SchedulesPage() {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
@@ -126,11 +127,12 @@ export default function SchedulesPage() {
     const matchesStatus =
       statusFilter === "all" ||
       (statusFilter === "upcoming" &&
-        new Date(schedule.startDate) > new Date()) ||
+        parseDateLocal(schedule.startDate)! > new Date()) ||
       (statusFilter === "ongoing" &&
-        new Date(schedule.startDate) <= new Date() &&
-        new Date(schedule.endDate) >= new Date()) ||
-      (statusFilter === "completed" && new Date(schedule.endDate) < new Date());
+        parseDateLocal(schedule.startDate)! <= new Date() &&
+        parseDateLocal(schedule.endDate)! >= new Date()) ||
+      (statusFilter === "completed" &&
+        parseDateLocal(schedule.endDate)! < new Date());
 
     // Filter based on active tab
     const matchesTab =
@@ -177,8 +179,8 @@ export default function SchedulesPage() {
   // Get schedule status based on dates
   const getScheduleStatus = (startDate: string, endDate: string) => {
     const now = new Date();
-    const start = new Date(startDate);
-    const end = new Date(endDate);
+    const start = parseDateLocal(startDate)!;
+    const end = parseDateLocal(endDate)!;
 
     if (now < start) return "upcoming";
     if (now >= start && now <= end) return "ongoing";
