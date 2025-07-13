@@ -143,43 +143,70 @@ class CourseService {
    */
   async updateCourse(id: string, data: any) {
     try {
-      console.log('Updating course with ID:', id);
-      console.log('Update data:', JSON.stringify(data, null, 2));
+      console.log('=== COURSE UPDATE DEBUG ===');
+      console.log('Course ID:', id);
+      console.log('Update data structure:', JSON.stringify(data, null, 2));
+      console.log('Data keys:', Object.keys(data));
+      console.log('Upload structure:', data.upload ? JSON.stringify(data.upload, null, 2) : 'No upload data');
+      console.log('Components length:', data.components ? data.components.length : 'No components');
+      console.log('Key features length:', data.keyFeatures ? data.keyFeatures.length : 'No key features');
       
-      // Try multiple endpoint formats and HTTP methods
+      // Try different data formats to see which one works
       try {
-        console.log('Trying PUT to /courses/v1/update/{id}');
-        const response = await axiosInstance.put(`/courses/v1/update/${id}`, data);
+        console.log('Trying direct data format...');
+        const response = await axiosInstance.put(`/courses/v1/${id}`, data);
+        console.log('Update successful with direct format:', response.data);
         return response.data;
-      } catch (firstError) {
-        console.log('First attempt failed, trying standard PUT...');
+      } catch (directError: any) {
+        console.log('Direct format failed, trying wrapped format...');
+        
+        // Try wrapping the data in a 'course' object
         try {
-          console.log('Trying PUT to /courses/v1/{id}');
-          const response = await axiosInstance.put(`/courses/v1/${id}`, data);
+          const wrappedData = { course: data };
+          console.log('Trying wrapped data:', JSON.stringify(wrappedData, null, 2));
+          const response = await axiosInstance.put(`/courses/v1/${id}`, wrappedData);
+          console.log('Update successful with wrapped format:', response.data);
           return response.data;
-        } catch (secondError) {
-          console.log('Second attempt failed, trying with course wrapper...');
-          try {
-            console.log('Trying PUT with course wrapper');
-            const response = await axiosInstance.put(`/courses/v1/${id}`, { course: data });
-            return response.data;
-          } catch (thirdError) {
-            console.log('Third attempt failed, trying POST method...');
-            // Try POST method as some APIs use POST for updates
-            const response = await axiosInstance.post(`/courses/v1/${id}/update`, data);
-            return response.data;
-          }
+        } catch (wrappedError: any) {
+          console.log('Wrapped format also failed, trying minimal data...');
+          
+          // Try with only essential fields
+          const minimalData = {
+            title: data.title,
+            categoryId: data.categoryId,
+            shortDescription: data.shortDescription,
+            description: data.description
+          };
+          console.log('Trying minimal data:', JSON.stringify(minimalData, null, 2));
+          const response = await axiosInstance.put(`/courses/v1/${id}`, minimalData);
+          console.log('Update successful with minimal format:', response.data);
+          return response.data;
         }
       }
     } catch (error: any) {
-      console.error('Course update error:', error);
+      console.error('=== COURSE UPDATE ERROR ===');
+      console.error('Course update error:', error.message);
       
       // Log more detailed error information
       if (error.response) {
-        console.error('Error response data:', error.response.data);
         console.error('Error response status:', error.response.status);
+        console.error('Error response data:', error.response.data);
         console.error('Error response headers:', error.response.headers);
+        
+        // Try to get more details from the error
+        if (error.response.data) {
+          console.error('Error message:', error.response.data.message);
+          console.error('Error details:', error.response.data.details);
+          console.error('Validation errors:', error.response.data.errors);
+        }
+      } else if (error.request) {
+        console.error('No response received:', error.request);
+      } else {
+        console.error('Request setup error:', error.message);
       }
+      
+      console.error('Error config:', error.config);
+      console.error('=== END ERROR DEBUG ===');
       
       throw error;
     }

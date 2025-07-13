@@ -175,6 +175,7 @@ export default function MultipleImageUpload({
                 alt={`Uploaded image ${index + 1}`}
                 fill
                 className="object-cover"
+                unoptimized
               />
             )}
             

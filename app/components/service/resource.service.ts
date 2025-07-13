@@ -191,11 +191,11 @@ class ResourceService {
           
           // Try PATCH as last resort
           console.log("Trying PATCH as final attempt");
-          const response = await axiosInstance.patch(`/resources/v1/${id}`, {
+      const response = await axiosInstance.patch(`/resources/v1/${id}`, {
             isDeleted: false,
             isActive: true
-          });
-          return response.data;
+      });
+      return response.data;
         }
       }
     } catch (error) {

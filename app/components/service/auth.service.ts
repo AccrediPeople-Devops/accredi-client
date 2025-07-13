@@ -8,8 +8,8 @@ class AuthService {
         password,
       });
 
-      // Only set token if we're on the client side
-      if (typeof window !== "undefined") {
+      // Only set token if we're on the client side and token exists
+      if (typeof window !== "undefined" && response.data.token) {
         localStorage.setItem("token", response.data.token.accessToken);
         localStorage.setItem("refreshToken", response.data.token.refreshToken);
       }
@@ -23,6 +23,24 @@ class AuthService {
   async register(userData: any) {
     try {
       const response = await axiosInstance.post("/auth/v1/register", userData);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async loginWith2FA(userId: string, otp: string) {
+    try {
+      const response = await axiosInstance.post(`/auth/v1/login-with-2fa/${userId}`, {
+        otp,
+      });
+
+      // Only set token if we're on the client side
+      if (typeof window !== "undefined") {
+        localStorage.setItem("token", response.data.token.accessToken);
+        localStorage.setItem("refreshToken", response.data.token.refreshToken);
+      }
+
       return response.data;
     } catch (error) {
       throw error;

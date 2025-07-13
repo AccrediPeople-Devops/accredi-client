@@ -26,6 +26,10 @@ export default function RichTextEditor({
   const editorRef = useRef<HTMLDivElement>(null);
   const [isFocused, setIsFocused] = useState(false);
   const [charCount, setCharCount] = useState(0);
+  const [showColorPicker, setShowColorPicker] = useState(false);
+  const [showFontSizePicker, setShowFontSizePicker] = useState(false);
+  const colorPickerRef = useRef<HTMLDivElement>(null);
+  const fontSizePickerRef = useRef<HTMLDivElement>(null);
   
   // Create a deterministic ID based solely on the label, with no randomness
   const editorId = id || `editor-${label ? label.replace(/\s+/g, '-').toLowerCase() : 'rich-text'}`;
@@ -41,7 +45,44 @@ export default function RichTextEditor({
     alignCenter: false,
     alignRight: false,
     alignJustify: false,
+    heading1: false,
+    heading2: false,
+    heading3: false,
   });
+
+  // Color palette for text colors - organized by category
+  const colorPalette = [
+    // Essential colors
+    { color: '#FFFFFF', name: 'White' },
+    { color: '#000000', name: 'Black' },
+    { color: '#6C757D', name: 'Gray' },
+    
+    // Primary colors
+    { color: '#DC3545', name: 'Red' },
+    { color: '#FFC107', name: 'Yellow' },
+    { color: '#007BFF', name: 'Blue' },
+    
+    // Secondary colors
+    { color: '#28A745', name: 'Green' },
+    { color: '#FD7E14', name: 'Orange' },
+    { color: '#6F42C1', name: 'Purple' },
+    
+    // Additional colors
+    { color: '#17A2B8', name: 'Cyan' },
+    { color: '#E83E8C', name: 'Pink' },
+    { color: '#20C997', name: 'Teal' },
+  ];
+
+  // Font sizes
+  const fontSizes = [
+    { label: 'Small', value: '12px' },
+    { label: 'Normal', value: '14px' },
+    { label: 'Medium', value: '16px' },
+    { label: 'Large', value: '18px' },
+    { label: 'X-Large', value: '20px' },
+    { label: 'XX-Large', value: '24px' },
+    { label: 'Huge', value: '32px' },
+  ];
   
   // Initialize editor content and handle updates
   useEffect(() => {
@@ -70,7 +111,24 @@ export default function RichTextEditor({
     };
   }, []);
 
-  // Add styling for links and lists in the editor
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (colorPickerRef.current && !colorPickerRef.current.contains(event.target as Node)) {
+        setShowColorPicker(false);
+      }
+      if (fontSizePickerRef.current && !fontSizePickerRef.current.contains(event.target as Node)) {
+        setShowFontSizePicker(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Add styling for links, lists, and headings in the editor
   useEffect(() => {
     if (typeof window === 'undefined') return; // Skip on server
     
@@ -100,6 +158,27 @@ export default function RichTextEditor({
         
         #${editorId} li {
           margin-bottom: 0.5em;
+        }
+        
+        #${editorId} h1 {
+          font-size: 2em;
+          font-weight: bold;
+          margin: 0.67em 0;
+          line-height: 1.2;
+        }
+        
+        #${editorId} h2 {
+          font-size: 1.5em;
+          font-weight: bold;
+          margin: 0.75em 0;
+          line-height: 1.3;
+        }
+        
+        #${editorId} h3 {
+          font-size: 1.25em;
+          font-weight: bold;
+          margin: 0.83em 0;
+          line-height: 1.4;
         }
       `;
       document.head.appendChild(style);
@@ -131,6 +210,63 @@ export default function RichTextEditor({
       onChange(newContent);
       updateCharCount();
     }
+  };
+
+  // Handle paste event to clean up formatting
+  const handlePaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    
+    // Get the pasted data
+    const paste = e.clipboardData.getData('text/html') || e.clipboardData.getData('text/plain');
+    
+    if (paste) {
+      // Create a temporary div to clean the HTML
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = paste;
+      
+      // Remove all style attributes and problematic formatting
+      const cleanHtml = cleanPastedContent(tempDiv);
+      
+      // Insert the cleaned content
+      if (editorRef.current) {
+        editorRef.current.focus();
+        document.execCommand('insertHTML', false, cleanHtml);
+        handleContentChange();
+      }
+    }
+  };
+
+  // Clean pasted content to remove problematic formatting
+  const cleanPastedContent = (element: HTMLElement): string => {
+    // Remove all style attributes
+    const elementsWithStyle = element.querySelectorAll('[style]');
+    elementsWithStyle.forEach(el => {
+      el.removeAttribute('style');
+    });
+
+    // Remove font tags that might have color attributes
+    const fontTags = element.querySelectorAll('font');
+    fontTags.forEach(font => {
+      const span = document.createElement('span');
+      span.innerHTML = font.innerHTML;
+      font.parentNode?.replaceChild(span, font);
+    });
+
+    // Remove any elements with problematic color styling
+    const colorElements = element.querySelectorAll('[color]');
+    colorElements.forEach(el => {
+      el.removeAttribute('color');
+    });
+
+    // Apply default text color to ensure visibility
+    const allTextElements = element.querySelectorAll('*');
+    allTextElements.forEach(el => {
+      if (el.textContent && el.textContent.trim() !== '') {
+        (el as HTMLElement).style.color = 'inherit';
+      }
+    });
+
+    return element.innerHTML;
   };
 
   // Special function to ensure proper list insertion
@@ -171,6 +307,26 @@ export default function RichTextEditor({
   const updateActiveFormats = () => {
     if (!editorRef.current) return;
     
+    // Check for heading tags
+    const selection = window.getSelection();
+    let heading1 = false, heading2 = false, heading3 = false;
+    
+    if (selection && selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0);
+      let node: Node | null = range.commonAncestorContainer;
+      
+      // Walk up the DOM tree to find heading tags
+      while (node && node !== editorRef.current) {
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          const tagName = (node as Element).tagName;
+          if (tagName === 'H1') heading1 = true;
+          if (tagName === 'H2') heading2 = true;
+          if (tagName === 'H3') heading3 = true;
+        }
+        node = node.parentNode;
+      }
+    }
+    
     setActiveFormats({
       bold: document.queryCommandState("bold"),
       italic: document.queryCommandState("italic"),
@@ -182,6 +338,9 @@ export default function RichTextEditor({
       alignCenter: document.queryCommandState("justifyCenter"),
       alignRight: document.queryCommandState("justifyRight"),
       alignJustify: document.queryCommandState("justifyFull"),
+      heading1,
+      heading2,
+      heading3,
     });
   };
 
@@ -194,6 +353,46 @@ export default function RichTextEditor({
       }
     } else {
       alert("Please select text to create a link");
+    }
+  };
+
+  const handleColorChange = (color: string) => {
+    executeCommand("foreColor", color);
+    setShowColorPicker(false);
+  };
+
+  const handleFontSizeChange = (size: string) => {
+    executeCommand("fontSize", "3"); // Reset to default size first
+    
+    // Apply inline style for better control
+    if (editorRef.current) {
+      editorRef.current.focus();
+      const selection = window.getSelection();
+      if (selection && selection.toString().length > 0) {
+        const range = selection.getRangeAt(0);
+        const span = document.createElement('span');
+        span.style.fontSize = size;
+        span.appendChild(range.extractContents());
+        range.insertNode(span);
+        selection.removeAllRanges();
+      }
+      handleContentChange();
+    }
+    setShowFontSizePicker(false);
+  };
+
+  const clearFormatting = () => {
+    executeCommand("removeFormat");
+    // Also clear any inline styles
+    if (editorRef.current) {
+      const selection = window.getSelection();
+      if (selection && selection.toString().length > 0) {
+        const range = selection.getRangeAt(0);
+        const contents = range.extractContents();
+        const textContent = contents.textContent || '';
+        range.insertNode(document.createTextNode(textContent));
+      }
+      handleContentChange();
     }
   };
 
@@ -221,6 +420,27 @@ export default function RichTextEditor({
       title={tooltip}
     >
       {icon}
+    </button>
+  );
+
+  const headingButton = (
+    level: 1 | 2 | 3,
+    isActive: boolean,
+    tooltip: string
+  ) => (
+    <button
+      type="button"
+      className={`px-2 py-1.5 rounded-md transition-colors font-medium text-sm ${
+        isActive
+          ? "bg-[#5B2C6F]/20 text-white"
+          : "text-white/70 hover:bg-[#2D2D44] hover:text-white"
+      }`}
+      onClick={() => {
+        executeCommand("formatBlock", `<h${level}>`);
+      }}
+      title={tooltip}
+    >
+      H{level}
     </button>
   );
 
@@ -260,6 +480,129 @@ export default function RichTextEditor({
             <span className="underline text-sm">U</span>,
             "Underline"
           )}
+          
+          <div className="w-px h-6 bg-[#3A3A55] mx-1"></div>
+          
+          {/* Color Picker */}
+          <div className="relative" ref={colorPickerRef}>
+            <button
+              type="button"
+              className="p-1.5 rounded-md transition-colors text-white/70 hover:bg-[#2D2D44] hover:text-white"
+              onClick={() => setShowColorPicker(!showColorPicker)}
+              title="Text Color"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4.098 19.902a3.75 3.75 0 005.304 0l6.401-6.402M4.098 19.902A3.75 3.75 0 109.402 4.098m0 15.804l6.401-6.402M9.402 4.098a3.75 3.75 0 010 5.304l-6.401 6.402M9.402 4.098l6.401 6.402" />
+              </svg>
+            </button>
+            
+            {showColorPicker && (
+              <div className="absolute top-full left-0 z-10 mt-1 p-3 bg-[#2D2D44] border border-[#3A3A55] rounded-lg shadow-lg min-w-[200px]">
+                <div className="text-xs text-white/70 mb-3 font-medium">Essential Colors</div>
+                <div className="grid grid-cols-3 gap-2 mb-4">
+                  {colorPalette.slice(0, 3).map((colorItem) => (
+                    <button
+                      key={colorItem.color}
+                      type="button"
+                      className="w-10 h-10 rounded-md border-2 border-[#3A3A55] hover:border-[#5B2C6F] hover:scale-105 transition-all duration-200 flex items-center justify-center group"
+                      style={{ backgroundColor: colorItem.color }}
+                      onClick={() => handleColorChange(colorItem.color)}
+                      title={colorItem.name}
+                    >
+                      {colorItem.color === '#FFFFFF' && (
+                        <div className="w-full h-full rounded-md border border-gray-200"></div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+                
+                <div className="text-xs text-white/70 mb-3 font-medium">Primary Colors</div>
+                <div className="grid grid-cols-3 gap-2 mb-4">
+                  {colorPalette.slice(3, 6).map((colorItem) => (
+                    <button
+                      key={colorItem.color}
+                      type="button"
+                      className="w-10 h-10 rounded-md border-2 border-[#3A3A55] hover:border-[#5B2C6F] hover:scale-105 transition-all duration-200"
+                      style={{ backgroundColor: colorItem.color }}
+                      onClick={() => handleColorChange(colorItem.color)}
+                      title={colorItem.name}
+                    />
+                  ))}
+                </div>
+                
+                <div className="text-xs text-white/70 mb-3 font-medium">More Colors</div>
+                <div className="grid grid-cols-3 gap-2">
+                  {colorPalette.slice(6).map((colorItem) => (
+                    <button
+                      key={colorItem.color}
+                      type="button"
+                      className="w-10 h-10 rounded-md border-2 border-[#3A3A55] hover:border-[#5B2C6F] hover:scale-105 transition-all duration-200"
+                      style={{ backgroundColor: colorItem.color }}
+                      onClick={() => handleColorChange(colorItem.color)}
+                      title={colorItem.name}
+                    />
+                  ))}
+                </div>
+                
+                <div className="text-xs text-white/50 text-center mt-3 pt-2 border-t border-[#3A3A55]">
+                  Select text first, then click a color
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Font Size Picker */}
+          <div className="relative" ref={fontSizePickerRef}>
+            <button
+              type="button"
+              className="px-2 py-1.5 rounded-md transition-colors text-white/70 hover:bg-[#2D2D44] hover:text-white text-sm font-medium"
+              onClick={() => setShowFontSizePicker(!showFontSizePicker)}
+              title="Font Size"
+            >
+              A
+            </button>
+            
+            {showFontSizePicker && (
+              <div className="absolute top-full left-0 z-10 mt-1 bg-[#2D2D44] border border-[#3A3A55] rounded-lg shadow-lg min-w-[140px]">
+                <div className="p-2 border-b border-[#3A3A55]">
+                  <div className="text-xs text-white/70 font-medium">Font Size</div>
+                </div>
+                {fontSizes.map((size) => (
+                  <button
+                    key={size.value}
+                    type="button"
+                    className="w-full text-left px-3 py-2.5 text-sm text-white/70 hover:bg-[#3A3A55] hover:text-white transition-colors border-b border-[#3A3A55]/30 last:border-b-0 flex items-center justify-between"
+                    onClick={() => handleFontSizeChange(size.value)}
+                  >
+                    <span>{size.label}</span>
+                    <span className="text-xs text-white/40">{size.value}</span>
+                  </button>
+                ))}
+                <div className="p-2 border-t border-[#3A3A55]">
+                  <div className="text-xs text-white/50 text-center">Select text first</div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Clear Formatting */}
+          <button
+            type="button"
+            className="p-1.5 rounded-md transition-colors text-white/70 hover:bg-[#2D2D44] hover:text-white"
+            onClick={clearFormatting}
+            title="Clear Formatting"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          
+          <div className="w-px h-6 bg-[#3A3A55] mx-1"></div>
+          
+          {/* Headings */}
+          {headingButton(1, activeFormats.heading1, "Heading 1")}
+          {headingButton(2, activeFormats.heading2, "Heading 2")}
+          {headingButton(3, activeFormats.heading3, "Heading 3")}
           
           <div className="w-px h-6 bg-[#3A3A55] mx-1"></div>
           
@@ -370,6 +713,7 @@ export default function RichTextEditor({
           onMouseUp={updateActiveFormats}
           onKeyUp={updateActiveFormats}
           onInput={handleContentChange}
+          onPaste={handlePaste}
         />
       </div>
 
