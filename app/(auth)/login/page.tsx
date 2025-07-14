@@ -277,11 +277,11 @@ export default function LoginPage() {
                   autoComplete="current-password"
                 />
 
-                {/* <div className="flex justify-end">
+                <div className="flex justify-end">
                   <Link href="/forgot-password" className="auth-link text-sm">
                     Forgot password?
                   </Link>
-                </div> */}
+                </div>
 
                 <Button type="submit" fullWidth disabled={isLoading} className="py-3 bg-[#4F46E5] hover:bg-[#4338CA]">
                   {isLoading ? "Signing in..." : "Sign In"}

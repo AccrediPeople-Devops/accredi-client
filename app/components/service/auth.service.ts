@@ -83,6 +83,30 @@ class AuthService {
       throw error;
     }
   }
+
+  async forgotPassword(email: string) {
+    try {
+      const response = await axiosInstance.post("/auth/v1/forgot-password", {
+        email,
+      });
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async resetPassword(token: string, password: string, confirmPassword: string) {
+    try {
+      const response = await axiosInstance.post("/auth/v1/reset-password", {
+        token,
+        password,
+        confirmPassword,
+      });
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
 }
 
 export default new AuthService();
