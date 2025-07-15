@@ -54,7 +54,10 @@ export default function CoursePage({ params }: CoursePageProps) {
   const [selectedState, setSelectedState] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
   const [selectedSchedule, setSelectedSchedule] = useState<any>(null);
-  const [quantity, setQuantity] = useState(1);
+  // Remove the single global quantity state
+  // const [quantity, setQuantity] = useState(1);
+  // Add individual quantity states for each schedule
+  const [scheduleQuantities, setScheduleQuantities] = useState<{ [key: string]: number }>({});
   const [showEnrollModal, setShowEnrollModal] = useState(false);
   const [enrollFormData, setEnrollFormData] = useState({
     fullName: "",
@@ -81,6 +84,16 @@ export default function CoursePage({ params }: CoursePageProps) {
   // Schedule calendar modal state
   const [showCalendarModal, setShowCalendarModal] = useState(false);
   const [calendarSchedule, setCalendarSchedule] = useState<any>(null);
+
+  // Auto-scroll to top when enrollment modal opens
+  useEffect(() => {
+    if (showEnrollModal) {
+      // Small delay to ensure modal is rendered
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 100);
+    }
+  }, [showEnrollModal]);
 
   // Handler to open calendar modal
   const handleViewCalendar = (schedule: any) => {
@@ -335,11 +348,17 @@ export default function CoursePage({ params }: CoursePageProps) {
     }
   };
 
-  const handleQuantityChange = (action: "increase" | "decrease") => {
+  const handleQuantityChange = (action: "increase" | "decrease", scheduleId: string) => {
     if (action === "increase") {
-      setQuantity((prev) => prev + 1);
-    } else if (action === "decrease" && quantity > 1) {
-      setQuantity((prev) => prev - 1);
+      setScheduleQuantities((prev) => ({
+        ...prev,
+        [scheduleId]: (prev[scheduleId] || 1) + 1
+      }));
+    } else if (action === "decrease" && (scheduleQuantities[scheduleId] || 1) > 1) {
+      setScheduleQuantities((prev) => ({
+        ...prev,
+        [scheduleId]: (prev[scheduleId] || 1) - 1
+      }));
     }
   };
 
@@ -594,6 +613,7 @@ export default function CoursePage({ params }: CoursePageProps) {
   const calculateTotal = () => {
     if (!selectedSchedule) return 0;
     // Always return the original price - let backend handle discount
+    const quantity = scheduleQuantities[selectedSchedule.id] || 1;
     const basePrice = selectedSchedule.earlyBirdPrice * quantity;
     return basePrice;
   };
@@ -602,6 +622,7 @@ export default function CoursePage({ params }: CoursePageProps) {
   const calculateDisplayTotal = () => {
     if (!selectedSchedule) return 0;
 
+    const quantity = scheduleQuantities[selectedSchedule.id] || 1;
     const basePrice = selectedSchedule.earlyBirdPrice * quantity;
 
     if (appliedCoupon) {
@@ -623,6 +644,7 @@ export default function CoursePage({ params }: CoursePageProps) {
   // Get original price for display
   const getOriginalPrice = () => {
     if (!selectedSchedule) return 0;
+    const quantity = scheduleQuantities[selectedSchedule.id] || 1;
     return selectedSchedule.earlyBirdPrice * quantity;
   };
 
@@ -630,6 +652,7 @@ export default function CoursePage({ params }: CoursePageProps) {
   const getDiscountAmount = () => {
     if (!appliedCoupon || !selectedSchedule) return 0;
 
+    const quantity = scheduleQuantities[selectedSchedule.id] || 1;
     const basePrice = selectedSchedule.earlyBirdPrice * quantity;
 
     if (appliedCoupon.type === "percentage") {
@@ -1595,9 +1618,9 @@ export default function CoursePage({ params }: CoursePageProps) {
                             </label>
                             <div className="flex items-center gap-3">
                               <button
-                                onClick={() => handleQuantityChange("decrease")}
+                                onClick={() => handleQuantityChange("decrease", schedule.id)}
                                 className="w-10 h-10 site-glass backdrop-blur-sm rounded-xl flex items-center justify-center hover:bg-white/20 site-light:hover:bg-white/60 transition-all duration-300 disabled:opacity-50"
-                                disabled={quantity <= 1}
+                                disabled={(scheduleQuantities[schedule.id] || 1) <= 1}
                               >
                                 <svg
                                   className="w-4 h-4 site-text-primary"
@@ -1614,10 +1637,10 @@ export default function CoursePage({ params }: CoursePageProps) {
                                 </svg>
                               </button>
                               <span className="w-10 text-center font-black text-lg site-text-primary">
-                                {quantity}
+                                {scheduleQuantities[schedule.id] || 1}
                               </span>
                               <button
-                                onClick={() => handleQuantityChange("increase")}
+                                onClick={() => handleQuantityChange("increase", schedule.id)}
                                 className="w-10 h-10 site-glass backdrop-blur-sm rounded-xl flex items-center justify-center hover:bg-white/20 site-light:hover:bg-white/60 transition-all duration-300"
                               >
                                 <svg
@@ -2024,7 +2047,7 @@ export default function CoursePage({ params }: CoursePageProps) {
             }
           }}
         >
-          <div className="site-glass backdrop-blur-xl rounded-3xl w-full max-w-4xl my-4 shadow-2xl border site-border min-h-fit">
+          <div className="site-glass backdrop-blur-xl rounded-3xl w-full max-w-4xl my-4 mt-24 shadow-2xl border site-border min-h-fit">
             {/* Modal Header */}
             <div className="flex items-center justify-between p-4 sm:p-6 border-b site-border sticky top-0 bg-inherit rounded-t-3xl z-20">
               <div className="flex items-center gap-3">
@@ -2131,7 +2154,7 @@ export default function CoursePage({ params }: CoursePageProps) {
                               Participants:
                             </span>
                             <span className="site-text-primary font-medium text-sm">
-                              {quantity}
+                              {scheduleQuantities[selectedSchedule.id] || 1}
                             </span>
                           </div>
                         </>
