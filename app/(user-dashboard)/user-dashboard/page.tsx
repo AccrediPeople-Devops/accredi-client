@@ -205,12 +205,12 @@ export default function UserDashboardProfile() {
       };
     }
     
-    if (user.isEmailVerified === false) {
-      return {
-        label: "Email Not Verified",
-        className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
-      };
-    }
+    // if (user.isEmailVerified === false) {
+    //   return {
+    //     label: "Email Not Verified",
+    //     className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
+    //   };
+    // }
     
     return {
       label: "Active Account",

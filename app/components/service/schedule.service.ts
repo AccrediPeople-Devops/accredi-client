@@ -15,7 +15,18 @@ class ScheduleService {
    */
   async getAllSchedules() {
     try {
-      console.log("ScheduleService: Fetching all schedules");
+      // Check if we have a token
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.error("ScheduleService: No authentication token found");
+        return {
+          status: false,
+          message: "Authentication required. Please log in again.",
+          schedules: []
+        };
+      }
+      
+      console.log("ScheduleService: Fetching all schedules with token:", token.substring(0, 20) + "...");
       const response = await axiosInstance.get("/schedules/v1");
       console.log("ScheduleService: All schedules response:", response.data);
       
@@ -24,12 +35,28 @@ class ScheduleService {
     } catch (error: any) {
       console.error("ScheduleService: Error fetching all schedules:", error);
       if (error.response) {
+        console.error("ScheduleService: Response status:", error.response.status);
         console.error("ScheduleService: Response data:", error.response.data);
-        return { 
-          status: false, 
-          message: error.response.data?.message || "Error fetching schedules",
-          schedules: []
-        };
+        
+        if (error.response.status === 401) {
+          return { 
+            status: false, 
+            message: "Authentication failed. Please log in again.",
+            schedules: []
+          };
+        } else if (error.response.status === 403) {
+          return { 
+            status: false, 
+            message: "Access denied. You don't have permission to view schedules.",
+            schedules: []
+          };
+        } else {
+          return { 
+            status: false, 
+            message: error.response.data?.message || "Error fetching schedules",
+            schedules: []
+          };
+        }
       }
       throw error;
     }

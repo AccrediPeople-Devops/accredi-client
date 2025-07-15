@@ -13,6 +13,7 @@ import { User } from "@/app/types/user";
 import config from "../config/config";
 import RichTextRenderer from "../RichTextRenderer";
 import { stripHtml } from "@/app/utils/textUtils";
+import { useScrollNavbar } from "@/app/hooks/useScrollNavbar";
 
 const DOMAIN_ICONS: Record<string, React.ReactElement> = {
   "Project Management": <HiOutlineDesktopComputer className="w-4 h-4 mr-2" />,
@@ -45,6 +46,9 @@ const Navbar = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  
+  // Scroll-based navbar visibility
+  const { isVisible, isAtTop, scrollY } = useScrollNavbar({ threshold: 100 });
   
   const menuRef = useRef<HTMLDivElement>(null);
   const allCoursesBtnRef = useRef<HTMLButtonElement>(null);
@@ -414,7 +418,7 @@ const Navbar = () => {
     if (!isMenuOpen) {
       menuOpenTimeoutRef.current = setTimeout(() => {
         setIsMenuOpen(true);
-      }, 100);
+      }, 50); // Reduced from 100ms to 50ms for faster response
     }
   };
 
@@ -426,7 +430,7 @@ const Navbar = () => {
     }
     menuCloseTimeoutRef.current = setTimeout(() => {
       setIsMenuOpen(false);
-    }, 150);
+    }, 100); // Reduced from 150ms to 100ms for faster closing
   };
 
   // Immediate close for other nav items
@@ -518,8 +522,22 @@ const Navbar = () => {
 
   return (
     <React.Fragment>
-      {/* Navbar always visible */}
-      <div ref={navRef} className="py-4 sm:py-6 xl:px-20 sm:px-28 px-0 flex relative justify-center items-center h-[72px] !py-0 site-navbar z-[100]">
+      {/* Fixed navbar with scroll-based visibility */}
+      <div 
+        ref={navRef} 
+        className={`
+          fixed top-0 left-0 right-0 z-[100] h-[72px] transition-all duration-200 ease-in-out
+          ${isVisible ? 'transform translate-y-0' : 'transform -translate-y-full'}
+          ${isAtTop ? 'bg-transparent backdrop-blur-none' : 'bg-black/40 backdrop-blur-md site-light:bg-white/95 site-light:backdrop-blur-sm'}
+          ${!isAtTop ? 'shadow-lg border-b border-white/10 site-light:border-slate-200/50' : ''}
+          py-4 sm:py-6 xl:px-20 sm:px-28 px-0 flex justify-center items-center !py-0 site-navbar
+        `}
+        style={{
+          transform: isVisible ? 'translateY(0)' : 'translateY(-100%)',
+          backdropFilter: isAtTop ? 'none' : 'blur(12px)',
+          WebkitBackdropFilter: isAtTop ? 'none' : 'blur(12px)',
+        }}
+      >
         <div className="px-5 md:px-0 w-full 2xl:max-w-7xl mx-auto">
           <nav className="flex h-11 justify-between">
             {/* Logo and All Courses */}
@@ -541,7 +559,7 @@ const Navbar = () => {
               <div className="ml-8 relative hidden md:block">
                 <button
                   ref={allCoursesBtnRef}
-                  className="all-courses-button flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white font-medium text-sm hover:bg-white/20 transition-all duration-300 hover:scale-105 site-light:bg-white/80 site-light:border-slate-300 site-light:text-slate-800 site-light:hover:bg-white site-light:hover:text-slate-900"
+                  className="all-courses-button flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white font-medium text-sm hover:bg-white/20 transition-all duration-150 hover:scale-105 site-light:bg-white/80 site-light:border-slate-300 site-light:text-slate-800 site-light:hover:bg-white site-light:hover:text-slate-900"
                   type="button"
                   tabIndex={0}
                   aria-haspopup="true"
@@ -553,7 +571,7 @@ const Navbar = () => {
                   <HiOutlineMenu className="w-5 h-5 mr-1" />
                   All Courses
                   <svg
-                    className={`w-4 h-4 ml-1 transition-transform duration-300 ${isMenuOpen ? 'rotate-180' : ''}`}
+                    className={`w-4 h-4 ml-1 transition-transform duration-150 ${isMenuOpen ? 'rotate-180' : ''}`}
                     fill="none"
                     stroke="currentColor"
                     strokeWidth={2}
@@ -570,18 +588,18 @@ const Navbar = () => {
                 <div key={index} className="group relative"
                   onMouseEnter={handleImmediateMenuClose}
                 >
-                  <div className="relative pr-4 pl-4 py-2 hover:bg-white/10 rounded-xl flex items-center gap-0.5 text-white font-normal cursor-pointer duration-300 transition-all hover:scale-105 site-light:text-slate-700 site-light:hover:text-slate-900 site-light:hover:bg-slate-100">
+                  <div className="relative pr-4 pl-4 py-2 hover:bg-white/10 rounded-xl flex items-center gap-0.5 text-white font-normal cursor-pointer duration-150 transition-all hover:scale-105 site-light:text-slate-700 site-light:hover:text-slate-900 site-light:hover:bg-slate-100">
                     <span>{menu.title}</span>
                     <i className="icon-chevron-right rotate-90 text-base leading-4 text-gray-300 site-light:text-slate-500"></i>
                   </div>
                   {/* Hover bridge - invisible area to prevent dropdown closing */}
                   <div className="absolute top-full left-0 right-0 h-2 z-40 hidden group-hover:block"></div>
-                  <div className="absolute z-50 flex-col hidden bg-black/80 backdrop-blur-xl border border-white/20 py-2 min-w-[220px] rounded-2xl shadow-2xl group-hover:flex duration-300 transition-all opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 mt-2 site-light:bg-white site-light:border-slate-300 site-light:shadow-lg">
+                  <div className="absolute z-50 flex-col hidden bg-black/80 backdrop-blur-xl border border-white/20 py-2 min-w-[220px] rounded-2xl shadow-2xl group-hover:flex duration-150 transition-all opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 mt-2 site-light:bg-white site-light:border-slate-300 site-light:shadow-lg">
                     {menu.items.map((item, idx) => (
                       <Link
                         key={idx}
                         href={item.href}
-                        className="pr-4 pl-4 border-b border-white/20 last:border-b-0 hover:bg-white/20 duration-300 block site-light:border-slate-300 site-light:hover:bg-slate-100"
+                        className="pr-4 pl-4 border-b border-white/20 last:border-b-0 hover:bg-white/20 duration-150 block site-light:border-slate-300 site-light:hover:bg-slate-100"
                       >
                         <div className="py-3 text-sm cursor-pointer whitespace-nowrap text-white hover:text-[#4F46E5] transition-colors site-light:text-slate-900 site-light:hover:text-[#4F46E5]">
                           {item.label}
@@ -594,7 +612,7 @@ const Navbar = () => {
               {/* Reviews Link */}
               <Link
                 href="/reviews"
-                className="relative pr-4 pl-4 py-2 hover:bg-white/10 rounded-xl flex items-center gap-0.5 text-white font-normal cursor-pointer duration-300 transition-all hover:scale-105 site-light:text-slate-700 site-light:hover:text-slate-900 site-light:hover:bg-slate-100"
+                className="relative pr-4 pl-4 py-2 hover:bg-white/10 rounded-xl flex items-center gap-0.5 text-white font-normal cursor-pointer duration-150 transition-all hover:scale-105 site-light:text-slate-700 site-light:hover:text-slate-900 site-light:hover:bg-slate-100"
                 onMouseEnter={handleImmediateMenuClose}
               >
                 Reviews
@@ -610,7 +628,7 @@ const Navbar = () => {
                 <div className="relative" ref={userMenuRef}>
                   <button
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                    className="flex items-center gap-2 px-3 py-2 hover:bg-white/10 rounded-xl transition-all duration-300 hover:scale-105 site-light:hover:bg-slate-100"
+                    className="flex items-center gap-2 px-3 py-2 hover:bg-white/10 rounded-xl transition-all duration-150 hover:scale-105 site-light:hover:bg-slate-100"
                     onMouseEnter={handleImmediateMenuClose}
                   >
                     <div className="w-8 h-8 rounded-full overflow-hidden bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] flex items-center justify-center">
@@ -633,7 +651,7 @@ const Navbar = () => {
                       {currentUser.fullName.split(' ')[0]}
                     </span>
                     <svg 
-                      className={`w-4 h-4 text-white site-light:text-slate-700 transition-transform duration-200 ${isUserMenuOpen ? 'rotate-180' : ''}`} 
+                      className={`w-4 h-4 text-white site-light:text-slate-700 transition-transform duration-150 ${isUserMenuOpen ? 'rotate-180' : ''}`} 
                       fill="none" 
                       stroke="currentColor" 
                       strokeWidth={2} 
@@ -708,7 +726,7 @@ const Navbar = () => {
                   {/* Sign In Button */}
                   <Link
                     href="/login"
-                    className="relative pr-4 pl-4 py-2 hover:bg-white/10 rounded-xl flex items-center gap-0.5 text-white font-normal cursor-pointer duration-300 transition-all hover:scale-105 site-light:text-slate-700 site-light:hover:text-slate-900 site-light:hover:bg-slate-100"
+                    className="relative pr-4 pl-4 py-2 hover:bg-white/10 rounded-xl flex items-center gap-0.5 text-white font-normal cursor-pointer duration-150 transition-all hover:scale-105 site-light:text-slate-700 site-light:hover:text-slate-900 site-light:hover:bg-slate-100"
                     onMouseEnter={handleImmediateMenuClose}
                   >
                     Sign In
@@ -717,7 +735,7 @@ const Navbar = () => {
                   {/* Sign Up Button */}
                   <Link
                     href="/signup"
-                    className="relative px-6 py-2 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white rounded-xl hover:shadow-xl hover:shadow-[#4F46E5]/25 transition-all duration-300 text-sm font-medium hover:scale-105 border border-[#4F46E5]/20 site-light:border-[#4F46E5]/30 site-light:shadow-sm"
+                    className="relative px-6 py-2 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white rounded-xl hover:shadow-xl hover:shadow-[#4F46E5]/25 transition-all duration-150 text-sm font-medium hover:scale-105 border border-[#4F46E5]/20 site-light:border-[#4F46E5]/30 site-light:shadow-sm"
                     onMouseEnter={handleImmediateMenuClose}
                   >
                     Sign Up
@@ -776,7 +794,7 @@ const Navbar = () => {
                   {categories.map((category) => (
                     <li
                       key={category._id}
-                      className={`flex items-center px-8 py-3 cursor-pointer text-[15px] transition-all duration-300 hover:scale-105
+                      className={`flex items-center px-8 py-3 cursor-pointer text-[15px] transition-all duration-150 hover:scale-105
                         ${activeDomain?._id === category._id
                           ? "bg-gradient-to-r from-[#4F46E5]/20 to-[#7C3AED]/20 site-light:from-[#4F46E5]/10 site-light:to-[#7C3AED]/10 text-[#4F46E5] font-semibold border-r-2 border-[#4F46E5]"
                           : "text-gray-300 site-light:text-slate-600 hover:bg-white/10 site-light:hover:bg-slate-100 hover:text-white site-light:hover:text-slate-900"
@@ -840,7 +858,7 @@ const Navbar = () => {
                         <Link
                           key={course._id}
                           href={`/courses/${createCourseSlug(course.title)}`}
-                          className="block p-4 bg-white/5 site-light:bg-white/70 backdrop-blur-sm border border-white/20 site-light:border-slate-200 rounded-2xl hover:bg-white/10 site-light:hover:bg-white/90 hover:shadow-xl transition-all duration-300 group hover:scale-105"
+                          className="block p-4 bg-white/5 site-light:bg-white/70 backdrop-blur-sm border border-white/20 site-light:border-slate-200 rounded-2xl hover:bg-white/10 site-light:hover:bg-white/90 hover:shadow-xl transition-all duration-150 group hover:scale-105"
                           onClick={handleImmediateMenuClose}
                         >
                           <div className="flex items-start gap-3">
@@ -886,7 +904,7 @@ const Navbar = () => {
                     {activeDomain.courses.length > 6 && (
                       <Link
                         href={`/courses?category=${activeDomain._id}`}
-                        className="block mt-4 text-center py-3 text-[#4F46E5] hover:text-white site-light:hover:text-[#4F46E5] border border-[#4F46E5]/30 rounded-xl hover:bg-[#4F46E5]/10 transition-all duration-300"
+                        className="block mt-4 text-center py-3 text-[#4F46E5] hover:text-white site-light:hover:text-[#4F46E5] border border-[#4F46E5]/30 rounded-xl hover:bg-[#4F46E5]/10 transition-all duration-150"
                         onClick={handleImmediateMenuClose}
                       >
                         View All {activeDomain.courses.length} Courses

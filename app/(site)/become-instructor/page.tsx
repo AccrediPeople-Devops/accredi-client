@@ -24,8 +24,8 @@ export default function BecomeInstructorPage() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     if (name === "phone") {
-      // Allow only numbers, +, and . and limit to 13 characters
-      const numericValue = value.replace(/[^0-9+.]/g, "").replace(/(..*)./g, "$1").slice(0, 13);
+      // Allow only numbers, +, and limit to 15 characters
+      const numericValue = value.replace(/[^0-9+]/g, "").slice(0, 15);
       setFormData(prev => ({
         ...prev,
         [name]: numericValue

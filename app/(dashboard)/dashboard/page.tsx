@@ -316,7 +316,7 @@ export default function Dashboard() {
       <div className="flex justify-between items-start">
         <div>
           <h1 className="text-2xl font-bold text-[var(--foreground)]">
-            Welcome to AccrediLearn
+            Welcome to AccrediPeople Certifications
           </h1>
           <p className="text-[var(--foreground-muted)]">
             Your dashboard gives you an overview of your learning platform.

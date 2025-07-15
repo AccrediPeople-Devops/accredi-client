@@ -6,7 +6,7 @@ import Breadcrumb from "@/app/components/site/Breadcrumb";
 import RichTextRenderer from "@/app/components/RichTextRenderer";
 import siteCourseService from "@/app/components/site/siteCourse.service";
 import config from "@/app/components/config/config";
-import { Course } from "@/app/types/course";
+import { Course, Component, FileUpload } from "@/app/types/course";
 import paymentService from "@/app/components/service/payment.service";
 import couponCodeService from "@/app/components/service/couponCode.service";
 import { useLocation } from "@/app/context/LocationContext";
@@ -14,6 +14,8 @@ import CountrySelectionModal from "@/app/components/CountrySelectionModal";
 import StateButton from "@/app/components/StateButton";
 import { StateData } from "@/app/components/service/enhancedLocationData";
 import ScheduleCalendarModal from "@/app/components/ScheduleCalendarModal";
+import GlobalLoader from "@/app/components/GlobalLoader";
+import { useSimpleEnhancedLoader } from "@/app/hooks/useEnhancedGlobalLoader";
 
 interface CoursePageProps {
   params: Promise<{ slug: string }>;
@@ -27,6 +29,9 @@ export default function CoursePage({ params }: CoursePageProps) {
   const [course, setCourse] = useState<Course | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  
+  // Global loader state - synchronized with layout
+  const { isLoading: globalLoading, setDataLoaded } = useSimpleEnhancedLoader(true, 800);
 
   // Location context for currency handling
   const {
@@ -103,12 +108,21 @@ export default function CoursePage({ params }: CoursePageProps) {
           console.log("Course schedules:", response.course.schedules);
           console.log("Course FAQ:", response.course.faqId);
           console.log("Course brochure:", response.course.broucher);
+          
+          // Add a small delay to prevent flash
+          await new Promise(resolve => setTimeout(resolve, 500));
+          
+          // Mark data as loaded
+          setDataLoaded();
+          
         } else {
           setError("Course not found");
+          setDataLoaded();
         }
       } catch (err: any) {
         console.error("Error fetching course:", err);
         setError("Failed to load course data");
+        setDataLoaded();
       } finally {
         setIsLoading(false);
       }
@@ -117,7 +131,7 @@ export default function CoursePage({ params }: CoursePageProps) {
     if (courseSlug) {
       fetchCourse();
     }
-  }, [courseSlug]);
+  }, [courseSlug, setDataLoaded]);
 
   // Helper function to get course image URL
   const getCourseImageUrl = (course: Course) => {
@@ -177,21 +191,9 @@ export default function CoursePage({ params }: CoursePageProps) {
     return null;
   };
 
-  // Loading state
-  if (isLoading) {
-    return (
-      <div className="min-h-screen site-section-bg flex items-center justify-center">
-        <div className="flex flex-col items-center space-y-4">
-          <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin"></div>
-          <p className="site-text-primary text-lg">Loading course...</p>
-          {geolocationLoading && (
-            <p className="site-text-secondary text-sm">
-              Loading location data...
-            </p>
-          )}
-        </div>
-      </div>
-    );
+  // Loading state - use GlobalLoader
+  if (globalLoading) {
+    return <GlobalLoader isLoading={globalLoading} />;
   }
 
   // Error state
@@ -1523,7 +1525,7 @@ export default function CoursePage({ params }: CoursePageProps) {
                               {schedule.seatsLeft && (
                                 <div className="inline-flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-[#F59E0B] to-[#EF4444] text-white rounded-full text-sm font-bold">
                                   <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                                  Only {schedule.seatsLeft} seats left
+                                  Limited Seats Available
                                 </div>
                               )}
                             </div>
@@ -2015,7 +2017,7 @@ export default function CoursePage({ params }: CoursePageProps) {
                 fullName: "",
                 email: "",
                 contactNumber: "",
-                country: "United States",
+                country: "",
                 city: "",
                 couponCode: "",
               });
@@ -2055,7 +2057,7 @@ export default function CoursePage({ params }: CoursePageProps) {
                     fullName: "",
                     email: "",
                     contactNumber: "",
-                    country: "United States",
+                    country: "",
                     city: "",
                     couponCode: "",
                   });
@@ -2272,19 +2274,20 @@ export default function CoursePage({ params }: CoursePageProps) {
                           <label className="block text-sm font-medium site-text-primary mb-2">
                             Country *
                           </label>
-                          <select
-                            name="country"
-                            value={enrollFormData.country}
-                            onChange={handleEnrollInputChange}
-                            className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300"
-                            required
-                          >
-                            {countries.map((country) => (
-                              <option key={country} value={country}>
-                                {country}
-                              </option>
-                            ))}
-                          </select>
+                          <input
+                          type="text"
+                          name="country"
+                          value={enrollFormData.country}
+                          onChange={handleEnrollInputChange}
+                          className={`w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl border site-text-primary placeholder:site-text-muted focus:ring-2 focus:border-transparent transition-all duration-300 ${
+                            showValidation &&
+                            enrollFormData.country.trim() === ""
+                              ? "border-red-300 focus:ring-red-500"
+                              : "site-border focus:ring-[#4F46E5]"
+                          }`}
+                          placeholder="Country"
+                          required
+                        />
                         </div>
                       </div>
 

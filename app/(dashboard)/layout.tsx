@@ -6,6 +6,8 @@ import Sidebar from "@/app/components/dashboard/Sidebar";
 import AuthService from "@/app/components/service/auth.service";
 import { ThemeProvider } from "@/app/context/ThemeContext";
 import { Toaster } from "react-hot-toast";
+import GlobalLoader from "@/app/components/GlobalLoader";
+import { useSimpleLoader } from "@/app/hooks/useGlobalLoader";
 import { Inter } from "next/font/google";
 import "../globals.css";
 const inter = Inter({ subsets: ["latin"] });
@@ -16,15 +18,28 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { isLoading, setLoading } = useSimpleLoader(true);
   const router = useRouter();
 
   // Check authentication on mount
   useEffect(() => {
-    // If not authenticated, redirect to login
-    if (!AuthService.isAuthenticated()) {
-      router.push("/login");
-    }
-  }, [router]);
+    const checkAuth = async () => {
+      try {
+        const isAuth = await AuthService.isAuthenticated();
+        if (!isAuth) {
+          router.push("/login");
+        } else {
+          // Authentication successful, stop loading
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error("Auth check failed:", error);
+        router.push("/login");
+      }
+    };
+
+    checkAuth();
+  }, [router, setLoading]);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -33,6 +48,7 @@ export default function DashboardLayout({
   return (
     <ThemeProvider>
       <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] font-[var(--font-family)]">
+        <GlobalLoader isLoading={isLoading} />
         <Sidebar isMobileOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
 
         {/* Main content */}
