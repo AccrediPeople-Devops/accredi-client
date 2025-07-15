@@ -80,7 +80,7 @@ class BecomeInstructorService {
       const formData = new FormData();
       formData.append('file', file);
       
-      const response = await axiosInstance.post('/upload/file', formData, {
+      const response = await axiosInstance.post('/uploads/v1', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

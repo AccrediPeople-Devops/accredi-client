@@ -14,9 +14,50 @@ class CourseService {
    */
   async getAllCourses() {
     try {
+      // Check if we have a token
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.error("CourseService: No authentication token found");
+        return {
+          status: false,
+          message: "Authentication required. Please log in again.",
+          courses: []
+        };
+      }
+      
+      console.log("CourseService: Fetching all courses with token:", token.substring(0, 20) + "...");
       const response = await axiosInstance.get("/courses/v1");
+      
+      console.log("CourseService: All courses response:", response.data);
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
+      console.error("CourseService: Error fetching all courses:", error);
+      
+      if (error.response) {
+        console.error("CourseService: Response status:", error.response.status);
+        console.error("CourseService: Response data:", error.response.data);
+        
+        if (error.response.status === 401) {
+          return {
+            status: false,
+            message: "Authentication failed. Please log in again.",
+            courses: []
+          };
+        } else if (error.response.status === 403) {
+          return {
+            status: false,
+            message: "Access denied. You don't have permission to view courses.",
+            courses: []
+          };
+        } else {
+          return {
+            status: false,
+            message: error.response.data?.message || "Error fetching courses",
+            courses: []
+          };
+        }
+      }
+      
       throw error;
     }
   }
