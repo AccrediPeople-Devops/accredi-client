@@ -6,7 +6,7 @@ import Link from "next/link";
 import Input from "@/app/components/Input";
 import questionPaperService from "@/app/components/service/questionPaper.service";
 import courseService from "@/app/components/service/course.service";
-import { QuestionItem } from "@/app/types/questionPaper";
+import { QuestionItem, QuestionPaper } from "@/app/types/questionPaper";
 import { LoadingSpinner } from "@/app/components/LoadingSpinner";
 import QuestionInput from "@/app/components/question/QuestionInput";
 
@@ -15,7 +15,12 @@ interface CourseOption {
   title: string;
 }
 
-export default function AddQuestionPaperPage() {
+// Main component that receives the ID as a prop
+export default function EditQuestionPaperPageClient({
+  id,
+}: {
+  id: string;
+}) {
   const router = useRouter();
   const [formData, setFormData] = useState({
     title: "",
@@ -26,53 +31,93 @@ export default function AddQuestionPaperPage() {
   
   const [availableCourses, setAvailableCourses] = useState<CourseOption[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [isLoadingCourses, setIsLoadingCourses] = useState(true);
+  const [isLoadingInitial, setIsLoadingInitial] = useState(true);
   const [error, setError] = useState("");
+  const questionPaperId = id;
 
-  // Fetch available courses
+  // Fetch question paper and courses
   useEffect(() => {
-    const fetchCourses = async () => {
+    const fetchData = async () => {
       try {
-        setIsLoadingCourses(true);
-        console.log("Fetching all courses for dropdown");
+        setIsLoadingInitial(true);
+        setError("");
+
+        console.log("Fetching question paper with ID:", questionPaperId);
+        console.log("API endpoint should be: /question-papers/v1/" + questionPaperId);
         
-        const response = await courseService.getAllCourses();
-        console.log("Courses response:", response);
+        // Instead of using the direct endpoint which may return 404,
+        // fetch all question papers and find the one with matching ID
+        const papersResponse = await questionPaperService.getAllQuestionPapers();
+        console.log("All question papers response:", papersResponse);
         
-        let courses = [];
-        
-        if (response && response.courses && Array.isArray(response.courses)) {
-          console.log("Found courses in standard format");
-          courses = response.courses;
-        } else if (Array.isArray(response)) {
-          console.log("Found courses as direct array");
-          courses = response;
-        } else if (response && response.data && Array.isArray(response.data)) {
-          console.log("Found courses in data property");
-          courses = response.data;
+        if (papersResponse) {
+          let papers = [];
+          
+          // Handle different response formats
+          if (papersResponse.questionPapers && Array.isArray(papersResponse.questionPapers)) {
+            console.log("Found question papers in standard format");
+            papers = papersResponse.questionPapers;
+          } else if (Array.isArray(papersResponse)) {
+            console.log("Found question papers as direct array");
+            papers = papersResponse;
+          } else if (papersResponse.data && Array.isArray(papersResponse.data)) {
+            console.log("Found question papers in data property");
+            papers = papersResponse.data;
+          }
+          
+          // Find the paper with the matching ID
+          const foundPaper = papers.find((p: any) => p._id === questionPaperId);
+          console.log("Found paper:", foundPaper);
+          
+          if (foundPaper) {
+            console.log("Successfully found question paper:", foundPaper);
+            setFormData({
+              title: foundPaper.title,
+              courseId: foundPaper.courseId,
+              content: foundPaper.content || [],
+              isActive: foundPaper.isActive,
+            });
+
+            // Fetch all courses for the dropdown
+            console.log("Fetching courses for dropdown");
+            const coursesResponse = await courseService.getAllCourses();
+            console.log("Courses response:", coursesResponse);
+            
+            let courses = [];
+            
+            if (coursesResponse && coursesResponse.courses) {
+              courses = coursesResponse.courses;
+            } else if (Array.isArray(coursesResponse)) {
+              courses = coursesResponse;
+            } else if (coursesResponse && coursesResponse.data && Array.isArray(coursesResponse.data)) {
+              courses = coursesResponse.data;
+            }
+            
+            if (courses.length > 0) {
+              setAvailableCourses(
+                courses.map((course: any) => ({
+                  _id: course._id,
+                  title: course.title,
+                }))
+              );
+            }
+            
+            return;
+          }
         }
         
-        if (courses.length > 0) {
-          console.log("Successfully loaded courses:", courses.length);
-          setAvailableCourses(
-            courses.map((course: any) => ({
-              _id: course._id,
-              title: course.title,
-            }))
-          );
-        } else {
-          console.warn("No courses found or empty course list");
-        }
+        // If we couldn't find the paper, show an error
+        throw new Error("Question paper not found");
       } catch (err: any) {
-        console.error("Error fetching courses:", err);
-        setError("Failed to load courses. Please try again.");
+        console.error("Error fetching data:", err);
+        setError(err.message || "An error occurred while fetching data");
       } finally {
-        setIsLoadingCourses(false);
+        setIsLoadingInitial(false);
       }
     };
 
-    fetchCourses();
-  }, []);
+    fetchData();
+  }, [questionPaperId]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -149,10 +194,11 @@ export default function AddQuestionPaperPage() {
         }
       }
 
-      console.log("Submitting question paper data:", formData);
+      console.log("Submitting updated question paper data:", formData);
+      console.log("API endpoint should be: /question-papers/v1/" + questionPaperId);
       
-      // Submit the question paper
-      const response = await questionPaperService.createQuestionPaper(formData);
+      // Submit the updated question paper
+      const response = await questionPaperService.updateQuestionPaper(questionPaperId, formData);
       console.log("Response from service:", response);
 
       // If we get any response back, consider it successful
@@ -172,14 +218,17 @@ export default function AddQuestionPaperPage() {
         if (response.message) {
           setError(response.message);
         } else {
+          // If we can't determine a specific pattern but got a response,
+          // assume success and redirect
+          console.log("No specific success indicator found, but got a response. Assuming success.");
           router.push("/dashboard/question-papers");
         }
       } else {
-        setError("Failed to create question paper. No response from server.");
+        setError("Failed to update question paper. No response from server.");
       }
     } catch (err: any) {
-      console.error("Error creating question paper:", err);
-      setError(err.message || "An unexpected error occurred while creating the question paper");
+      console.error("Error updating question paper:", err);
+      setError(err.message || "An unexpected error occurred while updating the question paper");
     } finally {
       setIsLoading(false);
     }
@@ -189,9 +238,9 @@ export default function AddQuestionPaperPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--foreground)]">Add Question Paper</h1>
+          <h1 className="text-2xl font-bold text-[var(--foreground)]">Edit Question Paper</h1>
           <p className="text-[var(--foreground-muted)]">
-            Create a new question paper for your course
+            Update the question paper details
           </p>
         </div>
         <Link
@@ -220,9 +269,9 @@ export default function AddQuestionPaperPage() {
         </div>
       )}
 
-      {isLoadingCourses ? (
+      {isLoadingInitial ? (
         <div className="flex justify-center items-center py-10">
-          <LoadingSpinner size="medium" text="Loading courses..." />
+          <LoadingSpinner size="medium" text="Loading question paper..." />
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -310,10 +359,10 @@ export default function AddQuestionPaperPage() {
               {isLoading ? (
                 <>
                   <LoadingSpinner size="small" className="text-white" />
-                  Creating...
+                  Updating...
                 </>
               ) : (
-                "Create Question Paper"
+                "Update Question Paper"
               )}
             </button>
           </div>

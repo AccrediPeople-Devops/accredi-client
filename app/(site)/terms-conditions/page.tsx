@@ -19,7 +19,7 @@ export default function TermsConditionsPage() {
             Terms & Conditions
           </h1>
           <p className="site-text-secondary text-lg">
-            Effective date: 29-05-2025
+            Effective date: 01-01-2025
           </p>
         </div>
 

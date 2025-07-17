@@ -1,39 +1,82 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { 
   HiOutlineClipboardList, 
   HiOutlineClock,
   HiOutlineQuestionMarkCircle,
   HiOutlinePlay,
-  HiOutlineCheckCircle
+  HiOutlineCheckCircle,
+  HiOutlineBookOpen
 } from "react-icons/hi";
+import examService, { Exam } from "@/app/components/user-dashboard/services/exam.service";
+import examAttemptService from "@/app/components/user-dashboard/services/examAttempt.service";
+import { ExamAttempt } from "@/app/types/examAttempt";
+import { LoadingSpinner } from "@/app/components/LoadingSpinner";
 
-interface PracticeTest {
-  id: string;
-  title: string;
-  duration: number; // in minutes
-  totalQuestions: number;
-  completedQuestions?: number;
+interface PracticeTest extends Exam {
   status: 'not-started' | 'in-progress' | 'completed';
-  score?: number;
-  lastAttempted?: string;
   attempts: number;
   maxAttempts: number;
+  lastAttempted?: string;
+  score?: number;
+  completedQuestions?: number;
 }
 
 export default function PracticeTestsPage() {
+  const router = useRouter();
   const [practiceTests, setPracticeTests] = useState<PracticeTest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'not-started' | 'in-progress' | 'completed'>('all');
 
   useEffect(() => {
-    // Simulate fetching practice test data - currently no tests available
     const fetchPracticeTests = async () => {
       setIsLoading(true);
       try {
-        // No practice tests available yet
-        setPracticeTests([]);
+        // Fetch available exams
+        const exams = await examService.getAvailableExams();
+        
+        // Fetch user's exam attempts to determine status
+        const attempts = await examAttemptService.getMyAttempts();
+        
+        // Map exams to practice tests with status
+        const practiceTestsWithStatus: PracticeTest[] = exams.map(exam => {
+          const examAttempts = attempts.filter(attempt => {
+            // Handle both string and object examId
+            const attemptExamId = typeof attempt.examId === 'string' ? attempt.examId : (attempt.examId as any)._id;
+            return attemptExamId === exam._id;
+          });
+          const latestAttempt = examAttempts.length > 0 ? examAttempts[examAttempts.length - 1] : null;
+          
+          let status: 'not-started' | 'in-progress' | 'completed' = 'not-started';
+          let score: number | undefined;
+          let lastAttempted: string | undefined;
+          let completedQuestions: number | undefined;
+          
+          if (latestAttempt) {
+            if (latestAttempt.isCompleted) {
+              status = 'completed';
+              score = latestAttempt.percentage;
+            } else {
+              status = 'in-progress';
+              completedQuestions = latestAttempt.answers?.filter(a => a.selectedOptions?.length > 0).length || 0;
+            }
+            lastAttempted = latestAttempt.startTime;
+          }
+          
+          return {
+            ...exam,
+            status,
+            attempts: examAttempts.length,
+            maxAttempts: 3, // Default max attempts
+            score,
+            lastAttempted,
+            completedQuestions,
+          };
+        });
+        
+        setPracticeTests(practiceTestsWithStatus);
       } catch (error) {
         console.error('Error fetching practice tests:', error);
       } finally {
@@ -100,14 +143,24 @@ export default function PracticeTestsPage() {
 
   const handleTestAction = (test: PracticeTest) => {
     // Handle test action (start, resume, retake, view results)
-    console.log(`Action for test ${test.id}:`, getButtonText(test));
-    // TODO: Implement navigation to test interface
+    console.log(`Action for test ${test._id}:`, getButtonText(test));
+    
+    if (test.status === 'not-started') {
+      // Start new exam
+      router.push(`/user-dashboard/exam-attempts/start/${test._id}`);
+    } else if (test.status === 'in-progress') {
+      // Continue exam
+      router.push(`/user-dashboard/exam-attempts/${test._id}/take`);
+    } else if (test.status === 'completed') {
+      // View results
+      router.push(`/user-dashboard/exam-attempts/${test._id}/result`);
+    }
   };
 
   const getProgressPercentage = (test: PracticeTest) => {
     if (test.status === 'completed') return 100;
     if (test.status === 'not-started') return 0;
-    return test.completedQuestions ? Math.round((test.completedQuestions / test.totalQuestions) * 100) : 0;
+    return test.completedQuestions ? Math.round((test.completedQuestions / 10) * 100) : 0; // Default to 10 questions
   };
 
   const filteredTests = practiceTests.filter(test => 
@@ -169,7 +222,7 @@ export default function PracticeTestsPage() {
           ) : (
             filteredTests.map((test) => (
               <div
-                key={test.id}
+                key={test._id}
                 className="bg-[var(--input-bg)] border border-[var(--border)] rounded-[var(--radius-lg)] p-6 hover:bg-[var(--border)] transition-colors duration-200"
               >
                 <div className="flex items-center justify-between gap-4">
@@ -187,14 +240,14 @@ export default function PracticeTestsPage() {
                           <div className="flex items-center gap-1">
                             <HiOutlineClock className="w-4 h-4" />
                             <span className="text-yellow-600 dark:text-yellow-400 font-medium">
-                              {test.duration} minutes
+                              {test.timeLimit} minutes
                             </span>
                           </div>
                           <div className="text-gray-400">|</div>
                           <div className="flex items-center gap-1">
                             <HiOutlineQuestionMarkCircle className="w-4 h-4" />
                             <span className="text-yellow-600 dark:text-yellow-400 font-medium">
-                              {test.totalQuestions} Questions
+                              {test.questionPaperSetId.title}
                             </span>
                           </div>
                         </div>
@@ -206,7 +259,7 @@ export default function PracticeTestsPage() {
                       <div className="mb-4">
                         <div className="flex justify-between items-center mb-2">
                           <span className="text-sm font-medium text-[var(--foreground)]">
-                            Progress: {test.completedQuestions || 0}/{test.totalQuestions}
+                            Progress: {test.completedQuestions || 0}/10
                           </span>
                           <span className="text-sm text-[var(--foreground-muted)]">
                             {getProgressPercentage(test)}%

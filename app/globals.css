@@ -23,6 +23,60 @@
   }
 }
 
+/* Fix positioning context issues */
+html, body {
+  position: relative;
+  transform: none !important;
+}
+
+/* Ensure floating elements work properly */
+.fixed, .absolute {
+  transform: none !important;
+}
+
+/* Allow transforms for mega menu positioning */
+.fixed[style*="transform: translateX(-50%)"] {
+  transform: translateX(-50%) !important;
+}
+
+/* Mega menu specific positioning */
+.mega-menu {
+  transform: translateX(-50%) !important;
+}
+
+/* Tawk.to widget positioning fixes */
+#tawkto-container {
+  position: fixed !important;
+  z-index: 9999 !important;
+  transform: none !important;
+}
+
+/* Modal positioning fixes */
+.modal-container {
+  position: fixed !important;
+  z-index: 9998 !important;
+  transform: none !important;
+}
+
+/* Navbar positioning fixes */
+.site-navbar {
+  position: fixed !important;
+  z-index: 100 !important;
+  transform: none !important;
+}
+
+/* Ensure proper stacking context */
+[data-site-theme-container] {
+  position: relative;
+  transform: none !important;
+}
+
+/* Fix for sticky elements */
+.sticky {
+  position: sticky !important;
+  transform: none !important;
+}
+
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 80px; /* Account for fixed navbar */

@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import Navbar from "@/app/components/site/Navbar";
 import Footer from "@/app/components/site/Footer";
+import TawkToWidget from "@/app/components/site/TawkToWidget";
 import { SiteThemeProvider } from "./context/SiteThemeContext";
 import SiteLayoutWrapper from "@/app/components/SiteLayoutWrapper";
 import "../globals.css";
@@ -35,6 +36,9 @@ export default function SiteLayout({
           {children}
           </main>
         <Footer />
+        
+        {/* Tawk.to Chat Widget */}
+        <TawkToWidget />
       </div>
       </SiteLayoutWrapper>
     </SiteThemeProvider>

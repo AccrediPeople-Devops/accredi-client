@@ -5,7 +5,8 @@ export interface QuestionOption {
 export interface QuestionItem {
   question: string;
   options: string[];
-  answer: string;
+  answer: string | string[]; // Can be single string or array of strings for multiple answers
+  multipleChoiceQuestions?: boolean; // Flag to indicate if multiple answers are allowed
   answerDescription: string;
 }
 

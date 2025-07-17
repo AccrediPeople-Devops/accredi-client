@@ -1851,6 +1851,7 @@ export default function CoursePage({ params }: CoursePageProps) {
                   Can't find what you're looking for? Our support team is here
                   to help.
                 </p>
+                <a href="/contact">
                 <button className="group flex items-center justify-center gap-3 mx-auto px-6 py-3 bg-gradient-to-r from-[#8B5CF6] to-[#6D28D9] hover:from-[#6D28D9] hover:to-[#5B21B6] text-white font-bold rounded-2xl transition-all duration-300 transform hover:scale-105">
                   <svg
                     className="w-5 h-5 group-hover:scale-110 transition-transform duration-300"
@@ -1867,6 +1868,7 @@ export default function CoursePage({ params }: CoursePageProps) {
                   </svg>
                   Contact Support
                 </button>
+                </a>
               </div>
             </div>
           </div>
@@ -2029,7 +2031,7 @@ export default function CoursePage({ params }: CoursePageProps) {
       {/* Enrollment Modal - Optimized */}
       {showEnrollModal && selectedSchedule && (
         <div
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-start justify-center z-50 p-4 overflow-y-auto"
+          className="modal-container fixed inset-0 bg-black/80 backdrop-blur-sm flex items-start justify-center z-[9998] p-4 overflow-y-auto"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setShowEnrollModal(false);
@@ -2660,7 +2662,7 @@ export default function CoursePage({ params }: CoursePageProps) {
 
       {/* Brochure Download Modal */}
       {showBrochureModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="modal-container fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[9998] p-4">
           <div className="site-glass backdrop-blur-xl rounded-3xl w-full max-w-md shadow-2xl border site-border">
             {/* Modal Header */}
             <div className="p-6 border-b site-border">
