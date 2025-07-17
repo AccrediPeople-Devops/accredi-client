@@ -52,19 +52,23 @@ class ExamAttemptService {
   async getMyAttempts(): Promise<ExamAttempt[]> {
     try {
       const response = await axiosInstance.get("/exam-attempts/my-attempts");
-      console.log("My attempts response:", response.data);
       
       // Handle different response formats
+      let attempts: ExamAttempt[] = [];
+      
       if (response.data && Array.isArray(response.data)) {
-        return response.data;
+        attempts = response.data;
       } else if (response.data && response.data.examAttempts && Array.isArray(response.data.examAttempts)) {
-        return response.data.examAttempts;
+        attempts = response.data.examAttempts;
       } else if (response.data && response.data.data && Array.isArray(response.data.data)) {
-        return response.data.data;
+        attempts = response.data.data;
+      } else if (response.data && response.data.attempts && Array.isArray(response.data.attempts)) {
+        attempts = response.data.attempts;
       } else {
-        console.warn("Unexpected response format for my attempts:", response.data);
-        return [];
+        attempts = [];
       }
+      
+      return attempts;
     } catch (error: any) {
       console.error("Error fetching my attempts:", error);
       throw new Error(error.response?.data?.message || "Failed to fetch exam attempts");
@@ -81,6 +85,8 @@ class ExamAttemptService {
       throw new Error(error.response?.data?.message || "Failed to fetch exam result");
     }
   }
+
+
 }
 
 const examAttemptService = new ExamAttemptService();

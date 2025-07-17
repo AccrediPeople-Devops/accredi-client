@@ -24,6 +24,7 @@ export default function ExamAttemptsPage() {
     try {
       setIsLoading(true);
       setError("");
+      
       const response = await examAttemptService.getAllExamAttempts();
       
       // Handle different response formats
@@ -35,7 +36,6 @@ export default function ExamAttemptsPage() {
       } else if (response && typeof response === 'object' && 'data' in response && Array.isArray((response as any).data)) {
         attempts = (response as any).data;
       } else {
-        console.warn("Unexpected response format:", response);
         attempts = [];
       }
       
@@ -137,31 +137,36 @@ export default function ExamAttemptsPage() {
           </p>
         </div>
         {uniqueExams.length > 0 && (
-          <div className="flex space-x-2">
-            <select
-              onChange={(e) => {
-                const exam = uniqueExams.find(ex => ex.id === e.target.value);
-                if (exam) {
-                  handleShowResults(exam.id, exam.title);
-                }
-              }}
-              className="px-4 py-2 bg-[var(--primary)] text-white rounded-[var(--radius-md)] hover:bg-[var(--primary-hover)] transition-colors border-0"
-              defaultValue=""
-            >
-              <option value="" disabled>Show Results for Exam</option>
-              {uniqueExams.map(exam => (
-                <option key={exam.id} value={exam.id}>
-                  {exam.title}
-                </option>
-              ))}
-            </select>
-          </div>
+          <select
+            onChange={(e) => {
+              const exam = uniqueExams.find(ex => ex.id === e.target.value);
+              if (exam) {
+                handleShowResults(exam.id, exam.title);
+              }
+            }}
+            className="px-4 py-2 bg-[var(--primary)] text-white rounded-[var(--radius-md)] hover:bg-[var(--primary-hover)] transition-colors border-0"
+            defaultValue=""
+          >
+            <option value="" disabled>Show Results for Exam</option>
+            {uniqueExams.map(exam => (
+              <option key={exam.id} value={exam.id}>
+                {exam.title}
+              </option>
+            ))}
+          </select>
         )}
       </div>
 
       {error && (
         <div className="p-4 bg-[var(--error)]/10 border border-[var(--error)]/30 text-[var(--error)] rounded-[var(--radius-md)]">
-          {error}
+          <h3 className="font-medium mb-2">Error Loading Exam Attempts</h3>
+          <p>{error}</p>
+          <button
+            onClick={fetchExamAttempts}
+            className="mt-2 px-3 py-1 bg-[var(--error)] text-white rounded text-sm hover:bg-[var(--error)]/80 transition-colors"
+          >
+            Retry
+          </button>
         </div>
       )}
 

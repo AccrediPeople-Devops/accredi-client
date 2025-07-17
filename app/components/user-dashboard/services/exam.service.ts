@@ -52,10 +52,14 @@ class ExamService {
   // Get exam by ID
   async getExamById(examId: string): Promise<Exam> {
     try {
+      console.log("Fetching exam by ID:", examId);
       const response = await axiosInstance.get(`/exams/v1/${examId}`);
+      console.log("Exam response:", response.data);
       return response.data.exam || response.data;
     } catch (error: any) {
       console.error("Error fetching exam:", error);
+      console.error("Error response:", error.response?.data);
+      console.error("Error status:", error.response?.status);
       throw new Error(error.response?.data?.message || "Failed to fetch exam");
     }
   }

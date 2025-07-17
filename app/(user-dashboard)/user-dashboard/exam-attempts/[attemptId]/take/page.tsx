@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { 
   HiOutlineClock, 
   HiOutlineSave, 
@@ -56,12 +57,31 @@ export default function TakeExamPage({ params }: TakeExamPageProps) {
         setIsLoading(true);
         setError("");
         
-        // For now, we'll need to get the exam attempt data
-        // This would typically come from the start exam endpoint
-        // For now, let's simulate it
-        const response = await examAttemptService.getExamResult(attemptId);
-        const attempt: any = response.examAttempt || response;
-        console.log("Exam attempt data:", attempt);
+        // Try to get exam data from localStorage first (from start exam)
+        const storedExamData = localStorage.getItem('currentExamData');
+        let examData: any = null;
+        
+        if (storedExamData) {
+          try {
+            examData = JSON.parse(storedExamData);
+            // Check if this is the correct exam attempt
+            if (examData.examAttempt._id === attemptId) {
+              console.log("Using stored exam data");
+            } else {
+              examData = null; // Wrong attempt, fetch from API
+            }
+          } catch (e) {
+            examData = null; // Invalid data, fetch from API
+          }
+        }
+        
+        // If no stored data or wrong attempt, we can't proceed
+        if (!examData) {
+          throw new Error("Exam data not found. Please start the exam again.");
+        }
+        
+        const attempt = examData.examAttempt;
+        const exam = examData.exam;
         
         // Initialize answers from existing attempt
         const existingAnswers: { [questionId: string]: string[] } = {};
@@ -77,42 +97,28 @@ export default function TakeExamPage({ params }: TakeExamPageProps) {
         setAnswers(existingAnswers);
         setUserDescriptions(existingDescriptions);
         
-        // Set time limit (this should come from the exam data)
-        setTimeLeft(60); // Default 60 minutes
+        // Set time limit from exam data
+        setTimeLeft((exam.timeLimit || 60) * 60); // Convert minutes to seconds
         
         // Set exam data
         setExamData({
           status: true,
           examAttempt: attempt,
           exam: {
-            _id: typeof attempt.examId === 'object' ? attempt.examId._id : attempt.examId,
-            title: typeof attempt.examId === 'object' ? attempt.examId.title : 'Exam',
-            timeLimit: 60,
-            resultMethod: "manual",
-            isActive: true,
-            courseId: (() => {
-              if (typeof attempt.courseId === 'object' && attempt.courseId !== null) {
-                return {
-                  _id: String((attempt.courseId as any)._id ?? ''),
-                  title: String((attempt.courseId as any).title ?? 'Course')
-                };
-              } else {
-                return { _id: String(attempt.courseId ?? ''), title: 'Course' };
-              }
-            })(),
-            questions: (attempt.answers as any[]).map((a: any) => ({
-              _id: a.questionId,
-              question: a.question,
-              options: [], // This should come from the exam data
-              multipleChoiceQuestions: false
-            })),
-            createdAt: "",
-            updatedAt: ""
+            _id: exam._id,
+            title: exam.title,
+            timeLimit: exam.timeLimit || 60,
+            resultMethod: exam.resultMethod || "manual",
+            isActive: exam.isActive !== false,
+            courseId: exam.courseId,
+            questions: exam.questions || [],
+            createdAt: exam.createdAt || "",
+            updatedAt: exam.updatedAt || ""
           }
         });
       } catch (err: any) {
         console.error("Error fetching exam attempt:", err);
-        setError(err.message || "Failed to fetch exam attempt");
+        setError(err.message || "Failed to fetch exam attempt. Please go back and start the exam again.");
       } finally {
         setIsLoading(false);
       }
@@ -175,7 +181,7 @@ export default function TakeExamPage({ params }: TakeExamPageProps) {
   };
 
   const saveProgress = useCallback(async () => {
-    if (!examData) return;
+    if (!examData || !examData.exam || !examData.exam.questions) return;
 
     setIsSaving(true);
     setError("");
@@ -203,7 +209,7 @@ export default function TakeExamPage({ params }: TakeExamPageProps) {
   }, [examData, answers, userDescriptions]);
 
   const handleSubmitExam = async () => {
-    if (!examData) return;
+    if (!examData || !examData.exam || !examData.exam.questions) return;
 
     setIsSubmitting(true);
     setError("");
@@ -228,6 +234,9 @@ export default function TakeExamPage({ params }: TakeExamPageProps) {
         endTime,
         timeSpent
       );
+
+      // Clean up stored exam data
+      localStorage.removeItem('currentExamData');
 
       // Navigate to results page
       router.push(`/user-dashboard/exam-attempts/${examData.examAttempt._id}/result`);
@@ -275,6 +284,12 @@ export default function TakeExamPage({ params }: TakeExamPageProps) {
           <div>
             <h1 className="text-2xl font-bold text-[var(--foreground)]">Take Exam</h1>
           </div>
+          <Link
+            href="/user-dashboard/practice-tests"
+            className="px-4 py-2 bg-[var(--input-bg)] text-[var(--foreground)] border border-[var(--border)] rounded-[var(--radius-md)] hover:bg-[var(--input-bg)]/80 transition-colors"
+          >
+            Back to Practice Tests
+          </Link>
         </div>
         <div className="p-4 bg-[var(--error)]/10 border border-[var(--error)]/30 text-[var(--error)] rounded-[var(--radius-md)]">
           {error || "Exam not found"}

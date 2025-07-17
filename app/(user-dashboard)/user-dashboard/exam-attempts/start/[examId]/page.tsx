@@ -46,7 +46,9 @@ export default function StartExamPage({ params }: StartExamPageProps) {
 
     try {
       const response = await examAttemptService.startExamAttempt(exam._id);
-      console.log("Started exam attempt:", response);
+      
+      // Store the complete exam data in localStorage for the take exam page
+      localStorage.setItem('currentExamData', JSON.stringify(response));
       
       // Navigate to the exam interface
       router.push(`/user-dashboard/exam-attempts/${response.examAttempt._id}/take`);
