@@ -76,9 +76,21 @@ class BecomeInstructorService {
   async uploadResume(file: File): Promise<{ success: boolean; data?: any; message: string }> {
     try {
       console.log('BecomeInstructorService: Uploading resume file:', file.name);
+      console.log('BecomeInstructorService: File size:', file.size);
+      console.log('BecomeInstructorService: File type:', file.type);
+      
+      // Check authentication
+      const token = localStorage.getItem('token');
+      console.log('BecomeInstructorService: Auth token exists:', !!token);
+      if (token) {
+        console.log('BecomeInstructorService: Token preview:', token.substring(0, 20) + '...');
+      }
       
       const formData = new FormData();
       formData.append('file', file);
+      
+      console.log('BecomeInstructorService: FormData created, making request to /uploads/v1');
+      console.log('BecomeInstructorService: API URL:', 'https://api.accredipeoplecertifications.com/api/uploads/v1');
       
       const response = await axiosInstance.post('/uploads/v1', formData, {
         headers: {
@@ -86,28 +98,69 @@ class BecomeInstructorService {
         },
       });
       
-      console.log('BecomeInstructorService: Resume upload response:', response.data);
+      console.log('BecomeInstructorService: Raw response:', response);
+      console.log('BecomeInstructorService: Response data:', response.data);
+      console.log('BecomeInstructorService: Response data type:', typeof response.data);
+      console.log('BecomeInstructorService: Is array?', Array.isArray(response.data));
       
-      if (response.data && response.data.path && response.data.key) {
+      // Handle both array and single object responses
+      let uploadData = response.data;
+      
+      // If response is an array, take the first item
+      if (Array.isArray(response.data)) {
+        console.log('BecomeInstructorService: Response is array, taking first item');
+        uploadData = response.data[0];
+      }
+      
+      console.log('BecomeInstructorService: Processed upload data:', uploadData);
+      console.log('BecomeInstructorService: Has path?', !!uploadData?.path);
+      console.log('BecomeInstructorService: Has key?', !!uploadData?.key);
+      
+      if (uploadData && uploadData.path && uploadData.key) {
+        // Format the data according to the expected form submission format
+        const formattedData = {
+          _id: uploadData._id || uploadData.key, // Use key as _id if _id is not provided
+          path: uploadData.path.startsWith('/') ? uploadData.path : `/${uploadData.path}`, // Ensure path starts with /
+          key: uploadData.key
+        };
+        
+        console.log('BecomeInstructorService: Formatted upload data:', formattedData);
+        
         return {
           success: true,
-          data: response.data,
+          data: formattedData,
           message: 'Resume uploaded successfully'
         };
       } else {
+        console.error('BecomeInstructorService: Invalid upload data structure:', uploadData);
         throw new Error('Invalid upload response format');
       }
     } catch (error: any) {
       console.error('BecomeInstructorService: Error uploading resume:', error);
+      console.error('BecomeInstructorService: Error name:', error.name);
+      console.error('BecomeInstructorService: Error message:', error.message);
+      console.error('BecomeInstructorService: Error stack:', error.stack);
+      console.error('BecomeInstructorService: Error details:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        headers: error.response?.headers
+      });
       
       let errorMessage = 'Error uploading resume. Please try again.';
       
       if (error.response) {
+        console.error('BecomeInstructorService: Server responded with error:', error.response.status, error.response.data);
         errorMessage = error.response.data?.message || 
                      error.response.data?.error || 
-                     `Upload failed (${error.response.status}). Please try again.`;
+                     `Upload failed (${error.response.status}): ${error.response.statusText}`;
       } else if (error.request) {
+        console.error('BecomeInstructorService: No response received:', error.request);
         errorMessage = 'Network error during upload. Please check your connection.';
+      } else {
+        console.error('BecomeInstructorService: Request setup error:', error.message);
+        errorMessage = error.message || errorMessage;
       }
       
       return {
@@ -162,15 +215,29 @@ class BecomeInstructorService {
     }
     
     if (resumeFile) {
+      // Define allowed file types
+      const allowedTypes = [
+        'application/pdf', // PDF
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // DOCX
+        'application/msword', // DOC
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // XLSX
+        'application/vnd.ms-excel', // XLS
+        'image/jpeg', // JPEG
+        'image/jpg', // JPG
+        'image/png', // PNG
+        'image/gif', // GIF
+        'image/webp' // WebP
+      ];
+      
       // Validate file type
-      if (resumeFile.type !== 'application/pdf') {
-        errors.push('Resume must be a PDF file.');
+      if (!allowedTypes.includes(resumeFile.type)) {
+        errors.push('Resume must be a valid file type: PDF, DOC, DOCX, Excel, or image files (JPEG, PNG, GIF, WebP).');
       }
       
-      // Validate file size (5MB limit)
-      const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+      // Validate file size (10MB limit)
+      const maxSize = 10 * 1024 * 1024; // 10MB in bytes
       if (resumeFile.size > maxSize) {
-        errors.push('Resume file size must be less than 5MB.');
+        errors.push('Resume file size must be less than 10MB.');
       }
     }
     

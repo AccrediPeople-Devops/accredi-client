@@ -18,7 +18,8 @@ const QuestionInput: React.FC<QuestionInputProps> = ({
     const newQuestion: QuestionItem = {
       question: "",
       options: [],
-      answer: "",
+      answer: "", // Will be string for single choice, array for multiple choice
+      multipleChoiceQuestions: false, // Default to single choice
       answerDescription: "",
     };
     setQuestions(prev => [...prev, newQuestion]);
@@ -48,6 +49,42 @@ const QuestionInput: React.FC<QuestionInputProps> = ({
       };
       return updatedQuestions;
     });
+  };
+
+  // Handle answer selection for both single and multiple choice
+  const handleAnswerChange = (questionIndex: number, option: string, isChecked: boolean) => {
+    const question = questions[questionIndex];
+    const isMultipleChoice = question.multipleChoiceQuestions;
+
+    if (isMultipleChoice) {
+      // Handle multiple choice (checkbox)
+      const currentAnswers = Array.isArray(question.answer) ? question.answer : [];
+      
+      if (isChecked) {
+        // Add option to answers
+        const newAnswers = [...currentAnswers, option];
+        updateQuestion(questionIndex, "answer", newAnswers);
+      } else {
+        // Remove option from answers
+        const newAnswers = currentAnswers.filter(ans => ans !== option);
+        updateQuestion(questionIndex, "answer", newAnswers);
+      }
+    } else {
+      // Handle single choice (radio)
+      updateQuestion(questionIndex, "answer", option);
+    }
+  };
+
+  // Toggle between single and multiple choice
+  const toggleMultipleChoice = (questionIndex: number) => {
+    const question = questions[questionIndex];
+    const newMultipleChoice = !question.multipleChoiceQuestions;
+    
+    // Reset answer when switching modes
+    const newAnswer = newMultipleChoice ? [] : "";
+    
+    updateQuestion(questionIndex, "multipleChoiceQuestions", newMultipleChoice);
+    updateQuestion(questionIndex, "answer", newAnswer);
   };
 
   // Update the option input for a specific question
@@ -102,12 +139,30 @@ const QuestionInput: React.FC<QuestionInputProps> = ({
       updatedQuestions[questionIndex].options.splice(optionIndex, 1);
       
       // If the removed option was the answer, reset the answer
-      if (updatedQuestions[questionIndex].answer === removedOption) {
-        updatedQuestions[questionIndex].answer = "";
+      const currentQuestion = updatedQuestions[questionIndex];
+      if (currentQuestion.multipleChoiceQuestions) {
+        // For multiple choice, remove from array
+        const currentAnswers = Array.isArray(currentQuestion.answer) ? currentQuestion.answer : [];
+        currentQuestion.answer = currentAnswers.filter(ans => ans !== removedOption);
+      } else {
+        // For single choice, reset to empty string
+        if (currentQuestion.answer === removedOption) {
+          currentQuestion.answer = "";
+        }
       }
       
       return updatedQuestions;
     });
+  };
+
+  // Check if an option is selected (for both single and multiple choice)
+  const isOptionSelected = (questionIndex: number, option: string) => {
+    const question = questions[questionIndex];
+    if (question.multipleChoiceQuestions) {
+      return Array.isArray(question.answer) && question.answer.includes(option);
+    } else {
+      return question.answer === option;
+    }
   };
 
   return (
@@ -195,6 +250,31 @@ const QuestionInput: React.FC<QuestionInputProps> = ({
                   />
                 </div>
 
+                {/* Multiple Choice Toggle */}
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id={`multiple-choice-${questionIndex}`}
+                    checked={question.multipleChoiceQuestions || false}
+                    onChange={() => toggleMultipleChoice(questionIndex)}
+                    className="text-[var(--primary)] focus:ring-[var(--primary)]"
+                  />
+                  <label 
+                    htmlFor={`multiple-choice-${questionIndex}`}
+                    className="text-sm font-medium text-[var(--foreground-muted)]"
+                  >
+                    Allow multiple answers
+                  </label>
+                </div>
+
+                {/* Question Type Indicator */}
+                <div className="text-xs text-[var(--foreground-muted)]">
+                  {question.multipleChoiceQuestions ? 
+                    "Multiple Choice (Checkboxes)" : 
+                    "Single Choice (Radio Buttons)"
+                  }
+                </div>
+
                 {/* Options */}
                 <div>
                   <label 
@@ -209,16 +289,30 @@ const QuestionInput: React.FC<QuestionInputProps> = ({
                         className="flex items-center"
                       >
                         <div className="flex-1 flex items-center space-x-2">
-                          <input
-                            type="radio"
-                            id={`q${questionIndex}-option${optionIndex}`}
-                            name={`q${questionIndex}-answer`}
-                            checked={question.answer === option}
-                            onChange={() => 
-                              updateQuestion(questionIndex, "answer", option)
-                            }
-                            className="text-[var(--primary)] focus:ring-[var(--primary)]"
-                          />
+                          {question.multipleChoiceQuestions ? (
+                            // Checkbox for multiple choice
+                            <input
+                              type="checkbox"
+                              id={`q${questionIndex}-option${optionIndex}`}
+                              checked={isOptionSelected(questionIndex, option)}
+                              onChange={(e) => 
+                                handleAnswerChange(questionIndex, option, e.target.checked)
+                              }
+                              className="text-[var(--primary)] focus:ring-[var(--primary)]"
+                            />
+                          ) : (
+                            // Radio button for single choice
+                            <input
+                              type="radio"
+                              id={`q${questionIndex}-option${optionIndex}`}
+                              name={`q${questionIndex}-answer`}
+                              checked={isOptionSelected(questionIndex, option)}
+                              onChange={() => 
+                                handleAnswerChange(questionIndex, option, true)
+                              }
+                              className="text-[var(--primary)] focus:ring-[var(--primary)]"
+                            />
+                          )}
                           <label 
                             htmlFor={`q${questionIndex}-option${optionIndex}`}
                             className="flex-1 px-4 py-2 bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] rounded-[var(--radius-md)]"

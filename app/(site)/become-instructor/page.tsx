@@ -49,17 +49,34 @@ export default function BecomeInstructorPage() {
   };
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
-    if (file && file.type !== "application/pdf") {
-      setValidationErrors(["Please upload a PDF file only."]);
-      e.target.value = "";
-      return;
-    }
     
-    // Check file size (5MB limit)
-    if (file && file.size > 5 * 1024 * 1024) {
-      setValidationErrors(["Resume file size must be less than 5MB."]);
-      e.target.value = "";
-      return;
+    if (file) {
+      // Define allowed file types
+      const allowedTypes = [
+        'application/pdf', // PDF
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // DOCX
+        'application/msword', // DOC
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // XLSX
+        'application/vnd.ms-excel', // XLS
+        'image/jpeg', // JPEG
+        'image/jpg', // JPG
+        'image/png', // PNG
+        'image/gif', // GIF
+        'image/webp' // WebP
+      ];
+      
+      if (!allowedTypes.includes(file.type)) {
+        setValidationErrors(["Please upload a valid file type: PDF, DOC, DOCX, Excel, or image files (JPEG, PNG, GIF, WebP)."]);
+        e.target.value = "";
+        return;
+      }
+      
+      // Check file size (10MB limit)
+      if (file.size > 10 * 1024 * 1024) {
+        setValidationErrors(["File size must be less than 10MB."]);
+        e.target.value = "";
+        return;
+      }
     }
     
     setFormData(prev => ({
@@ -111,21 +128,41 @@ export default function BecomeInstructorPage() {
       let resumeData = null;
       if (formData.cv) {
         setIsUploadingResume(true);
-        const uploadResponse = await becomeInstructorService.uploadResume(formData.cv);
+        console.log('BecomeInstructorPage: Starting resume upload for file:', formData.cv.name);
+        console.log('BecomeInstructorPage: File details:', {
+          name: formData.cv.name,
+          size: formData.cv.size,
+          type: formData.cv.type
+        });
         
-        if (!uploadResponse.success) {
+        try {
+          const uploadResponse = await becomeInstructorService.uploadResume(formData.cv);
+          console.log('BecomeInstructorPage: Upload response:', uploadResponse);
+          
+          if (!uploadResponse.success) {
+            console.error('BecomeInstructorPage: Upload failed:', uploadResponse.message);
+            setSubmitStatus({
+              type: "error",
+              message: uploadResponse.message
+            });
+            return;
+          }
+          
+          resumeData = {
+            _id: uploadResponse.data._id || "",
+            path: uploadResponse.data.path,
+            key: uploadResponse.data.key
+          };
+          
+          console.log('BecomeInstructorPage: Formatted resume data:', resumeData);
+        } catch (uploadError) {
+          console.error('BecomeInstructorPage: Upload error caught:', uploadError);
           setSubmitStatus({
             type: "error",
-            message: uploadResponse.message
+            message: "Upload failed unexpectedly. Please try again."
           });
           return;
         }
-        
-        resumeData = {
-          _id: uploadResponse.data._id || "",
-          path: uploadResponse.data.path,
-          key: uploadResponse.data.key
-        };
       }
 
       setIsUploadingResume(false);
@@ -141,6 +178,8 @@ export default function BecomeInstructorPage() {
         resume: resumeData!,
         message: formData.message.trim()
       };
+
+      console.log('BecomeInstructorPage: Submitting form data:', apiFormData);
 
       // Submit form data
       const response = await becomeInstructorService.submitBecomeInstructorForm(apiFormData);
@@ -418,21 +457,21 @@ export default function BecomeInstructorPage() {
 
                 <div>
                   <label htmlFor="cv" className="block text-sm font-bold site-text-primary mb-2">
-                    Resume (PDF Only) *
+                    Resume/CV *
                   </label>
                   <div className="relative">
                     <input
                       type="file"
                       id="cv"
                       name="cv"
-                      accept=".pdf"
+                      accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif,.webp"
                       onChange={handleFileChange}
                       className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-2xl site-border border focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300 site-text-primary file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#4F46E5] file:text-white hover:file:bg-[#7C3AED] file:transition-colors"
                       required
                     />
                   </div>
                   <p className="text-xs site-text-muted mt-2">
-                    Please upload your CV in PDF format only. Maximum file size: 5MB
+                    Accepted formats: PDF, DOC, DOCX, Excel, or image files (JPEG, PNG, GIF, WebP). Maximum file size: 10MB
                   </p>
                 </div>
               </div>

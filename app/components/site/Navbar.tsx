@@ -527,13 +527,12 @@ const Navbar = () => {
         ref={navRef} 
         className={`
           fixed top-0 left-0 right-0 z-[100] h-[72px] transition-all duration-200 ease-in-out
-          ${isVisible ? 'transform translate-y-0' : 'transform -translate-y-full'}
+          ${isVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}
           ${isAtTop ? 'bg-transparent backdrop-blur-none' : 'bg-black/40 backdrop-blur-md site-light:bg-white/95 site-light:backdrop-blur-sm'}
           ${!isAtTop ? 'shadow-lg border-b border-white/10 site-light:border-slate-200/50' : ''}
           py-4 sm:py-6 xl:px-20 sm:px-28 px-0 flex justify-center items-center !py-0 site-navbar
         `}
         style={{
-          transform: isVisible ? 'translateY(0)' : 'translateY(-100%)',
           backdropFilter: isAtTop ? 'none' : 'blur(12px)',
           WebkitBackdropFilter: isAtTop ? 'none' : 'blur(12px)',
         }}
@@ -776,9 +775,13 @@ const Navbar = () => {
           <div className="hidden md:block fixed inset-0 top-[72px] z-40 bg-black/50 backdrop-blur-sm site-light:bg-black/20" />
           {/* Mega Menu */}
           <div
-            className="hidden md:flex fixed left-1/2 top-[72px] z-50 -translate-x-1/2 w-[1200px] h-[calc(100vh-72px)] shadow-2xl overflow-hidden bg-gradient-to-br from-[#0F0F23]/95 via-[#1A1A3E]/95 to-[#2D1B69]/95 site-light:bg-gradient-to-br site-light:from-white/98 site-light:via-gray-50/98 site-light:to-slate-100/98 backdrop-blur-xl border border-white/20 site-light:border-slate-200"
+            className="hidden md:flex fixed top-[72px] z-50 w-[1200px] h-[calc(100vh-72px)] shadow-2xl overflow-hidden bg-gradient-to-br from-[#0F0F23]/95 via-[#1A1A3E]/95 to-[#2D1B69]/95 site-light:bg-gradient-to-br site-light:from-white/98 site-light:via-gray-50/98 site-light:to-slate-100/98 backdrop-blur-xl border border-white/20 site-light:border-slate-200 mega-menu"
             ref={menuRef}
-            style={{ borderRadius: "0 0 20px 20px" }}
+            style={{ 
+              borderRadius: "0 0 20px 20px",
+              left: "50%",
+              transform: "translateX(-50%)"
+            }}
             onMouseEnter={handleMenuOpen}
             onMouseLeave={handleMenuClose}
           >
