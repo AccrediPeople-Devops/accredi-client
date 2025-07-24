@@ -138,8 +138,13 @@ export default function ResourcesPage() {
       if (response.status && response.resources) {
         console.log("Received resources:", response.resources);
 
+        // Handle the nested array structure - resources is an array of arrays
+        const resourcesArray = Array.isArray(response.resources[0]) 
+          ? response.resources[0] 
+          : response.resources;
+
         // Filter and transform to categories - show only non-deleted resources with content
-        const transformedCategories = response.resources
+        const transformedCategories = resourcesArray
           .filter((resource) => !resource.isDeleted) // Don't show deleted resources
           .filter((resource) => resource.content && resource.content.length > 0) // Only resources with content
           .map((resource, index) =>
