@@ -42,6 +42,26 @@ interface AssignedCourse {
   isDeleted: boolean;
   createdAt: string;
   updatedAt: string;
+  schedule?: {
+    _id: string;
+    courseId: string;
+    country: string;
+    scheduleType: string;
+    startDate: string;
+    endDate: string;
+    days: string[];
+    type: string;
+    instructorName: string;
+    accessType: string;
+    state: string;
+    city: string;
+    standardPrice: number;
+    offerPrice: number;
+    isActive: boolean;
+    isDeleted: boolean;
+    createdAt: string;
+    updatedAt: string;
+  };
 }
 
 export default function UserProfilePage() {
@@ -68,29 +88,27 @@ export default function UserProfilePage() {
     setError("");
 
     try {
-      // Use the same pattern as the edit page - fetch all users and find the specific one
-      const response = await UserService.getAllUsers();
+      // Use the specific user endpoint instead of fetching all users
+      const response = await UserService.getUserById(userId);
       
-      if (!response || !response.status || !response.users || !Array.isArray(response.users)) {
+      console.log("=== API RESPONSE DEBUG ===");
+      console.log("Full response:", response);
+      console.log("Response status:", response?.status);
+      console.log("Response keys:", Object.keys(response || {}));
+      
+      if (!response || !response.status) {
         setUserProfile(null);
         setError("Failed to fetch user data");
         setIsLoading(false);
         return;
       }
 
-      // Find the specific user by ID
-      const foundUser = response.users.find((user: any) => user._id === userId);
-
-      if (!foundUser) {
-        setUserProfile(null);
-        setError("User not found.");
-        setIsLoading(false);
-        return;
-      }
-
+      // The API returns the user data directly, not wrapped in a 'user' property
+      const userData = response;
+      
       // Transform the response to match our interface
       const profileData: UserProfile = {
-        user: foundUser,
+        user: userData,
         token: "" // We don't need the token for display
       };
       
@@ -98,34 +116,27 @@ export default function UserProfilePage() {
 
       // Extract assigned courses from the user data
       console.log("=== COURSE DEBUGGING ===");
-      console.log("Found user:", foundUser);
-      console.log("User keys:", Object.keys(foundUser));
-      console.log("User courses property:", foundUser.courses);
-      console.log("User course property:", foundUser.course);
-      console.log("User assignedCourses property:", foundUser.assignedCourses);
-      console.log("User enrolledCourses property:", foundUser.enrolledCourses);
-      console.log("Courses type:", typeof foundUser.courses);
-      console.log("Is array:", Array.isArray(foundUser.courses));
-      console.log("Courses length:", foundUser.courses?.length);
+      console.log("Found user:", userData);
+      console.log("User courses:", userData.courses);
       
-      // Check for different possible course property names
-      const possibleCourseProps = ['courses', 'course', 'assignedCourses', 'enrolledCourses', 'userCourses'];
-      let courseData = null;
-      
-      for (const prop of possibleCourseProps) {
-        if (foundUser[prop]) {
-          console.log(`Found course data in property: ${prop}`, foundUser[prop]);
-          courseData = foundUser[prop];
-          break;
-        }
-      }
-      
-      // If no course property exists, treat as empty array (no courses assigned)
-      if (courseData && Array.isArray(courseData)) {
-        console.log("Course data found:", courseData);
-        setAssignedCourses(courseData);
+      // Check if courses exist and is an array
+      if (userData.courses && Array.isArray(userData.courses)) {
+        console.log("Course data found:", userData.courses);
+        console.log("Number of courses:", userData.courses.length);
+        
+        // Log each course and its schedule
+        userData.courses.forEach((course: any, index: number) => {
+          console.log(`Course ${index + 1}:`, {
+            courseId: course._id,
+            title: course.title,
+            scheduleId: course.schedule?._id,
+            schedule: course.schedule
+          });
+        });
+        
+        setAssignedCourses(userData.courses);
       } else {
-        console.log("No course property found or not an array. Treating as no courses assigned.");
+        console.log("No courses found or not an array. Treating as no courses assigned.");
         setAssignedCourses([]);
       }
       console.log("=== END COURSE DEBUGGING ===");
@@ -190,7 +201,7 @@ export default function UserProfilePage() {
     fetchUserProfile();
   };
 
-  const handleRemoveCourse = async (courseId: string) => {
+  const handleRemoveCourse = async (courseId: string, scheduleId?: string) => {
     if (!confirm("Are you sure you want to remove this course from the user?")) {
       return;
     }
@@ -198,14 +209,27 @@ export default function UserProfilePage() {
     try {
       console.log("=== REMOVE COURSE DEBUG ===");
       console.log("User ID from params:", userId);
-      console.log("User ID type:", typeof userId);
       console.log("Course ID:", courseId);
-      console.log("Course ID type:", typeof courseId);
-      console.log("Current user profile:", userProfile?.user?._id);
-      console.log("Current user profile ID type:", typeof userProfile?.user?._id);
+      console.log("Schedule ID parameter:", scheduleId);
       
-      // Call the remove course endpoint with null scheduleId
-      const response = await courseAssignmentService.removeCourseFromUser(userId, courseId, undefined);
+      // Find the course in assignedCourses to get the schedule ID
+      const course = assignedCourses.find(c => c._id === courseId);
+      console.log("Found course:", course);
+      console.log("Course schedule:", course?.schedule);
+      console.log("Course schedule ID:", course?.schedule?._id);
+      
+      // Use the schedule ID from the found course if not provided
+      const finalScheduleId = scheduleId || course?.schedule?._id;
+      console.log("Final schedule ID to send:", finalScheduleId);
+      
+      if (!finalScheduleId) {
+        console.error("No schedule ID found for course removal");
+        alert("Error: Could not determine which course schedule to remove. Please try again.");
+        return;
+      }
+      
+      // Call the remove course endpoint with scheduleId
+      const response = await courseAssignmentService.removeCourseFromUser(userId, courseId, finalScheduleId);
       
       if (response.success) {
         console.log("Course removed successfully");
