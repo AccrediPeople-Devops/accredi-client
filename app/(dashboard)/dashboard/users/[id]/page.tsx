@@ -17,19 +17,31 @@ interface UserProfile {
 
 interface AssignedCourse {
   _id: string;
-  courseId: {
-    _id: string;
-    title: string;
-    shortDescription: string;
+  title: string;
+  shortDescription: string;
+  description: string;
+  upload: {
+    courseImage: Array<{
+      path: string;
+      key: string;
+      _id: string;
+    }>;
+    courseSampleCertificate: Array<{
+      path: string;
+      key: string;
+      _id: string;
+    }>;
+    courseBadge: Array<{
+      path: string;
+      key: string;
+      _id: string;
+    }>;
   };
-  scheduleId: {
-    _id: string;
-    startDate: string;
-    endDate: string;
-    scheduleType: string;
-    location?: string;
-  };
-  assignedAt: string;
+  keyFeatures: string[];
+  isActive: boolean;
+  isDeleted: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export default function UserProfilePage() {
@@ -42,9 +54,13 @@ export default function UserProfilePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [showCourseAssignmentModal, setShowCourseAssignmentModal] = useState(false);
+  const [currentUserRole, setCurrentUserRole] = useState<string>("");
 
   useEffect(() => {
     fetchUserProfile();
+    // Get current user's role from localStorage or context
+    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+    setCurrentUserRole(currentUser.role || '');
   }, [userId]);
 
   const fetchUserProfile = async () => {
@@ -80,16 +96,39 @@ export default function UserProfilePage() {
       
       setUserProfile(profileData);
 
-      // Fetch assigned courses
-      try {
-        const coursesResponse = await courseAssignmentService.getUserAssignedCourses(userId);
-        if (coursesResponse.success && coursesResponse.courses) {
-          setAssignedCourses(coursesResponse.courses);
+      // Extract assigned courses from the user data
+      console.log("=== COURSE DEBUGGING ===");
+      console.log("Found user:", foundUser);
+      console.log("User keys:", Object.keys(foundUser));
+      console.log("User courses property:", foundUser.courses);
+      console.log("User course property:", foundUser.course);
+      console.log("User assignedCourses property:", foundUser.assignedCourses);
+      console.log("User enrolledCourses property:", foundUser.enrolledCourses);
+      console.log("Courses type:", typeof foundUser.courses);
+      console.log("Is array:", Array.isArray(foundUser.courses));
+      console.log("Courses length:", foundUser.courses?.length);
+      
+      // Check for different possible course property names
+      const possibleCourseProps = ['courses', 'course', 'assignedCourses', 'enrolledCourses', 'userCourses'];
+      let courseData = null;
+      
+      for (const prop of possibleCourseProps) {
+        if (foundUser[prop]) {
+          console.log(`Found course data in property: ${prop}`, foundUser[prop]);
+          courseData = foundUser[prop];
+          break;
         }
-      } catch (coursesError) {
-        console.error("Error fetching assigned courses:", coursesError);
-        // Don't fail the whole page if courses fail to load
       }
+      
+      // If no course property exists, treat as empty array (no courses assigned)
+      if (courseData && Array.isArray(courseData)) {
+        console.log("Course data found:", courseData);
+        setAssignedCourses(courseData);
+      } else {
+        console.log("No course property found or not an array. Treating as no courses assigned.");
+        setAssignedCourses([]);
+      }
+      console.log("=== END COURSE DEBUGGING ===");
 
     } catch (err: any) {
       console.error("Error fetching user profile:", err);
@@ -115,6 +154,18 @@ export default function UserProfilePage() {
     });
   };
 
+  // Function to parse rich text content and extract plain text
+  const parseRichText = (htmlContent: string) => {
+    if (!htmlContent) return "";
+    
+    // Create a temporary div to parse HTML
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = htmlContent;
+    
+    // Extract text content, removing HTML tags
+    return tempDiv.textContent || tempDiv.innerText || "";
+  };
+
   const getRoleColor = (role: string) => {
     switch (role) {
       case "superadmin":
@@ -137,6 +188,37 @@ export default function UserProfilePage() {
   const handleCourseAssignmentSuccess = () => {
     // Refresh the assigned courses
     fetchUserProfile();
+  };
+
+  const handleRemoveCourse = async (courseId: string) => {
+    if (!confirm("Are you sure you want to remove this course from the user?")) {
+      return;
+    }
+
+    try {
+      console.log("=== REMOVE COURSE DEBUG ===");
+      console.log("User ID from params:", userId);
+      console.log("User ID type:", typeof userId);
+      console.log("Course ID:", courseId);
+      console.log("Course ID type:", typeof courseId);
+      console.log("Current user profile:", userProfile?.user?._id);
+      console.log("Current user profile ID type:", typeof userProfile?.user?._id);
+      
+      // Call the remove course endpoint with null scheduleId
+      const response = await courseAssignmentService.removeCourseFromUser(userId, courseId, undefined);
+      
+      if (response.success) {
+        console.log("Course removed successfully");
+        // Refresh the course list
+        fetchUserProfile();
+      } else {
+        console.error("Failed to remove course:", response.message);
+        alert("Failed to remove course: " + response.message);
+      }
+    } catch (error) {
+      console.error("Error removing course:", error);
+      alert("Error removing course. Please try again.");
+    }
   };
 
   if (isLoading) {
@@ -216,17 +298,15 @@ export default function UserProfilePage() {
                 <Image
                   src={userProfile.user.profileImageUrl}
                   alt={userProfile.user.fullName}
-                  layout="fill"
-                  objectFit="cover"
-                  unoptimized
+                  fill
+                  className="object-cover"
                 />
               ) : userProfile.user.profileImage?.path ? (
                 <Image
                   src={`${config.imageUrl}${userProfile.user.profileImage.path}`}
                   alt={userProfile.user.fullName}
-                  layout="fill"
-                  objectFit="cover"
-                  unoptimized
+                  fill
+                  className="object-cover"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-[var(--foreground-muted)]">
@@ -248,12 +328,6 @@ export default function UserProfilePage() {
               <span className="text-[var(--foreground-muted)]">Role:</span>
               <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(userProfile.user.role)}`}>
                 {userProfile.user.role === "superadmin" ? "Super Admin" : userProfile.user.role === "admin" ? "Admin" : "User"}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-[var(--foreground-muted)]">Email Verified:</span>
-              <span className={`px-2 py-1 text-xs font-semibold rounded-full ${userProfile.user.isEmailVerified ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
-                {userProfile.user.isEmailVerified ? "Verified" : "Not Verified"}
               </span>
             </div>
           </div>
@@ -302,40 +376,77 @@ export default function UserProfilePage() {
           </div>
         ) : (
           <div className="space-y-4">
-            {assignedCourses.map((course) => (
-              <div key={course._id} className="border border-[var(--border)] rounded-[var(--radius-md)] p-4">
+            {assignedCourses.map((course, index) => (
+              <div key={`${course._id}-${index}`} className="border border-[var(--border)] rounded-[var(--radius-md)] p-4">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <h3 className="text-lg font-medium text-[var(--foreground)] mb-2">
-                      {course.courseId.title}
+                      {course.title}
                     </h3>
                     <p className="text-[var(--foreground-muted)] mb-3">
-                      {course.courseId.shortDescription}
+                      {parseRichText(course.shortDescription)}
                     </p>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                       <div>
-                        <span className="text-[var(--foreground-muted)]">Schedule Type:</span>
-                        <p className="text-[var(--foreground)] font-medium">{course.scheduleId.scheduleType}</p>
+                        <span className="text-[var(--foreground-muted)]">Course ID:</span>
+                        <span className="text-[var(--foreground)] ml-2">{course._id}</span>
                       </div>
                       <div>
-                        <span className="text-[var(--foreground-muted)]">Start Date:</span>
-                        <p className="text-[var(--foreground)] font-medium">{formatDate(course.scheduleId.startDate)}</p>
+                        <span className="text-[var(--foreground-muted)]">Status:</span>
+                        <span className="text-green-600 ml-2">Assigned</span>
                       </div>
                       <div>
-                        <span className="text-[var(--foreground-muted)]">End Date:</span>
-                        <p className="text-[var(--foreground)] font-medium">{formatDate(course.scheduleId.endDate)}</p>
+                        <span className="text-[var(--foreground-muted)]">Created:</span>
+                        <span className="text-[var(--foreground)] ml-2">{formatDate(course.createdAt)}</span>
+                      </div>
+                      <div>
+                        <span className="text-[var(--foreground-muted)]">Updated:</span>
+                        <span className="text-[var(--foreground)] ml-2">{formatDate(course.updatedAt)}</span>
                       </div>
                     </div>
-                    {course.scheduleId.location && (
+                    {course.keyFeatures && course.keyFeatures.length > 0 && (
                       <div className="mt-2">
-                        <span className="text-[var(--foreground-muted)]">Location:</span>
-                        <p className="text-[var(--foreground)] font-medium">{course.scheduleId.location}</p>
+                        <span className="text-[var(--foreground-muted)]">Key Features:</span>
+                        <div className="mt-1">
+                          {course.keyFeatures.slice(0, 3).map((feature, index) => (
+                            <span key={index} className="inline-block bg-[var(--primary)]/10 text-[var(--primary)] text-xs px-2 py-1 rounded mr-2 mb-1">
+                              {feature}
+                            </span>
+                          ))}
+                          {course.keyFeatures.length > 3 && (
+                            <span className="text-[var(--foreground-muted)] text-xs">
+                              +{course.keyFeatures.length - 3} more
+                            </span>
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>
                   <div className="text-right">
                     <span className="text-xs text-[var(--foreground-muted)]">Assigned</span>
-                    <p className="text-sm text-[var(--foreground)]">{formatDate(course.assignedAt)}</p>
+                    <p className="text-sm text-[var(--foreground)]">{formatDate(course.createdAt)}</p>
+                    {/* Show remove button for admin and superadmin */}
+                    {(currentUserRole === "superadmin" || currentUserRole === "admin") && (
+                      <button
+                        onClick={() => handleRemoveCourse(course._id)}
+                        className="mt-2 px-4 py-2 bg-red-600 text-white rounded-[var(--radius-md)] hover:bg-red-700 transition-colors text-sm font-medium flex items-center gap-2"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        Remove Course
+                      </button>
+                    )}
+                    {/* Temporary: Show button for all users for testing */}
+                    <button
+                      onClick={() => handleRemoveCourse(course._id)}
+                      className="mt-2 px-4 py-2 bg-red-600 text-white rounded-[var(--radius-md)] hover:bg-red-700 transition-colors text-sm font-medium flex items-center gap-2"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                      Remove Course
+                    </button>
                   </div>
                 </div>
               </div>

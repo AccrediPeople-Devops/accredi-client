@@ -215,12 +215,11 @@ export default function MyCoursesPage() {
                 {/* Course Image */}
                 <div className="relative h-48 overflow-hidden">
                   <Image
-                    src={getCourseImageUrl(course)}
+                    src={`${config.imageUrl}${course.upload.courseImage[0].path}`}
                     alt={course.title}
-                    width={400}
-                    height={192}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    unoptimized
+                    width={300}
+                    height={200}
+                    className="w-full h-32 object-cover rounded-t-xl"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
                   

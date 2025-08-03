@@ -71,7 +71,6 @@ export default function ModesOfTrainingSection() {
                     height={400}
                     className="w-full h-auto rounded-2xl"
                     loading="lazy"
-                    unoptimized
                   />
                   {/* Floating Stats */}
                   <div className="absolute -top-4 -right-4 bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] rounded-2xl p-4 text-white shadow-xl">
@@ -99,7 +98,6 @@ export default function ModesOfTrainingSection() {
                     height={400}
                     className="w-full h-auto rounded-2xl"
                     loading="lazy"
-                    unoptimized
                   />
                   {/* Floating Stats */}
                   <div className="absolute -top-4 -left-4 bg-gradient-to-br from-[#10B981] to-[#059669] rounded-2xl p-4 text-white shadow-xl">
@@ -174,7 +172,6 @@ export default function ModesOfTrainingSection() {
                     height={400}
                     className="w-full h-auto rounded-2xl"
                     loading="lazy"
-                    unoptimized
                   />
                   {/* Floating Stats */}
                   <div className="absolute -top-4 -right-4 bg-gradient-to-br from-[#F59E0B] to-[#D97706] rounded-2xl p-4 text-white shadow-xl">
@@ -202,7 +199,6 @@ export default function ModesOfTrainingSection() {
                     height={400}
                     className="w-full h-auto rounded-2xl"
                     loading="lazy"
-                    unoptimized
                   />
                   {/* Floating Stats */}
                   <div className="absolute -top-4 -left-4 bg-gradient-to-br from-[#8B5CF6] to-[#7C3AED] rounded-2xl p-4 text-white shadow-xl">

@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import CourseCategoryForm from "@/app/components/course-categories/CourseCategoryForm";
+import Image from "next/image";
+import CourseCategoryForm from "../course-categories/CourseCategoryForm";
 
 export default function TestCategoryEmoji() {
   const [submittedData, setSubmittedData] = useState<any>(null);
@@ -89,13 +90,14 @@ export default function TestCategoryEmoji() {
             <div className="mt-4">
               <h3 className="text-white font-medium mb-2">Category Image Preview:</h3>
               <div className="bg-white p-4 rounded-lg inline-block">
-                <img 
+                <Image 
                   src={submittedData.image[0].path ? 
                     `http://api.accredipeoplecertifications.com${submittedData.image[0].path}` : 
                     'placeholder'
                   }
                   alt="Category"
-                  className="w-16 h-16 object-contain"
+                  width={64}
+                  height={64}
                 />
               </div>
             </div>

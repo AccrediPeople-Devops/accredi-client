@@ -320,11 +320,10 @@ export default function CourseDetailsPage({ params }: { params: Promise<{ id: st
               <div className="relative aspect-video rounded-[var(--radius-md)] overflow-hidden">
                 {course.upload.courseImage[0] && (
                   <Image
-                    src={course.upload.courseImage[0].url}
+                    src={`${config.imageUrl}${course.upload.courseImage[0].path}`}
                     alt={course.title}
                     fill
-                    style={{ objectFit: "cover" }}
-                    unoptimized
+                    className="object-cover"
                   />
                 )}
               </div>
@@ -480,8 +479,7 @@ export default function CourseDetailsPage({ params }: { params: Promise<{ id: st
                       src={course.upload.courseSampleCertificate[0].url}
                       alt="Sample Certificate"
                       fill
-                      style={{ objectFit: "cover" }}
-                      unoptimized
+                      className="object-cover"
                     />
                   </div>
                 </div>
@@ -502,8 +500,7 @@ export default function CourseDetailsPage({ params }: { params: Promise<{ id: st
                           src={badge.url}
                           alt={`Badge ${index + 1}`}
                           fill
-                          style={{ objectFit: "cover" }}
-                          unoptimized
+                          className="object-cover"
                         />
                       </div>
                     ))}

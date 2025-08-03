@@ -197,8 +197,7 @@ export default function ComponentsInput({
                         src={`${config.imageUrl}${component.image.path}`}
                         alt="Component image"
                         fill
-                        style={{ objectFit: "cover" }}
-                        unoptimized
+                        className="object-cover"
                       />
                       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                         <span className="text-white text-sm font-medium">Click to change</span>

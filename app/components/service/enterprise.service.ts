@@ -92,8 +92,8 @@ class EnterpriseService {
     }
     
     // Training Details validation (optional but if provided, should be meaningful)
-    if (formData.trainingDetails && formData.trainingDetails.trim().length < 10) {
-      errors.push('Training details should be at least 10 characters long if provided.');
+    if (formData.trainingDetails && formData.trainingDetails.trim().length === 0) {
+      errors.push('Training details cannot be empty if provided.');
     }
     
     return {

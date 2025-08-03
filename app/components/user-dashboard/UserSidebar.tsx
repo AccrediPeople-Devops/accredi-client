@@ -259,7 +259,6 @@ export default function UserSidebar({ isMobileOpen, toggleSidebar, currentUser }
                     width={40}
                     height={40}
                     className="w-full h-full object-cover"
-                    unoptimized
                   />
                 ) : (
                   <span className="text-white font-medium">

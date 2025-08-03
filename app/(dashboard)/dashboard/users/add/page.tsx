@@ -408,9 +408,8 @@ export default function AddUserPage() {
                 <Image
                   src={profileImagePreview}
                   alt="Profile preview"
-                  layout="fill"
-                  objectFit="cover"
-                  unoptimized
+                  fill
+                  className="object-cover"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-[var(--foreground-muted)]">

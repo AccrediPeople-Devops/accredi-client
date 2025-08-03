@@ -227,7 +227,6 @@ export default function UserDashboardLayout({
                         width={36}
                         height={36}
                         className="w-full h-full object-cover"
-                        unoptimized
                       />
                     ) : (
                       <span className="text-white font-medium text-sm">
