@@ -271,12 +271,11 @@ export default function ReviewsPage() {
                       <div className="relative">
                         <div className="w-16 h-16 rounded-xl overflow-hidden ring-2 ring-white/20 site-light:ring-slate-300">
                           <Image
-                            src={getImageUrl(review.image.path)}
+                            src={`${config.imageUrl}${review.image.path}`}
                             alt={review.name}
                             width={64}
                             height={64}
                             className="w-full h-full object-cover"
-                            unoptimized
                           />
                         </div>
                         <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-[#10B981] rounded-lg flex items-center justify-center shadow-lg">

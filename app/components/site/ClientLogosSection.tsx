@@ -125,9 +125,21 @@ export default function ClientLogosSection() {
                           src={logo.src} 
                           alt={logo.alt} 
                           fill 
-                        className="object-contain filter brightness-0 invert opacity-70 group-hover:opacity-100 transition-all duration-300 site-light:brightness-100 site-light:invert-0"
+                          className="object-contain filter brightness-0 invert opacity-70 group-hover:opacity-100 transition-all duration-300 site-light:brightness-100 site-light:invert-0"
                           loading="lazy"
-                          unoptimized
+                          onError={(e) => {
+                            const target = e.currentTarget as HTMLImageElement;
+                            target.style.display = 'none';
+                            console.warn(`Failed to load client logo: ${logo.src}`);
+                          }}
+                          onLoad={(e) => {
+                            const target = e.currentTarget as HTMLImageElement;
+                            target.style.opacity = '1';
+                          }}
+                          style={{ 
+                            opacity: 0, 
+                            transition: 'opacity 0.3s ease',
+                          }}
                         />
                       </div>
                     </div>

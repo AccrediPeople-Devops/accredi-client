@@ -268,7 +268,6 @@ export default function EnhancedImageUpload({
                       alt="Emoji badge"
                       fill
                       style={{ objectFit: "contain" }}
-                      unoptimized
                     />
                   ) : (
                     preview
@@ -277,10 +276,9 @@ export default function EnhancedImageUpload({
               ) : (
                 <Image
                   src={preview}
-                  alt="Image preview"
+                  alt="Preview"
                   fill
-                  style={{ objectFit: "cover" }}
-                  unoptimized
+                  className="object-cover"
                 />
               )}
               <button

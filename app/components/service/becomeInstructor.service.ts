@@ -1,4 +1,5 @@
 import axiosInstance from '../config/axiosInstance';
+import axios from 'axios'; // Added axios import
 
 export interface BecomeInstructorFormData {
   firstName: string;
@@ -79,74 +80,115 @@ class BecomeInstructorService {
       console.log('BecomeInstructorService: File size:', file.size);
       console.log('BecomeInstructorService: File type:', file.type);
       
-      // Check authentication
-      const token = localStorage.getItem('token');
-      console.log('BecomeInstructorService: Auth token exists:', !!token);
-      if (token) {
-        console.log('BecomeInstructorService: Token preview:', token.substring(0, 20) + '...');
-      }
-      
       const formData = new FormData();
       formData.append('file', file);
       
-      console.log('BecomeInstructorService: FormData created, making request to /uploads/v1');
-      console.log('BecomeInstructorService: API URL:', 'https://api.accredipeoplecertifications.com/api/uploads/v1');
+      console.log('BecomeInstructorService: Making request to /uploads/v1');
       
-      const response = await axiosInstance.post('/uploads/v1', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      // For file uploads, we might not need authentication
+      // Let's try without auth first, then with auth if it fails
+      let response;
+      try {
+        // First try without authentication
+        response = await axios.post('https://api.accredipeoplecertifications.com/api/uploads/v1', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+        console.log('BecomeInstructorService: Upload successful without auth');
+      } catch (authError: any) {
+        console.log('BecomeInstructorService: Upload without auth failed, trying with auth:', authError.response?.status);
+        
+        // If that fails, try with authentication
+        response = await axiosInstance.post('/uploads/v1', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+        console.log('BecomeInstructorService: Upload successful with auth');
+      }
       
       console.log('BecomeInstructorService: Raw response:', response);
       console.log('BecomeInstructorService: Response data:', response.data);
       console.log('BecomeInstructorService: Response data type:', typeof response.data);
       console.log('BecomeInstructorService: Is array?', Array.isArray(response.data));
+      console.log('BecomeInstructorService: Response data keys:', Object.keys(response.data || {}));
       
-      // Handle both array and single object responses
+      // Handle the response format from the backend
       let uploadData = response.data;
       
-      // If response is an array, take the first item
-      if (Array.isArray(response.data)) {
+      // The backend returns { status: true, upload: Array(1) }
+      // We need to extract the first item from the upload array
+      if (response.data && response.data.upload && Array.isArray(response.data.upload)) {
+        console.log('BecomeInstructorService: Found upload array, taking first item');
+        uploadData = response.data.upload[0];
+        console.log('BecomeInstructorService: First upload array item:', uploadData);
+        console.log('BecomeInstructorService: Upload array item keys:', Object.keys(uploadData || {}));
+      } else if (Array.isArray(response.data)) {
+        // Fallback: if response is directly an array
         console.log('BecomeInstructorService: Response is array, taking first item');
         uploadData = response.data[0];
+        console.log('BecomeInstructorService: First array item:', uploadData);
+        console.log('BecomeInstructorService: First array item keys:', Object.keys(uploadData || {}));
       }
       
       console.log('BecomeInstructorService: Processed upload data:', uploadData);
-      console.log('BecomeInstructorService: Has path?', !!uploadData?.path);
-      console.log('BecomeInstructorService: Has key?', !!uploadData?.key);
+      console.log('BecomeInstructorService: Upload data keys:', Object.keys(uploadData || {}));
       
-      if (uploadData && uploadData.path && uploadData.key) {
-        // Format the data according to the expected form submission format
-        const formattedData = {
-          _id: uploadData._id || uploadData.key, // Use key as _id if _id is not provided
-          path: uploadData.path.startsWith('/') ? uploadData.path : `/${uploadData.path}`, // Ensure path starts with /
-          key: uploadData.key
-        };
-        
-        console.log('BecomeInstructorService: Formatted upload data:', formattedData);
-        
-        return {
-          success: true,
-          data: formattedData,
-          message: 'Resume uploaded successfully'
-        };
-      } else {
-        console.error('BecomeInstructorService: Invalid upload data structure:', uploadData);
-        throw new Error('Invalid upload response format');
+      // Check what fields are actually available
+      if (uploadData) {
+        console.log('BecomeInstructorService: Available fields:');
+        Object.keys(uploadData).forEach(key => {
+          console.log(`  ${key}:`, uploadData[key]);
+        });
       }
+      
+      // Try to extract the required fields from the response
+      // The backend might be returning a different structure
+      let path = uploadData?.path || uploadData?.url || uploadData?.filePath;
+      let key = uploadData?.key || uploadData?.filename || uploadData?.name;
+      let id = uploadData?._id || uploadData?.id || uploadData?.key;
+      
+      console.log('BecomeInstructorService: Extracted fields:');
+      console.log('  path:', path);
+      console.log('  key:', key);
+      console.log('  id:', id);
+      
+      // If we still don't have the required fields, try to construct them
+      if (!path && uploadData?.url) {
+        path = uploadData.url;
+      }
+      
+      if (!key && file.name) {
+        key = file.name;
+      }
+      
+      if (!id && key) {
+        id = key;
+      }
+      
+      // Validate that we have at least some form of path and key
+      if (!path || !key) {
+        console.error('BecomeInstructorService: Cannot extract required fields from response:', uploadData);
+        throw new Error('Invalid upload response format - cannot extract file information');
+      }
+      
+      // Format the data according to the expected form submission format
+      const formattedData = {
+        _id: id,
+        path: path.startsWith('/') ? path : `/${path}`,
+        key: key
+      };
+      
+      console.log('BecomeInstructorService: Formatted upload data:', formattedData);
+      
+      return {
+        success: true,
+        data: formattedData,
+        message: 'Resume uploaded successfully'
+      };
     } catch (error: any) {
       console.error('BecomeInstructorService: Error uploading resume:', error);
-      console.error('BecomeInstructorService: Error name:', error.name);
-      console.error('BecomeInstructorService: Error message:', error.message);
-      console.error('BecomeInstructorService: Error stack:', error.stack);
-      console.error('BecomeInstructorService: Error details:', {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        headers: error.response?.headers
-      });
       
       let errorMessage = 'Error uploading resume. Please try again.';
       
@@ -242,8 +284,8 @@ class BecomeInstructorService {
     }
     
     // Message validation
-    if (!formData.message || formData.message.trim().length < 20) {
-      errors.push('Message is required and must be at least 20 characters long.');
+    if (!formData.message || formData.message.trim().length === 0) {
+      errors.push('Message is required.');
     }
     
     return {

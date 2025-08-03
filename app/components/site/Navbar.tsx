@@ -549,7 +549,6 @@ const Navbar = () => {
                   width={138}
                   height={44}
                   priority
-                  unoptimized
                   className="object-contain w-full h-full site-logo"
                 />
                 </Link>
@@ -638,7 +637,6 @@ const Navbar = () => {
                           width={32}
                           height={32}
                           className="w-full h-full object-cover"
-                          unoptimized
                         />
                       ) : (
                         <span className="text-white font-medium text-sm">
@@ -674,7 +672,6 @@ const Navbar = () => {
                                   width={40}
                                   height={40}
                                   className="w-full h-full object-cover"
-                                  unoptimized
                                 />
                               ) : (
                                 <span className="text-white font-medium">
@@ -812,7 +809,6 @@ const Navbar = () => {
                             width={24}
                             height={24}
                             className="w-full h-full object-contain"
-                            unoptimized
                           />
                         ) : (
                           <div className="w-full h-full rounded-full bg-white/10 flex items-center justify-center">
@@ -873,7 +869,6 @@ const Navbar = () => {
                                   width={48}
                                   height={48}
                                   className="w-full h-full object-contain"
-                                  unoptimized
                                 />
                               ) : (
                                 <div className="w-full h-full rounded-full bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] flex items-center justify-center">
@@ -991,7 +986,6 @@ const Navbar = () => {
                     width={110}
                     height={32}
                     priority
-                    unoptimized
                     className="object-contain w-full h-full site-logo"
                   />
                 </div>
@@ -1078,7 +1072,6 @@ const Navbar = () => {
                                 width={40}
                                 height={40}
                                 className="w-full h-full object-cover"
-                                unoptimized
                               />
                             ) : (
                               <span className="text-white font-medium">
@@ -1206,7 +1199,6 @@ const Navbar = () => {
                               width={32}
                               height={32}
                               className="w-full h-full object-contain"
-                              unoptimized
                             />
                           ) : (
                             <div className="w-full h-full rounded-full bg-white/10 flex items-center justify-center">
@@ -1289,7 +1281,6 @@ const Navbar = () => {
                                         width={40}
                                         height={40}
                                         className="w-full h-full object-contain"
-                                        unoptimized
                                       />
                                     ) : (
                                       <div className="w-full h-full rounded-full bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] flex items-center justify-center">

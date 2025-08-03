@@ -231,12 +231,11 @@ export default function TestimonialsSection() {
                   <div className="relative">
                     <div className="w-20 h-20 rounded-2xl overflow-hidden ring-4 ring-white/20 site-light:ring-slate-300">
                       <Image
-                        src={getImageUrl(currentTestimonial.image.path)}
+                        src={`${config.imageUrl}${currentTestimonial.image.path}`}
                         alt={currentTestimonial.name}
                         width={80}
                         height={80}
-                        className="w-full h-full object-cover"
-                        unoptimized
+                        className="w-20 h-20 rounded-full object-cover"
                       />
                     </div>
                     <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-[#10B981] rounded-xl flex items-center justify-center shadow-lg">

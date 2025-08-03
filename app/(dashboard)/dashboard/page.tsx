@@ -282,7 +282,6 @@ export default function Dashboard() {
                 alt={course.title || "Course"}
                 fill
                 style={{ objectFit: "cover" }}
-                unoptimized
               />
             </div>
             <div className="p-4">

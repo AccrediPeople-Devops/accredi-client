@@ -162,10 +162,17 @@ export default function BecomeInstructorPage() {
             message: "Upload failed unexpectedly. Please try again."
           });
           return;
+        } finally {
+          setIsUploadingResume(false);
         }
+      } else {
+        // If no file is uploaded, show error
+        setSubmitStatus({
+          type: "error",
+          message: "Please upload a resume file."
+        });
+        return;
       }
-
-      setIsUploadingResume(false);
 
       // Prepare data for API submission
       const apiFormData: BecomeInstructorFormData = {
@@ -175,7 +182,7 @@ export default function BecomeInstructorPage() {
         phoneNumber: formData.phone.trim(),
         country: formData.country.trim(),
         city: formData.city.trim(),
-        resume: resumeData!,
+        resume: resumeData,
         message: formData.message.trim()
       };
 

@@ -501,7 +501,6 @@ export default function UsersPage() {
                             width={40}
                             height={40}
                             className="rounded-full object-cover"
-                            unoptimized
                           />
                         ) : (
                           <div className="h-10 w-10 rounded-full bg-[var(--primary)]/20 flex items-center justify-center text-[var(--primary)] font-medium uppercase">

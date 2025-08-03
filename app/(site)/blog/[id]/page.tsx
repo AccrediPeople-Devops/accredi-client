@@ -177,7 +177,6 @@ export default function BlogDetailsPage({ params }: { params: Promise<{ id: stri
                     width={60}
                     height={60}
                     className="w-15 h-15 rounded-full object-cover"
-                    unoptimized
                   />
                   <div className="text-left">
                     <h4 className="font-bold site-text-primary">{blogPost.author.name}</h4>
@@ -225,8 +224,8 @@ export default function BlogDetailsPage({ params }: { params: Promise<{ id: stri
                   alt={blogPost.title}
                   width={800}
                   height={400}
-                  className="w-full h-64 lg:h-96 object-cover"
-                  unoptimized
+                  className="w-full h-64 md:h-80 object-cover rounded-2xl"
+                  priority
                 />
               </div>
 
@@ -290,8 +289,7 @@ export default function BlogDetailsPage({ params }: { params: Promise<{ id: stri
                     width={120}
                     height={120}
                     className="w-30 h-30 rounded-full object-cover"
-                        unoptimized
-                      />
+                        />
                   <div className="flex-1 text-center lg:text-left">
                     <h3 className="text-2xl font-black site-text-primary mb-2">{blogPost.author.name}</h3>
                     <p className="text-lg font-medium text-[#4F46E5] mb-4">{blogPost.author.title}</p>
@@ -424,8 +422,7 @@ export default function BlogDetailsPage({ params }: { params: Promise<{ id: stri
                           width={80}
                           height={60}
                             className="w-20 h-15 object-cover rounded-xl flex-shrink-0"
-                          unoptimized
-                        />
+                          />
                         <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2 text-xs">
                               <span className="text-[#4F46E5] font-medium">{post.category}</span>

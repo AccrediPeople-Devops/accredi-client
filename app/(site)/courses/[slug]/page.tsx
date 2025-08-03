@@ -883,13 +883,12 @@ export default function CoursePage({ params }: CoursePageProps) {
               <div className="order-1 lg:order-2 flex justify-center lg:justify-end">
                 <div className="relative">
                   <Image
-                    src={courseData.image}
-                    alt={courseData.title}
-                    width={0}
-                    height={0}
-                    sizes="100vw"
-                    className="w-auto h-auto max-w-full rounded-lg shadow-lg"
-                    unoptimized
+                    src={`${config.imageUrl}${course.upload.courseImage[0].path}`}
+                    alt={course.title}
+                    width={800}
+                    height={600}
+                    className="w-full h-full object-cover"
+                    priority
                   />
                 </div>
               </div>
@@ -1037,13 +1036,11 @@ export default function CoursePage({ params }: CoursePageProps) {
                     <div className="site-glass backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500 group relative">
                       <div className="relative overflow-hidden">
                         <Image
-                          src={getSampleCertificateUrl(course) || ""}
+                          src={getSampleCertificateUrl(course) || "/placeholder.png"}
                           alt="Sample Certificate"
-                          width={0}
-                          height={0}
-                          sizes="100vw"
+                          width={400}
+                          height={300}
                           className="w-auto h-auto max-w-full group-hover:scale-105 transition-transform duration-500"
-                          unoptimized
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
                       </div>
@@ -1139,7 +1136,6 @@ export default function CoursePage({ params }: CoursePageProps) {
                               alt={`Course Component ${index + 1}`}
                               fill
                               className="object-cover group-hover:scale-105 transition-transform duration-500"
-                              unoptimized
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
                           </div>
