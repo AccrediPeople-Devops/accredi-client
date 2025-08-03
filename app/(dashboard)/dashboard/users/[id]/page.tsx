@@ -330,12 +330,6 @@ export default function UserProfilePage() {
                 {userProfile.user.role === "superadmin" ? "Super Admin" : userProfile.user.role === "admin" ? "Admin" : "User"}
               </span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-[var(--foreground-muted)]">Email Verified:</span>
-              <span className={`px-2 py-1 text-xs font-semibold rounded-full ${userProfile.user.isEmailVerified ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
-                {userProfile.user.isEmailVerified ? "Verified" : "Not Verified"}
-              </span>
-            </div>
           </div>
         </div>
 
@@ -431,24 +425,27 @@ export default function UserProfilePage() {
                   <div className="text-right">
                     <span className="text-xs text-[var(--foreground-muted)]">Assigned</span>
                     <p className="text-sm text-[var(--foreground)]">{formatDate(course.createdAt)}</p>
-                    {/* Debug: Show both roles */}
-                    <p className="text-xs text-[var(--foreground-muted)]">Profile User Role: {userProfile.user.role}</p>
-                    <p className="text-xs text-[var(--foreground-muted)]">Current User Role: {currentUserRole}</p>
                     {/* Show remove button for admin and superadmin */}
                     {(currentUserRole === "superadmin" || currentUserRole === "admin") && (
                       <button
                         onClick={() => handleRemoveCourse(course._id)}
-                        className="mt-2 px-3 py-1 bg-red-600 text-white rounded-md text-xs hover:bg-red-700 transition-colors"
+                        className="mt-2 px-4 py-2 bg-red-600 text-white rounded-[var(--radius-md)] hover:bg-red-700 transition-colors text-sm font-medium flex items-center gap-2"
                       >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
                         Remove Course
                       </button>
                     )}
                     {/* Temporary: Show button for all users for testing */}
                     <button
                       onClick={() => handleRemoveCourse(course._id)}
-                      className="mt-2 px-3 py-1 bg-blue-600 text-white rounded-md text-xs hover:bg-blue-700 transition-colors"
+                      className="mt-2 px-4 py-2 bg-red-600 text-white rounded-[var(--radius-md)] hover:bg-red-700 transition-colors text-sm font-medium flex items-center gap-2"
                     >
-                      Remove Course (Test)
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                      Remove Course
                     </button>
                   </div>
                 </div>
