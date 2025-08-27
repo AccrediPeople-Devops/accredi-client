@@ -287,7 +287,6 @@ export default function SignupPage() {
               fill
               style={{ objectFit: "contain" }}
               priority
-              unoptimized
             />
           </div>
           <div className="text-white text-center">

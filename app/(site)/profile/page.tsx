@@ -8,6 +8,8 @@ import { User } from "@/app/types/user";
 import UserService from "@/app/components/service/user.service";
 import uploadService from "@/app/components/service/upload.service";
 import config from "@/app/components/config/config";
+import GlobalLoader from "@/app/components/GlobalLoader";
+import { useSimpleEnhancedLoader } from "@/app/hooks/useEnhancedGlobalLoader";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -25,6 +27,9 @@ export default function ProfilePage() {
     country: "",
     city: "",
   });
+  
+  // Global loader state - synchronized with layout
+  const { isLoading: globalLoading, setDataLoaded } = useSimpleEnhancedLoader(true, 800);
 
   // Check authentication and fetch user data
   useEffect(() => {
@@ -59,8 +64,15 @@ export default function ProfilePage() {
             
             // Set profile image preview if exists
             if (foundUser.profileImage?.path) {
-              setProfileImagePreview(`${config.imageUrl}${foundUser.profileImage.path}`);
+              const imageUrl = `${config.imageUrl}${foundUser.profileImage.path}`;
+              setProfileImagePreview(imageUrl);
             }
+            
+            // Add a small delay to prevent flash
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Mark data as loaded
+            setDataLoaded();
           } else {
             localStorage.removeItem("token");
             localStorage.removeItem("refreshToken");
@@ -76,7 +88,7 @@ export default function ProfilePage() {
     };
 
     checkAuthAndFetchUser();
-  }, [router]);
+  }, [router, setDataLoaded]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -162,15 +174,8 @@ export default function ProfilePage() {
     setIsEditingProfile(false);
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen site-section-bg flex items-center justify-center">
-        <div className="flex flex-col items-center space-y-4">
-          <div className="w-12 h-12 border-4 border-white/20 site-light:border-slate-300 border-t-[#4F46E5] rounded-full animate-spin"></div>
-          <p className="site-text-primary text-lg">Loading profile...</p>
-        </div>
-      </div>
-    );
+  if (globalLoading) {
+    return <GlobalLoader isLoading={globalLoading} />;
   }
 
   if (!currentUser) {
@@ -206,7 +211,6 @@ export default function ProfilePage() {
                       width={128}
                       height={128}
                       className="w-full h-full object-cover"
-                      unoptimized
                     />
                   ) : (
                     <span className="text-white font-bold text-4xl">

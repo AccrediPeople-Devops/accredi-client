@@ -137,7 +137,6 @@ export default function CertificationsSection() {
                           alt={category.name} 
                       fill 
                       className="object-contain p-1" 
-                      unoptimized 
                     />
                   </div>
                       {/* Category Name */}

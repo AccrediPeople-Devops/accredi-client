@@ -10,6 +10,7 @@ import AuthService from "@/app/components/service/auth.service";
 import uploadService from "@/app/components/service/upload.service";
 import axios from "axios";
 import config from "@/app/components/config/config";
+import CourseAssignmentModal from "@/app/components/CourseAssignmentModal";
 
 export default function EditUserPage() {
   const params = useParams();
@@ -34,6 +35,7 @@ export default function EditUserPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
+  const [showCourseAssignmentModal, setShowCourseAssignmentModal] = useState(false);
 
   const fetchCurrentUser = async () => {
     try {
@@ -475,9 +477,8 @@ export default function EditUserPage() {
                   <Image
                     src={profileImagePreview}
                     alt="Profile preview"
-                    layout="fill"
-                    objectFit="cover"
-                    unoptimized
+                    fill
+                    className="object-cover"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-[var(--foreground-muted)]">
@@ -519,6 +520,33 @@ export default function EditUserPage() {
               </p>
             </div>
           </div>
+
+          {/* Course Assignment Section - Only for users with role "user" */}
+          {targetUser?.role === "user" && (
+            <div className="bg-[var(--background-secondary)] p-6 rounded-[var(--radius-lg)]">
+              <h2 className="text-lg font-medium text-[var(--foreground)] mb-4">
+                Course Assignment
+              </h2>
+              <p className="text-sm text-[var(--foreground-muted)] mb-4">
+                Assign courses to this user. This will give them access to the selected course and schedule.
+              </p>
+              <button
+                type="button"
+                onClick={() => setShowCourseAssignmentModal(true)}
+                className="px-4 py-2 bg-green-600 text-white rounded-[var(--radius-md)] hover:bg-green-700 transition-colors flex items-center gap-2"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Assign Course
+              </button>
+            </div>
+          )}
 
           <div className="flex justify-end space-x-3">
             <Link
@@ -562,6 +590,20 @@ export default function EditUserPage() {
             </button>
           </div>
         </form>
+      )}
+
+      {/* Course Assignment Modal */}
+      {targetUser && (
+        <CourseAssignmentModal
+          isOpen={showCourseAssignmentModal}
+          onClose={() => setShowCourseAssignmentModal(false)}
+          userId={targetUser._id}
+          userName={targetUser.fullName}
+          onSuccess={() => {
+            console.log("Course assigned successfully");
+            setShowCourseAssignmentModal(false);
+          }}
+        />
       )}
     </div>
   );

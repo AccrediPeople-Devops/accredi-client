@@ -7,6 +7,7 @@ import scheduleService from "@/app/components/service/schedule.service";
 import courseService from "@/app/components/service/course.service";
 import { LoadingSpinner } from "@/app/components/LoadingSpinner";
 import { Schedule } from "@/app/types/schedule";
+import { formatDate, parseDateLocal } from "@/app/utils/dateUtils";
 
 // Client component for the schedule details
 function ScheduleDetails({ id }: { id: string }) {
@@ -71,7 +72,8 @@ function ScheduleDetails({ id }: { id: string }) {
   }, [id]);
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
+    const date = parseDateLocal(dateString);
+    if (!date) return "N/A";
     return date.toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",

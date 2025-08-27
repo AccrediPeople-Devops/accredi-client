@@ -24,6 +24,18 @@ export default function UserDashboardLayout({
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
+  // Add timeout to prevent infinite loading
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (isLoading) {
+        console.log("⚠️ USER DASHBOARD: Loading timeout reached, forcing completion");
+        setIsLoading(false);
+      }
+    }, 10000); // 10 second timeout
+
+    return () => clearTimeout(timeout);
+  }, [isLoading]);
+
   // Check authentication and user role on mount
   useEffect(() => {
     const checkUserAuth = async () => {
@@ -39,7 +51,12 @@ export default function UserDashboardLayout({
 
         // Try to decode token and get user info directly
         try {
-          const tokenPayload = JSON.parse(atob(token.split('.')[1]));
+          const tokenParts = token.split('.');
+          if (tokenParts.length !== 3) {
+            throw new Error("Invalid token format");
+          }
+          
+          const tokenPayload = JSON.parse(atob(tokenParts[1]));
           console.log("🔍 USER DASHBOARD: Token payload:", tokenPayload);
           
           // Check if role exists in token
@@ -55,10 +72,10 @@ export default function UserDashboardLayout({
             
             // Get stored user email and create user object
             const storedEmail = localStorage.getItem("userEmail") || "";
-            const userName = storedEmail ? storedEmail.split('@')[0] : "User"; // Use email prefix as name
+            const userName = storedEmail ? storedEmail.split('@')[0].replace(/[._]/g, ' ') : "User"; // Use email prefix as name
             
             const userFromToken: User = {
-              _id: tokenPayload.userId,
+              _id: tokenPayload.userId || tokenPayload.sub || "unknown",
               fullName: userName,
               email: storedEmail,
               role: tokenPayload.role,
@@ -75,6 +92,9 @@ export default function UserDashboardLayout({
             
             console.log("✅ USER DASHBOARD: Regular user confirmed, loading user dashboard");
             setCurrentUser(userFromToken);
+            setIsLoading(false);
+            // Don't set global loading to false here, let it handle its own timing
+            console.log("✅ USER DASHBOARD: Loading states cleared, dashboard ready");
           } else {
             console.log("❌ USER DASHBOARD: No role found in token");
             localStorage.removeItem("token");
@@ -90,8 +110,6 @@ export default function UserDashboardLayout({
       } catch (err) {
         console.error("❌ USER DASHBOARD: Error checking user auth:", err);
         router.push("/login");
-      } finally {
-        setIsLoading(false);
       }
     };
 
@@ -120,119 +138,131 @@ export default function UserDashboardLayout({
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-[var(--foreground-muted)]">Loading your dashboard...</p>
+          <p className="text-xs text-[var(--foreground-muted)] mt-2">Checking authentication...</p>
         </div>
       </div>
     );
   }
 
   if (!currentUser) {
-    return null; // Will redirect
+    console.log("⚠️ USER DASHBOARD: No current user, showing loading...");
+    return (
+      <div className="min-h-screen bg-[var(--background)] flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-[var(--foreground-muted)]">Setting up your dashboard...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <ThemeProvider>
-      <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] font-[var(--font-family)]">
-        <UserSidebar 
-          isMobileOpen={isSidebarOpen} 
-          toggleSidebar={toggleSidebar}
-          currentUser={currentUser}
-        />
+    <>
+      <ThemeProvider>
+        <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] font-[var(--font-family)]">
+          <UserSidebar 
+            isMobileOpen={isSidebarOpen} 
+            toggleSidebar={toggleSidebar}
+            currentUser={currentUser}
+          />
 
-        {/* Main content */}
-        <div className="md:ml-64 transition-all duration-300 ease-in-out">
-          {/* Header */}
-          <header className="h-16 bg-[var(--background)] border-b border-[var(--border)] flex items-center justify-between px-6 sticky top-0 z-10">
-            <button
-              className="md:hidden text-[var(--foreground)] p-2 rounded-[var(--radius-sm)] hover:bg-[var(--input-bg)] transition-colors"
-              onClick={toggleSidebar}
-              aria-label="Toggle sidebar"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+          {/* Main content */}
+          <div className="md:ml-64 transition-all duration-300 ease-in-out">
+            {/* Header */}
+            <header className="h-16 bg-[var(--background)] border-b border-[var(--border)] flex items-center justify-between px-6 sticky top-0 z-10">
+              <button
+                className="md:hidden text-[var(--foreground)] p-2 rounded-[var(--radius-sm)] hover:bg-[var(--input-bg)] transition-colors"
+                onClick={toggleSidebar}
+                aria-label="Toggle sidebar"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              </svg>
-            </button>
-
-            <div className="flex-1 md:ml-4">
-              <h1 className="text-xl font-semibold text-[var(--foreground)]">
-                My Dashboard
-              </h1>
-            </div>
-
-            <div className="flex items-center space-x-4">
-              <div className="relative">
-                <button 
-                  className="h-9 w-9 rounded-full bg-[var(--primary)]/10 flex items-center justify-center text-[var(--primary)] hover:bg-[var(--primary)]/20 transition-colors"
-                  aria-label="Notifications"
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
+                </svg>
+              </button>
+
+              <div className="flex-1 md:ml-4">
+                <h1 className="text-xl font-semibold text-[var(--foreground)]">
+                  My Dashboard
+                </h1>
+              </div>
+
+              <div className="flex items-center space-x-4">
+                <div className="relative">
+                  <button 
+                    className="h-9 w-9 rounded-full bg-[var(--primary)]/10 flex items-center justify-center text-[var(--primary)] hover:bg-[var(--primary)]/20 transition-colors"
+                    aria-label="Notifications"
                   >
-                    <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
-                  </svg>
-                </button>
-              </div>
-              
-              {/* User Profile Avatar */}
-              <div className="flex items-center gap-3">
-                <div 
-                  className="h-9 w-9 rounded-full bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] flex items-center justify-center overflow-hidden border-2 border-[var(--background)]"
-                  title={currentUser.fullName}
-                >
-                  {getUserProfileImage(currentUser) ? (
-                    <Image
-                      src={getUserProfileImage(currentUser)!}
-                      alt={currentUser.fullName}
-                      width={36}
-                      height={36}
-                      className="w-full h-full object-cover"
-                      unoptimized
-                    />
-                  ) : (
-                    <span className="text-white font-medium text-sm">
-                      {currentUser.fullName.charAt(0).toUpperCase()}
-                    </span>
-                  )}
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
+                    </svg>
+                  </button>
                 </div>
-                <div className="hidden sm:block">
-                  <p className="text-sm font-medium text-[var(--foreground)]">
-                    {currentUser.fullName}
-                  </p>
-                  <p className="text-xs text-[var(--foreground-muted)]">
-                    {currentUser.email}
-                  </p>
+                
+                {/* User Profile Avatar */}
+                <div className="flex items-center gap-3">
+                  <div 
+                    className="h-9 w-9 rounded-full bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] flex items-center justify-center overflow-hidden border-2 border-[var(--background)]"
+                    title={currentUser.fullName}
+                  >
+                    {getUserProfileImage(currentUser) ? (
+                      <Image
+                        src={getUserProfileImage(currentUser)!}
+                        alt={currentUser.fullName}
+                        width={36}
+                        height={36}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-white font-medium text-sm">
+                        {currentUser.fullName.charAt(0).toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+                  <div className="hidden sm:block">
+                    <p className="text-sm font-medium text-[var(--foreground)]">
+                      {currentUser.fullName}
+                    </p>
+                    <p className="text-xs text-[var(--foreground-muted)]">
+                      {currentUser.email}
+                    </p>
+                    </div>
                 </div>
               </div>
-            </div>
-          </header>
+            </header>
 
-          {/* Content */}
-          <main className="p-6">
-            {children}
-          </main>
+            {/* Content */}
+            <main className="p-6">
+              {children}
+            </main>
 
-          {/* Footer */}
-          <footer className="py-4 px-6 border-t border-[var(--border)]">
-            <div className="text-center text-[var(--foreground-muted)] text-sm">
-              AccrediPeople Student Portal &copy; {new Date().getFullYear()}
-            </div>
-          </footer>
+            {/* Footer */}
+            <footer className="py-4 px-6 border-t border-[var(--border)]">
+              <div className="text-center text-[var(--foreground-muted)] text-sm">
+                AccrediPeople Student Portal &copy; {new Date().getFullYear()}
+              </div>
+            </footer>
+          </div>
         </div>
-      </div>
-      <Toaster />
-    </ThemeProvider>
+        
+        <Toaster />
+      </ThemeProvider>
+      
+    </>
   );
 } 

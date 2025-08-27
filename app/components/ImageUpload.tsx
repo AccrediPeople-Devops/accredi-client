@@ -139,10 +139,9 @@ export default function ImageUpload({
           <div className="relative h-full w-full rounded-[var(--radius-md)] overflow-hidden group">
             <Image
               src={preview}
-              alt="Image preview"
+              alt="Preview"
               fill
-              style={{ objectFit: "cover" }}
-              unoptimized
+              className="object-cover"
             />
             <button
               type="button"

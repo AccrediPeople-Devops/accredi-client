@@ -225,7 +225,6 @@ export default function LoginPage() {
               fill
               style={{ objectFit: "contain" }}
               priority
-              unoptimized
             />
           </div>
           <div className="text-white text-center">
@@ -245,7 +244,7 @@ export default function LoginPage() {
             <>
               <div className="mb-10">
                 <h1 className="text-3xl font-bold text-white">Welcome Back</h1>
-                <p className="text-secondary/80 mt-3">Sign in to access your certification dashboard</p>
+                <p className="text-secondary/80 mt-3">Sign in to access your dashboard</p>
               </div>
 
               {errors.general && (
@@ -277,11 +276,11 @@ export default function LoginPage() {
                   autoComplete="current-password"
                 />
 
-                {/* <div className="flex justify-end">
+                <div className="flex justify-end">
                   <Link href="/forgot-password" className="auth-link text-sm">
                     Forgot password?
                   </Link>
-                </div> */}
+                </div>
 
                 <Button type="submit" fullWidth disabled={isLoading} className="py-3 bg-[#4F46E5] hover:bg-[#4338CA]">
                   {isLoading ? "Signing in..." : "Sign In"}

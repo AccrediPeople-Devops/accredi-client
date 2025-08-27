@@ -125,8 +125,27 @@ export default function AddQuestionPaperPage() {
         if (question.options.length < 2) {
           throw new Error(`Question ${i + 1} must have at least 2 options`);
         }
-        if (!question.answer) {
-          throw new Error(`Question ${i + 1} must have a selected answer`);
+        
+        // Validate answer based on question type
+        if (question.multipleChoiceQuestions) {
+          // For multiple choice questions
+          if (!Array.isArray(question.answer) || question.answer.length === 0) {
+            throw new Error(`Question ${i + 1} must have at least one selected answer (multiple choice)`);
+          }
+          // Ensure all selected answers exist in options
+          for (const selectedAnswer of question.answer) {
+            if (!question.options.includes(selectedAnswer)) {
+              throw new Error(`Question ${i + 1} has an invalid selected answer`);
+            }
+          }
+        } else {
+          // For single choice questions
+          if (!question.answer || (typeof question.answer === 'string' && question.answer === "")) {
+            throw new Error(`Question ${i + 1} must have a selected answer (single choice)`);
+          }
+          if (typeof question.answer === 'string' && !question.options.includes(question.answer)) {
+            throw new Error(`Question ${i + 1} has an invalid selected answer`);
+          }
         }
       }
 

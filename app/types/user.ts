@@ -18,6 +18,7 @@ export interface User {
   isDeleted?: boolean;
   isEmailVerified?: boolean;
   twoStepVerification?: boolean;
+  is2FAEnabled?: boolean;
   twoStepVerificationCodeSentCount?: number;
   password?: string;
   course?: any[];

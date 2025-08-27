@@ -387,12 +387,11 @@ export default function CoursesPage() {
                             course.upload.courseImage.length > 0 &&
                             course.upload.courseImage[0].path ? (
                               <Image
-                                src={`${config.imageUrl}${course.upload.courseImage[0].path}`}
+                                src={`${process.env.NEXT_PUBLIC_API_URL || 'http://148.135.137.229:3000'}/${course.upload.courseImage[0].path}`}
                                 alt={course.title}
                                 width={40}
                                 height={40}
                                 className="h-full w-full object-cover"
-                                unoptimized
                               />
                             ) : (
                               <Image
@@ -401,7 +400,6 @@ export default function CoursesPage() {
                                 width={40}
                                 height={40}
                                 className="h-full w-full object-cover"
-                                unoptimized
                               />
                             )}
                           </div>

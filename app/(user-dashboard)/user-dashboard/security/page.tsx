@@ -36,7 +36,7 @@ export default function SecurityPage() {
           if (profileData && profileData._id) {
             console.log("✅ SECURITY PAGE: Profile data loaded from API:", profileData);
             setCurrentUser(profileData);
-            setIs2FAEnabled(profileData.twoStepVerification || false);
+            setIs2FAEnabled(profileData.is2FAEnabled || profileData.twoStepVerification || false);
             return;
           } else {
             console.log("⚠️ SECURITY PAGE: API response invalid:", profileData);

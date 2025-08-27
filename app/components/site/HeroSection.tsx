@@ -157,7 +157,6 @@ export default function HeroSection() {
                     height={400}
                     className="w-full h-auto object-cover"
                     priority
-                    unoptimized
                   />
                 </div>
               </div>
@@ -181,7 +180,6 @@ export default function HeroSection() {
                     alt={logo.alt} 
                     fill 
                     className="object-contain logo-filter" 
-                    unoptimized 
                     onError={(e) => {
                       const target = e.currentTarget as HTMLImageElement;
                       target.style.display = 'none';

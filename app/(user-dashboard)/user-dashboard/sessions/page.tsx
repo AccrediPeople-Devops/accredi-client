@@ -87,9 +87,18 @@ export default function SessionDetailsPage() {
       
       if (response.status && response.links) {
         console.log("Received links:", response.links);
-        
+
+        // Flatten links if nested
+        let links: UserLink[] = [];
+        if (Array.isArray(response.links[0])) {
+          // If the first element is an array, flatten all
+          links = response.links.flat();
+        } else {
+          links = response.links;
+        }
+
         // Transform API data to Session format
-        const transformedSessions = response.links
+        const transformedSessions = links
           .filter(link => !link.isDeleted) // Filter out deleted links
           .map(transformLinkToSession);
         

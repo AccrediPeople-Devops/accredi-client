@@ -90,8 +90,8 @@ class ReferEarnService {
     }
     
     // Message validation
-    if (!formData.message || formData.message.trim().length < 10) {
-      errors.push('Message is required and must be at least 10 characters long.');
+    if (!formData.message || formData.message.trim().length === 0) {
+      errors.push('Message is required.');
     }
     
     return {

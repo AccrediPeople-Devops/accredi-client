@@ -10,6 +10,13 @@ import siteCourseService from "@/app/components/site/siteCourse.service";
 import config from "@/app/components/config/config";
 import { createCourseSlug, stripHtml } from "@/app/utils/textUtils";
 import RichTextRenderer from "@/app/components/RichTextRenderer";
+import { 
+  StaggeredAnimation, 
+  FadeIn, 
+  SlideUp 
+} from "@/app/components/animations/ScrollAnimationWrapper";
+import GlobalLoader from "@/app/components/GlobalLoader";
+import { useSimpleEnhancedLoader } from "@/app/hooks/useEnhancedGlobalLoader";
 
 interface CategoryWithCourses extends CourseCategory {
   courses: Course[];
@@ -25,6 +32,9 @@ export default function CoursesPage() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+
+  // Global loader state - synchronized with layout
+  const { isLoading: globalLoading, setDataLoaded } = useSimpleEnhancedLoader(true, 800);
 
   // Fetch data on component mount
   useEffect(() => {
@@ -96,16 +106,20 @@ export default function CoursesPage() {
           console.warn("No courses found in the response");
         }
         
+        // Mark data as loaded for global loader
+        setDataLoaded();
+        
       } catch (err: any) {
         console.error("Error fetching data:", err);
         setError("Failed to load courses and categories");
+        setDataLoaded(); // Still mark as loaded even on error
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchData();
-  }, []);
+  }, [setDataLoaded]);
 
   // Filter courses based on search and category
   useEffect(() => {
@@ -172,15 +186,8 @@ export default function CoursesPage() {
     return "/api/placeholder/300/200";
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-[#0F0F23] via-[#1A1A3E] to-[#2D1B69] flex items-center justify-center">
-        <div className="flex flex-col items-center space-y-4">
-          <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin"></div>
-          <p className="text-white/80">Loading courses...</p>
-        </div>
-      </div>
-    );
+  if (globalLoading) {
+    return <GlobalLoader isLoading={globalLoading} />;
   }
 
   if (error) {
@@ -349,10 +356,16 @@ export default function CoursesPage() {
                   </div>
                 </div>
 
-                <div className={viewMode === "grid" 
+                <StaggeredAnimation
+                  animationType={viewMode === "grid" ? "slideUp" : "fadeIn"}
+                  stagger={viewMode === "grid" ? 100 : 150}
+                  duration={600}
+                  className={viewMode === "grid" 
                   ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
                   : "space-y-6"
-                }>
+                  }
+                  itemClassName="gpu-accelerated"
+                >
                   {filteredCourses.map(course => (
                     <Link
                       key={course._id}
@@ -402,12 +415,11 @@ export default function CoursesPage() {
                             <div className="md:w-48 flex-shrink-0">
                               <div className="relative overflow-hidden rounded-xl">
                                 <Image
-                                  src={getImageUrl(course)}
+                                  src={`${config.imageUrl}${course.upload.courseImage[0].path}`}
                                   alt={course.title}
-                                  width={300}
-                                  height={200}
-                                  className="w-full h-32 md:h-28 object-cover group-hover:scale-110 transition-transform duration-300"
-                                  unoptimized
+                                  width={400}
+                                  height={250}
+                                  className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
                               </div>
@@ -440,7 +452,7 @@ export default function CoursesPage() {
                       )}
                     </Link>
                   ))}
-                </div>
+                </StaggeredAnimation>
               </>
             ) : (
               <div className="text-center py-16">

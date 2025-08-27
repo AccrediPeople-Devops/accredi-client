@@ -1,31 +1,46 @@
+"use client";
+
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import Navbar from "@/app/components/site/Navbar";
 import Footer from "@/app/components/site/Footer";
+import TawkToWidget from "@/app/components/site/TawkToWidget";
 import { SiteThemeProvider } from "./context/SiteThemeContext";
+import SiteLayoutWrapper from "@/app/components/SiteLayoutWrapper";
 import "../globals.css";
 import "./styles/site-themes.css";
 
 const inter = Inter({ subsets: ["latin"] });
-
-export const metadata: Metadata = {
-  title: "Accredi - Professional Certifications",
-  description: "Get certified in your field with Accredi's professional certification courses.",
-};
 
 export default function SiteLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
   return (
     <SiteThemeProvider>
-      <div className={`${inter.className} min-h-screen site-bg-primary`} data-site-theme-container>
+      <SiteLayoutWrapper>
+        <div 
+          className={`${inter.className} min-h-screen site-bg-primary`} 
+          data-site-theme-container
+          style={{
+            scrollBehavior: 'smooth',
+            scrollPaddingTop: '80px',
+          }}
+        >
+          {/* Fixed navbar - positioned outside main content flow */}
         <Navbar />
+          
+          {/* Main content with top padding to account for fixed navbar */}
+          <main className="pt-[72px]">
           {children}
+          </main>
         <Footer />
+        
+        {/* Tawk.to Chat Widget */}
+        <TawkToWidget />
       </div>
+      </SiteLayoutWrapper>
     </SiteThemeProvider>
   );
 } 

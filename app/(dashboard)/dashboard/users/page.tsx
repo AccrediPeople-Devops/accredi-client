@@ -10,6 +10,8 @@ import AuthService from "@/app/components/service/auth.service";
 import uploadService from "@/app/components/service/upload.service";
 import config from "@/app/components/config/config";
 import Modal from "@/app/components/Modal";
+import CourseAssignmentModal from "../../../components/CourseAssignmentModal";
+import GlobalCourseAssignmentModal from "../../../components/GlobalCourseAssignmentModal";
 
 export default function UsersPage() {
   const router = useRouter();
@@ -23,6 +25,9 @@ export default function UsersPage() {
   const [isRestoring, setIsRestoring] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [userToDelete, setUserToDelete] = useState<string | null>(null);
+  const [showCourseAssignmentModal, setShowCourseAssignmentModal] = useState(false);
+  const [selectedUserForAssignment, setSelectedUserForAssignment] = useState<{ id: string; name: string } | null>(null);
+  const [showGlobalCourseAssignmentModal, setShowGlobalCourseAssignmentModal] = useState(false);
   const [error, setError] = useState("");
 
   const fetchCurrentUser = async () => {
@@ -248,6 +253,19 @@ export default function UsersPage() {
     }
   };
 
+  const handleAssignCourse = (user: User) => {
+    setSelectedUserForAssignment({
+      id: user._id,
+      name: user.fullName
+    });
+    setShowCourseAssignmentModal(true);
+  };
+
+  const handleCourseAssignmentSuccess = () => {
+    // Optionally refresh user data or show success message
+    console.log("Course assigned successfully");
+  };
+
   const getRoleColor = (role: string) => {
     switch (role) {
       case "superadmin":
@@ -282,10 +300,10 @@ export default function UsersPage() {
           )}
         </div>
 
-        {canCreateUser() && (
-          <Link
-            href="/dashboard/users/add"
-            className="px-4 py-2 bg-[var(--primary)] text-white rounded-[var(--radius-md)] flex items-center gap-2 hover:bg-[var(--primary-hover)] transition-colors"
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setShowGlobalCourseAssignmentModal(true)}
+            className="px-4 py-2 bg-green-600 text-white rounded-[var(--radius-md)] flex items-center gap-2 hover:bg-green-700 transition-colors"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -293,15 +311,31 @@ export default function UsersPage() {
               viewBox="0 0 20 20"
               fill="currentColor"
             >
-              <path
-                fillRule="evenodd"
-                d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-                clipRule="evenodd"
-              />
+              <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            Add User
-          </Link>
-        )}
+            Assign Course
+          </button>
+          {canCreateUser() && (
+            <Link
+              href="/dashboard/users/add"
+              className="px-4 py-2 bg-[var(--primary)] text-white rounded-[var(--radius-md)] flex items-center gap-2 hover:bg-[var(--primary-hover)] transition-colors"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              Add User
+            </Link>
+          )}
+        </div>
       </div>
 
       {/* Tabs for Active/Deleted */}
@@ -467,7 +501,6 @@ export default function UsersPage() {
                             width={40}
                             height={40}
                             className="rounded-full object-cover"
-                            unoptimized
                           />
                         ) : (
                           <div className="h-10 w-10 rounded-full bg-[var(--primary)]/20 flex items-center justify-center text-[var(--primary)] font-medium uppercase">
@@ -539,6 +572,39 @@ export default function UsersPage() {
                               <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                             </svg>
                           </div>
+                        )}
+                        {/* View Profile Button */}
+                        <Link
+                          href={`/dashboard/users/${user._id}`}
+                          className="p-1.5 bg-blue-100 text-blue-600 rounded-[var(--radius-sm)] hover:bg-blue-200"
+                          title="View profile"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                          >
+                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                            <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                          </svg>
+                        </Link>
+                        {/* Course Assignment Button - Only for users with role "user" */}
+                        {user.role === "user" && (
+                          <button
+                            onClick={() => handleAssignCourse(user)}
+                            className="p-1.5 bg-green-100 text-green-600 rounded-[var(--radius-sm)] hover:bg-green-200"
+                            title="Assign course"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-5 w-5"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          </button>
                         )}
                         {canDeleteUser(user) ? (
                           <button
@@ -645,6 +711,30 @@ export default function UsersPage() {
         onConfirm={confirmDelete}
         isConfirming={isDeleting !== null}
         variant="danger"
+      />
+
+      {/* Course Assignment Modal */}
+      {selectedUserForAssignment && (
+        <CourseAssignmentModal
+          isOpen={showCourseAssignmentModal}
+          onClose={() => {
+            setShowCourseAssignmentModal(false);
+            setSelectedUserForAssignment(null);
+          }}
+          userId={selectedUserForAssignment.id}
+          userName={selectedUserForAssignment.name}
+          onSuccess={handleCourseAssignmentSuccess}
+        />
+      )}
+
+      {/* Global Course Assignment Modal */}
+      <GlobalCourseAssignmentModal
+        isOpen={showGlobalCourseAssignmentModal}
+        onClose={() => setShowGlobalCourseAssignmentModal(false)}
+        onSuccess={() => {
+          console.log("Course assigned successfully");
+          setShowGlobalCourseAssignmentModal(false);
+        }}
       />
     </div>
   );

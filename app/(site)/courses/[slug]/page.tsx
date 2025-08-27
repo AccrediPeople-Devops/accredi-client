@@ -6,7 +6,7 @@ import Breadcrumb from "@/app/components/site/Breadcrumb";
 import RichTextRenderer from "@/app/components/RichTextRenderer";
 import siteCourseService from "@/app/components/site/siteCourse.service";
 import config from "@/app/components/config/config";
-import { Course } from "@/app/types/course";
+import { Course, Component, FileUpload } from "@/app/types/course";
 import paymentService from "@/app/components/service/payment.service";
 import couponCodeService from "@/app/components/service/couponCode.service";
 import { useLocation } from "@/app/context/LocationContext";
@@ -14,6 +14,8 @@ import CountrySelectionModal from "@/app/components/CountrySelectionModal";
 import StateButton from "@/app/components/StateButton";
 import { StateData } from "@/app/components/service/enhancedLocationData";
 import ScheduleCalendarModal from "@/app/components/ScheduleCalendarModal";
+import GlobalLoader from "@/app/components/GlobalLoader";
+import { useSimpleEnhancedLoader } from "@/app/hooks/useEnhancedGlobalLoader";
 
 interface CoursePageProps {
   params: Promise<{ slug: string }>;
@@ -27,6 +29,9 @@ export default function CoursePage({ params }: CoursePageProps) {
   const [course, setCourse] = useState<Course | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  
+  // Global loader state - synchronized with layout
+  const { isLoading: globalLoading, setDataLoaded } = useSimpleEnhancedLoader(true, 800);
 
   // Location context for currency handling
   const {
@@ -49,7 +54,10 @@ export default function CoursePage({ params }: CoursePageProps) {
   const [selectedState, setSelectedState] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
   const [selectedSchedule, setSelectedSchedule] = useState<any>(null);
-  const [quantity, setQuantity] = useState(1);
+  // Remove the single global quantity state
+  // const [quantity, setQuantity] = useState(1);
+  // Add individual quantity states for each schedule
+  const [scheduleQuantities, setScheduleQuantities] = useState<{ [key: string]: number }>({});
   const [showEnrollModal, setShowEnrollModal] = useState(false);
   const [enrollFormData, setEnrollFormData] = useState({
     fullName: "",
@@ -77,6 +85,16 @@ export default function CoursePage({ params }: CoursePageProps) {
   const [showCalendarModal, setShowCalendarModal] = useState(false);
   const [calendarSchedule, setCalendarSchedule] = useState<any>(null);
 
+  // Auto-scroll to top when enrollment modal opens
+  useEffect(() => {
+    if (showEnrollModal) {
+      // Small delay to ensure modal is rendered
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 100);
+    }
+  }, [showEnrollModal]);
+
   // Handler to open calendar modal
   const handleViewCalendar = (schedule: any) => {
     setCalendarSchedule(schedule);
@@ -103,12 +121,21 @@ export default function CoursePage({ params }: CoursePageProps) {
           console.log("Course schedules:", response.course.schedules);
           console.log("Course FAQ:", response.course.faqId);
           console.log("Course brochure:", response.course.broucher);
+          
+          // Add a small delay to prevent flash
+          await new Promise(resolve => setTimeout(resolve, 500));
+          
+          // Mark data as loaded
+          setDataLoaded();
+          
         } else {
           setError("Course not found");
+          setDataLoaded();
         }
       } catch (err: any) {
         console.error("Error fetching course:", err);
         setError("Failed to load course data");
+        setDataLoaded();
       } finally {
         setIsLoading(false);
       }
@@ -117,7 +144,7 @@ export default function CoursePage({ params }: CoursePageProps) {
     if (courseSlug) {
       fetchCourse();
     }
-  }, [courseSlug]);
+  }, [courseSlug, setDataLoaded]);
 
   // Helper function to get course image URL
   const getCourseImageUrl = (course: Course) => {
@@ -177,21 +204,9 @@ export default function CoursePage({ params }: CoursePageProps) {
     return null;
   };
 
-  // Loading state
-  if (isLoading) {
-    return (
-      <div className="min-h-screen site-section-bg flex items-center justify-center">
-        <div className="flex flex-col items-center space-y-4">
-          <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin"></div>
-          <p className="site-text-primary text-lg">Loading course...</p>
-          {geolocationLoading && (
-            <p className="site-text-secondary text-sm">
-              Loading location data...
-            </p>
-          )}
-        </div>
-      </div>
-    );
+  // Loading state - use GlobalLoader
+  if (globalLoading) {
+    return <GlobalLoader isLoading={globalLoading} />;
   }
 
   // Error state
@@ -333,11 +348,17 @@ export default function CoursePage({ params }: CoursePageProps) {
     }
   };
 
-  const handleQuantityChange = (action: "increase" | "decrease") => {
+  const handleQuantityChange = (action: "increase" | "decrease", scheduleId: string) => {
     if (action === "increase") {
-      setQuantity((prev) => prev + 1);
-    } else if (action === "decrease" && quantity > 1) {
-      setQuantity((prev) => prev - 1);
+      setScheduleQuantities((prev) => ({
+        ...prev,
+        [scheduleId]: (prev[scheduleId] || 1) + 1
+      }));
+    } else if (action === "decrease" && (scheduleQuantities[scheduleId] || 1) > 1) {
+      setScheduleQuantities((prev) => ({
+        ...prev,
+        [scheduleId]: (prev[scheduleId] || 1) - 1
+      }));
     }
   };
 
@@ -592,6 +613,7 @@ export default function CoursePage({ params }: CoursePageProps) {
   const calculateTotal = () => {
     if (!selectedSchedule) return 0;
     // Always return the original price - let backend handle discount
+    const quantity = scheduleQuantities[selectedSchedule.id] || 1;
     const basePrice = selectedSchedule.earlyBirdPrice * quantity;
     return basePrice;
   };
@@ -600,6 +622,7 @@ export default function CoursePage({ params }: CoursePageProps) {
   const calculateDisplayTotal = () => {
     if (!selectedSchedule) return 0;
 
+    const quantity = scheduleQuantities[selectedSchedule.id] || 1;
     const basePrice = selectedSchedule.earlyBirdPrice * quantity;
 
     if (appliedCoupon) {
@@ -621,6 +644,7 @@ export default function CoursePage({ params }: CoursePageProps) {
   // Get original price for display
   const getOriginalPrice = () => {
     if (!selectedSchedule) return 0;
+    const quantity = scheduleQuantities[selectedSchedule.id] || 1;
     return selectedSchedule.earlyBirdPrice * quantity;
   };
 
@@ -628,6 +652,7 @@ export default function CoursePage({ params }: CoursePageProps) {
   const getDiscountAmount = () => {
     if (!appliedCoupon || !selectedSchedule) return 0;
 
+    const quantity = scheduleQuantities[selectedSchedule.id] || 1;
     const basePrice = selectedSchedule.earlyBirdPrice * quantity;
 
     if (appliedCoupon.type === "percentage") {
@@ -858,13 +883,12 @@ export default function CoursePage({ params }: CoursePageProps) {
               <div className="order-1 lg:order-2 flex justify-center lg:justify-end">
                 <div className="relative">
                   <Image
-                    src={courseData.image}
-                    alt={courseData.title}
-                    width={0}
-                    height={0}
-                    sizes="100vw"
-                    className="w-auto h-auto max-w-full rounded-lg shadow-lg"
-                    unoptimized
+                    src={`${config.imageUrl}${course.upload.courseImage[0].path}`}
+                    alt={course.title}
+                    width={800}
+                    height={600}
+                    className="w-full h-full object-cover"
+                    priority
                   />
                 </div>
               </div>
@@ -1012,13 +1036,11 @@ export default function CoursePage({ params }: CoursePageProps) {
                     <div className="site-glass backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500 group relative">
                       <div className="relative overflow-hidden">
                         <Image
-                          src={getSampleCertificateUrl(course) || ""}
+                          src={getSampleCertificateUrl(course) || "/placeholder.png"}
                           alt="Sample Certificate"
-                          width={0}
-                          height={0}
-                          sizes="100vw"
+                          width={400}
+                          height={300}
                           className="w-auto h-auto max-w-full group-hover:scale-105 transition-transform duration-500"
-                          unoptimized
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
                       </div>
@@ -1114,7 +1136,6 @@ export default function CoursePage({ params }: CoursePageProps) {
                               alt={`Course Component ${index + 1}`}
                               fill
                               className="object-cover group-hover:scale-105 transition-transform duration-500"
-                              unoptimized
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
                           </div>
@@ -1523,7 +1544,7 @@ export default function CoursePage({ params }: CoursePageProps) {
                               {schedule.seatsLeft && (
                                 <div className="inline-flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-[#F59E0B] to-[#EF4444] text-white rounded-full text-sm font-bold">
                                   <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                                  Only {schedule.seatsLeft} seats left
+                                  Limited Seats Available
                                 </div>
                               )}
                             </div>
@@ -1593,9 +1614,9 @@ export default function CoursePage({ params }: CoursePageProps) {
                             </label>
                             <div className="flex items-center gap-3">
                               <button
-                                onClick={() => handleQuantityChange("decrease")}
+                                onClick={() => handleQuantityChange("decrease", schedule.id)}
                                 className="w-10 h-10 site-glass backdrop-blur-sm rounded-xl flex items-center justify-center hover:bg-white/20 site-light:hover:bg-white/60 transition-all duration-300 disabled:opacity-50"
-                                disabled={quantity <= 1}
+                                disabled={(scheduleQuantities[schedule.id] || 1) <= 1}
                               >
                                 <svg
                                   className="w-4 h-4 site-text-primary"
@@ -1612,10 +1633,10 @@ export default function CoursePage({ params }: CoursePageProps) {
                                 </svg>
                               </button>
                               <span className="w-10 text-center font-black text-lg site-text-primary">
-                                {quantity}
+                                {scheduleQuantities[schedule.id] || 1}
                               </span>
                               <button
-                                onClick={() => handleQuantityChange("increase")}
+                                onClick={() => handleQuantityChange("increase", schedule.id)}
                                 className="w-10 h-10 site-glass backdrop-blur-sm rounded-xl flex items-center justify-center hover:bg-white/20 site-light:hover:bg-white/60 transition-all duration-300"
                               >
                                 <svg
@@ -1826,6 +1847,7 @@ export default function CoursePage({ params }: CoursePageProps) {
                   Can't find what you're looking for? Our support team is here
                   to help.
                 </p>
+                <a href="/contact">
                 <button className="group flex items-center justify-center gap-3 mx-auto px-6 py-3 bg-gradient-to-r from-[#8B5CF6] to-[#6D28D9] hover:from-[#6D28D9] hover:to-[#5B21B6] text-white font-bold rounded-2xl transition-all duration-300 transform hover:scale-105">
                   <svg
                     className="w-5 h-5 group-hover:scale-110 transition-transform duration-300"
@@ -1842,6 +1864,7 @@ export default function CoursePage({ params }: CoursePageProps) {
                   </svg>
                   Contact Support
                 </button>
+                </a>
               </div>
             </div>
           </div>
@@ -2004,7 +2027,7 @@ export default function CoursePage({ params }: CoursePageProps) {
       {/* Enrollment Modal - Optimized */}
       {showEnrollModal && selectedSchedule && (
         <div
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-start justify-center z-50 p-4 overflow-y-auto"
+          className="modal-container fixed inset-0 bg-black/80 backdrop-blur-sm flex items-start justify-center z-[9998] p-4 overflow-y-auto"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setShowEnrollModal(false);
@@ -2015,14 +2038,14 @@ export default function CoursePage({ params }: CoursePageProps) {
                 fullName: "",
                 email: "",
                 contactNumber: "",
-                country: "United States",
+                country: "",
                 city: "",
                 couponCode: "",
               });
             }
           }}
         >
-          <div className="site-glass backdrop-blur-xl rounded-3xl w-full max-w-4xl my-4 shadow-2xl border site-border min-h-fit">
+          <div className="site-glass backdrop-blur-xl rounded-3xl w-full max-w-4xl my-4 mt-24 shadow-2xl border site-border min-h-fit">
             {/* Modal Header */}
             <div className="flex items-center justify-between p-4 sm:p-6 border-b site-border sticky top-0 bg-inherit rounded-t-3xl z-20">
               <div className="flex items-center gap-3">
@@ -2055,7 +2078,7 @@ export default function CoursePage({ params }: CoursePageProps) {
                     fullName: "",
                     email: "",
                     contactNumber: "",
-                    country: "United States",
+                    country: "",
                     city: "",
                     couponCode: "",
                   });
@@ -2129,7 +2152,7 @@ export default function CoursePage({ params }: CoursePageProps) {
                               Participants:
                             </span>
                             <span className="site-text-primary font-medium text-sm">
-                              {quantity}
+                              {scheduleQuantities[selectedSchedule.id] || 1}
                             </span>
                           </div>
                         </>
@@ -2272,19 +2295,20 @@ export default function CoursePage({ params }: CoursePageProps) {
                           <label className="block text-sm font-medium site-text-primary mb-2">
                             Country *
                           </label>
-                          <select
-                            name="country"
-                            value={enrollFormData.country}
-                            onChange={handleEnrollInputChange}
-                            className="w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl site-border border site-text-primary focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all duration-300"
-                            required
-                          >
-                            {countries.map((country) => (
-                              <option key={country} value={country}>
-                                {country}
-                              </option>
-                            ))}
-                          </select>
+                          <input
+                          type="text"
+                          name="country"
+                          value={enrollFormData.country}
+                          onChange={handleEnrollInputChange}
+                          className={`w-full px-4 py-3 site-glass backdrop-blur-sm rounded-xl border site-text-primary placeholder:site-text-muted focus:ring-2 focus:border-transparent transition-all duration-300 ${
+                            showValidation &&
+                            enrollFormData.country.trim() === ""
+                              ? "border-red-300 focus:ring-red-500"
+                              : "site-border focus:ring-[#4F46E5]"
+                          }`}
+                          placeholder="Country"
+                          required
+                        />
                         </div>
                       </div>
 
@@ -2634,7 +2658,7 @@ export default function CoursePage({ params }: CoursePageProps) {
 
       {/* Brochure Download Modal */}
       {showBrochureModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="modal-container fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[9998] p-4">
           <div className="site-glass backdrop-blur-xl rounded-3xl w-full max-w-md shadow-2xl border site-border">
             {/* Modal Header */}
             <div className="p-6 border-b site-border">

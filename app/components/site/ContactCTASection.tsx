@@ -1,8 +1,9 @@
 "use client";
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
+import { FaLinkedin, FaTwitter, FaFacebook, FaInstagram, FaYoutube } from "react-icons/fa";
 import { HiArrowRight } from "react-icons/hi";
-import { FaLinkedin, FaFacebook, FaInstagram } from "react-icons/fa";
 import { BsTwitterX } from "react-icons/bs";
 
 export default function ContactCTASection() {
@@ -200,10 +201,25 @@ export default function ContactCTASection() {
                     key={index}
                     className="w-16 h-10 bg-white/20 backdrop-blur-sm rounded-xl p-1 flex items-center justify-center border border-white/30 hover:bg-white/30 transition-all duration-300 hover:scale-105"
                   >
-                    <img
+                    <Image
                       src={payment.src}
                       alt={payment.name}
+                      width={50}
+                      height={20}
                       className="max-w-full max-h-full object-contain filter brightness-100"
+                      onError={(e) => {
+                        const target = e.currentTarget as HTMLImageElement;
+                        target.style.display = 'none';
+                        console.warn(`Failed to load payment logo: ${payment.src}`);
+                      }}
+                      onLoad={(e) => {
+                        const target = e.currentTarget as HTMLImageElement;
+                        target.style.opacity = '1';
+                      }}
+                      style={{ 
+                        opacity: 0, 
+                        transition: 'opacity 0.3s ease',
+                      }}
                     />
                   </div>
                 ))}

@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  --background: #1c1c1c;
+  --background: #4F46E5;
   --foreground: #f8f8f8;
   --primary: #4F46E5;
   --primary-hover: #4338CA;
@@ -23,6 +23,60 @@
   }
 }
 
+/* Fix positioning context issues */
+html, body {
+  position: relative;
+  transform: none !important;
+}
+
+/* Ensure floating elements work properly */
+.fixed, .absolute {
+  transform: none !important;
+}
+
+/* Allow transforms for mega menu positioning */
+.fixed[style*="transform: translateX(-50%)"] {
+  transform: translateX(-50%) !important;
+}
+
+/* Mega menu specific positioning */
+.mega-menu {
+  transform: translateX(-50%) !important;
+}
+
+/* Tawk.to widget positioning fixes */
+#tawkto-container {
+  position: fixed !important;
+  z-index: 9999 !important;
+  transform: none !important;
+}
+
+/* Modal positioning fixes */
+.modal-container {
+  position: fixed !important;
+  z-index: 9998 !important;
+  transform: none !important;
+}
+
+/* Navbar positioning fixes */
+.site-navbar {
+  position: fixed !important;
+  z-index: 100 !important;
+  transform: none !important;
+}
+
+/* Ensure proper stacking context */
+[data-site-theme-container] {
+  position: relative;
+  transform: none !important;
+}
+
+/* Fix for sticky elements */
+.sticky {
+  position: sticky !important;
+  transform: none !important;
+}
+
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 80px; /* Account for fixed navbar */
@@ -31,11 +85,123 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
+  overflow-x: hidden; /* Prevent horizontal scroll */
 }
 
 /* Enhanced smooth scrolling for all scroll containers */
 * {
   scroll-behavior: smooth;
+}
+
+/* Smooth scroll animations and performance enhancements */
+@supports (scroll-behavior: smooth) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Content animation classes */
+.animate-fade-in {
+  animation: fadeIn 0.6s ease-out forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.6s ease-out forwards;
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 0.6s ease-out forwards;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.6s ease-out forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.6s ease-out forwards;
+}
+
+/* Stagger animation utility */
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+.stagger-4 { animation-delay: 0.4s; }
+.stagger-5 { animation-delay: 0.5s; }
+
+/* Content animation keyframes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Performance optimizations */
+.will-animate {
+  will-change: transform, opacity;
+}
+
+.gpu-accelerated {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Intersection observer fallback */
+.intersection-fallback {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+/* Smooth transitions for theme changes */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
 /* Custom scrollbar styling for webkit browsers */
@@ -71,6 +237,193 @@ body {
   
   ::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.5);
+  }
+}
+
+/* Global Loader Animations */
+@keyframes logoRevealKeyframes {
+  0% {
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      transparent 100%
+    );
+  }
+  100% {
+    -webkit-mask-image: linear-gradient(
+      to right,
+      black 0%,
+      black 100%
+    );
+    mask-image: linear-gradient(
+      to right,
+      black 0%,
+      black 100%
+    );
+  }
+}
+
+@keyframes logoClipReveal {
+  0% {
+    clip-path: inset(0 100% 0 0);
+  }
+  70% {
+    clip-path: inset(0 0 0 0);
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes logoSmoothWipe {
+  0% {
+    -webkit-mask-image: linear-gradient(
+      90deg,
+      black 0%,
+      black 0%,
+      transparent 0%
+    );
+    mask-image: linear-gradient(
+      90deg,
+      black 0%,
+      black 0%,
+      transparent 0%
+    );
+  }
+  70% {
+    -webkit-mask-image: linear-gradient(
+      90deg,
+      black 0%,
+      black 100%,
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      90deg,
+      black 0%,
+      black 100%,
+      transparent 100%
+    );
+  }
+  100% {
+    -webkit-mask-image: linear-gradient(
+      90deg,
+      black 0%,
+      black 100%,
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      90deg,
+      black 0%,
+      black 100%,
+      transparent 100%
+    );
+  }
+}
+
+.animate-logo-reveal {
+  animation: logoClipReveal 3s ease-in-out infinite;
+}
+
+/* Fallback for browsers that don't support clip-path */
+@supports not (clip-path: inset(0 0 0 0)) {
+  .animate-logo-reveal {
+    animation: logoSmoothWipe 3s ease-in-out infinite;
+  }
+}
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .animate-logo-reveal {
+    animation: none;
+    clip-path: none;
+  }
+}
+
+/* Enhanced Smooth Scrolling & Performance */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px;
+}
+
+body {
+  transform: translateZ(0); /* GPU acceleration */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overscroll-behavior: none;
+}
+
+/* Fixed Navbar Styles */
+.site-navbar {
+  will-change: transform, opacity, backdrop-filter;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+.site-navbar.navbar-hidden {
+  transform: translateY(-100%);
+  opacity: 0;
+}
+
+.site-navbar.navbar-visible {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* Smooth Scrolling Enhancements */
+.smooth-scroll {
+  scroll-behavior: smooth !important;
+}
+
+.scroll-snap {
+  scroll-snap-type: y mandatory;
+}
+
+.scroll-snap-item {
+  scroll-snap-align: start;
+}
+
+/* Content Loading States */
+.content-loading {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.content-loaded {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Image Loading Optimization */
+img {
+  transition: opacity 0.3s ease-in-out;
+}
+
+img[data-src] {
+  opacity: 0;
+  filter: blur(5px);
+  transition: opacity 0.3s ease-in-out, filter 0.3s ease-in-out;
+}
+
+img[data-src].loaded {
+  opacity: 1;
+  filter: blur(0);
+}
+
+/* Enhanced Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  
+  .site-navbar {
+    transition: none !important;
   }
 }
 

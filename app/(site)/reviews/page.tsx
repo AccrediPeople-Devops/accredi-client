@@ -6,6 +6,8 @@ import Link from "next/link";
 import reviewService from "../../components/service/review.service";
 import { Review } from "../../types/review";
 import config from "../../components/config/config";
+import GlobalLoader from "../../components/GlobalLoader";
+import { useSimpleEnhancedLoader } from "../../hooks/useEnhancedGlobalLoader";
 
 interface ReviewsResponse {
   status: boolean;
@@ -28,6 +30,9 @@ export default function ReviewsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const reviewsPerPage = 9;
+  
+  // Global loader state - synchronized with layout
+  const { isLoading: globalLoading, setDataLoaded } = useSimpleEnhancedLoader(true, 800);
 
   useEffect(() => {
     fetchReviews();
@@ -40,10 +45,17 @@ export default function ReviewsPage() {
       if (response.status && response.review) {
         setReviews(response.review);
         setFilteredReviews(response.review);
+        
+        // Add a small delay to prevent flash
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Mark data as loaded
+        setDataLoaded();
       }
     } catch (error) {
       console.error("Error fetching reviews:", error);
       setError("Failed to load reviews");
+      setDataLoaded();
     } finally {
       setLoading(false);
     }
@@ -89,15 +101,8 @@ export default function ReviewsPage() {
   const currentReviews = filteredReviews.slice(indexOfFirstReview, indexOfLastReview);
   const totalPages = Math.ceil(filteredReviews.length / reviewsPerPage);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen site-section-bg flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#4F46E5] mx-auto"></div>
-          <p className="mt-4 site-text-secondary">Loading reviews...</p>
-        </div>
-      </div>
-    );
+  if (globalLoading) {
+    return <GlobalLoader isLoading={globalLoading} />;
   }
 
   if (error || reviews.length === 0) {
@@ -266,12 +271,11 @@ export default function ReviewsPage() {
                       <div className="relative">
                         <div className="w-16 h-16 rounded-xl overflow-hidden ring-2 ring-white/20 site-light:ring-slate-300">
                           <Image
-                            src={getImageUrl(review.image.path)}
+                            src={`${config.imageUrl}${review.image.path}`}
                             alt={review.name}
                             width={64}
                             height={64}
                             className="w-full h-full object-cover"
-                            unoptimized
                           />
                         </div>
                         <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-[#10B981] rounded-lg flex items-center justify-center shadow-lg">

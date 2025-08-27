@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { formatDate, parseDateLocal } from "@/app/utils/dateUtils";
 
 interface ScheduleCalendarProps {
   startDate: string;
@@ -123,16 +124,6 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
         newMonth.setMonth(prev.getMonth() + 1);
       }
       return newMonth;
-    });
-  };
-
-  // Format date for display
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString("en-US", {
-      weekday: "short",
-      year: "numeric",
-      month: "short",
-      day: "numeric",
     });
   };
 

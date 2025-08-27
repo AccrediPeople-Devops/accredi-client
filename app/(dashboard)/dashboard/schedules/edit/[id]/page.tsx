@@ -15,6 +15,7 @@ import { CountryData } from "@/app/context/LocationContext";
 import { StateData } from "@/app/components/service/enhancedLocationData";
 import { LoadingSpinner } from "@/app/components/LoadingSpinner";
 import { Schedule } from "@/app/types/schedule";
+import { formatDateForInput, parseDateLocal } from "@/app/utils/dateUtils";
 
 // Type for the page params
 interface PageParams {
@@ -111,7 +112,8 @@ function ScheduleEditForm({ id }: { id: string }) {
   // Format date for input fields (YYYY-MM-DD)
   const formatDateForInput = (dateString: string) => {
     if (!dateString) return "";
-    const date = new Date(dateString);
+    const date = parseDateLocal(dateString);
+    if (!date) return "";
     return date.toISOString().split('T')[0];
   };
 
@@ -401,7 +403,7 @@ function ScheduleEditForm({ id }: { id: string }) {
         return;
       }
 
-      if (new Date(formData.startDate) > new Date(formData.endDate)) {
+      if (parseDateLocal(formData.startDate)! > parseDateLocal(formData.endDate)!) {
         setError("Start date cannot be later than end date");
         setIsLoading(false);
         return;

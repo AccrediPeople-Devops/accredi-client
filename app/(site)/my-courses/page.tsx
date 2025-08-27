@@ -10,6 +10,8 @@ import UserService from "@/app/components/service/user.service";
 import siteCourseService from "@/app/components/site/siteCourse.service";
 import config from "@/app/components/config/config";
 import { createCourseSlug } from "@/app/utils/textUtils";
+import GlobalLoader from "@/app/components/GlobalLoader";
+import { useSimpleEnhancedLoader } from "@/app/hooks/useEnhancedGlobalLoader";
 
 export default function MyCoursesPage() {
   const router = useRouter();
@@ -17,6 +19,9 @@ export default function MyCoursesPage() {
   const [enrolledCourses, setEnrolledCourses] = useState<Course[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  
+  // Global loader state - synchronized with layout
+  const { isLoading: globalLoading, setDataLoaded } = useSimpleEnhancedLoader(true, 800);
 
   // Check authentication and fetch user courses
   useEffect(() => {
@@ -57,10 +62,19 @@ export default function MyCoursesPage() {
               
               // For now, show all courses as placeholder
               // In a real implementation, you'd filter by user enrollment
-              setEnrolledCourses(coursesData.slice(0, 6)); // Show first 6 as demo
+              const coursesToShow = coursesData.slice(0, 6);
+              setEnrolledCourses(coursesToShow);
+              
+              // Add a small delay to prevent flash
+              await new Promise(resolve => setTimeout(resolve, 500));
+              
+              // Mark data as loaded
+              setDataLoaded();
+              
             } catch (coursesError) {
               console.error("Error fetching courses:", coursesError);
               setError("Failed to load courses");
+              setDataLoaded();
             }
           } else {
             localStorage.removeItem("token");
@@ -77,7 +91,7 @@ export default function MyCoursesPage() {
     };
 
     checkAuthAndFetchCourses();
-  }, [router]);
+  }, [router, setDataLoaded]);
 
   // Helper function to get course image URL
   const getCourseImageUrl = (course: Course) => {
@@ -110,15 +124,8 @@ export default function MyCoursesPage() {
     return "Professional Certification";
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen site-section-bg flex items-center justify-center">
-        <div className="flex flex-col items-center space-y-4">
-          <div className="w-12 h-12 border-4 border-white/20 site-light:border-slate-300 border-t-[#4F46E5] rounded-full animate-spin"></div>
-          <p className="site-text-primary text-lg">Loading your courses...</p>
-        </div>
-      </div>
-    );
+  if (globalLoading) {
+    return <GlobalLoader isLoading={globalLoading} />;
   }
 
   if (!currentUser) {
@@ -208,12 +215,11 @@ export default function MyCoursesPage() {
                 {/* Course Image */}
                 <div className="relative h-48 overflow-hidden">
                   <Image
-                    src={getCourseImageUrl(course)}
+                    src={`${config.imageUrl}${course.upload.courseImage[0].path}`}
                     alt={course.title}
-                    width={400}
-                    height={192}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    unoptimized
+                    width={300}
+                    height={200}
+                    className="w-full h-32 object-cover rounded-t-xl"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
                   

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import { Review, ReviewFormData, ValidationError } from "../../types/review";
 import uploadService from "../service/upload.service";
 import config from "../config/config";
@@ -355,10 +356,11 @@ export default function ReviewForm({
             {imagePreview ? (
               <div className="relative">
                 <div className="h-32 w-32 rounded-full overflow-hidden border border-[var(--primary)]/20">
-                  <img
+                  <Image
                     src={imagePreview}
                     alt="Preview"
-                    className="h-full w-full object-cover"
+                    fill
+                    className="object-cover"
                   />
                 </div>
                 <button
