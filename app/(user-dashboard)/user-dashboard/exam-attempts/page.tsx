@@ -238,16 +238,19 @@ export default function UserExamAttemptsPage() {
                   </div>
                   <div className="flex space-x-2">
                     {!attempt.isCompleted ? (
-                      <button
-                        onClick={() =>
-                          router.push(
-                            `/user-dashboard/exam-attempts/${attempt._id}/take`
-                          )
-                        }
-                        className="px-4 py-2 bg-[var(--primary)] text-white rounded-[var(--radius-md)] hover:bg-[var(--primary-hover)] transition-colors"
-                      >
-                        Continue Exam
-                      </button>
+                      // <button
+                      //   onClick={() =>
+                      //     router.push(
+                      //       `/user-dashboard/exam-attempts/${attempt._id}/take`
+                      //     )
+                      //   }
+                      //   className="px-4 py-2 bg-[var(--primary)] text-white rounded-[var(--radius-md)] hover:bg-[var(--primary-hover)] transition-colors"
+                      // >
+                      //   Continue Exam
+                      // </button>
+                      <span className="px-4 py-2 text-[var(--foreground-muted)] bg-[var(--background)] rounded-[var(--radius-md)]">
+                        Please go to practice tests to continue exam
+                      </span>
                     ) : attempt.isResultShown ? (
                       <button
                         onClick={() =>

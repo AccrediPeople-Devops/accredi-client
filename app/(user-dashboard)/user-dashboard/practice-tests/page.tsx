@@ -414,11 +414,7 @@ export default function PracticeTestsPage() {
                   <div className="flex-shrink-0">
                     <button
                       onClick={() => handleTestAction(test)}
-                      disabled={
-                        isStartingExam === test._id ||
-                        (test.status === "completed" &&
-                          test.attempts >= test.maxAttempts)
-                      }
+                      disabled={isStartingExam === test._id} // Only disable when starting
                       className={`px-6 py-3 font-medium rounded-[var(--radius-md)] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${getButtonColor(
                         test
                       )}`}
