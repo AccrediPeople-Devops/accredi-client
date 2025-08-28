@@ -241,20 +241,27 @@ export default function PracticeTestsPage() {
     // Handle test action (start, resume, retake, view results)
     console.log(`Action for test ${test._id}:`, getButtonText(test));
     console.log("test --->", test);
+
     if (test.status === "not-started") {
       // Start new exam directly - call the correct API
       handleStartExam(test);
     } else if (test.status === "in-progress") {
       // Resume exam - call resume API to get current state
-      handleResumeExam(test); // ✅ Use the resume function
+      handleResumeExam(test);
     } else if (test.status === "completed") {
-      // View results
-      if (test.latestAttemptId) {
-        router.push(
-          `/user-dashboard/exam-attempts/${test.latestAttemptId}/result`
-        );
+      // Check if user can retake or should view results
+      if (test.attempts < test.maxAttempts) {
+        // User can retake - start a new attempt
+        handleStartExam(test);
       } else {
-        alert("Unable to view results.");
+        // Max attempts reached - view results
+        if (test.latestAttemptId) {
+          router.push(
+            `/user-dashboard/exam-attempts/${test.latestAttemptId}/result`
+          );
+        } else {
+          alert("Unable to view results.");
+        }
       }
     }
   };

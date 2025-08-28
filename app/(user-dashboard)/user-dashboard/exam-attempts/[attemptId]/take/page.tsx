@@ -3,13 +3,13 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { 
-  HiOutlineClock, 
-  HiOutlineSave, 
+import {
+  HiOutlineClock,
+  HiOutlineSave,
   HiOutlineCheckCircle,
   HiOutlineArrowLeft,
   HiOutlineArrowRight,
-  HiOutlineQuestionMarkCircle
+  HiOutlineQuestionMarkCircle,
 } from "react-icons/hi";
 import examAttemptService from "@/app/components/user-dashboard/services/examAttempt.service";
 import { StartExamAttemptResponse, ExamAnswer } from "@/app/types/examAttempt";
@@ -38,10 +38,18 @@ interface TakeExamPageProps {
 
 export default function TakeExamPage({ params }: TakeExamPageProps) {
   const router = useRouter();
-  const [examData, setExamData] = useState<{ status: boolean; examAttempt: any; exam: MinimalExam } | null>(null);
+  const [examData, setExamData] = useState<{
+    status: boolean;
+    examAttempt: any;
+    exam: MinimalExam;
+  } | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState<{ [questionId: string]: string[] }>({});
-  const [userDescriptions, setUserDescriptions] = useState<{ [questionId: string]: string }>({});
+  const [answers, setAnswers] = useState<{ [questionId: string]: string[] }>(
+    {}
+  );
+  const [userDescriptions, setUserDescriptions] = useState<{
+    [questionId: string]: string;
+  }>({});
   const [timeLeft, setTimeLeft] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -56,11 +64,11 @@ export default function TakeExamPage({ params }: TakeExamPageProps) {
         const { attemptId } = await params;
         setIsLoading(true);
         setError("");
-        
+
         // Try to get exam data from localStorage first (from start exam)
-        const storedExamData = localStorage.getItem('currentExamData');
+        const storedExamData = localStorage.getItem("currentExamData");
         let examData: any = null;
-        
+
         if (storedExamData) {
           try {
             examData = JSON.parse(storedExamData);
@@ -74,32 +82,33 @@ export default function TakeExamPage({ params }: TakeExamPageProps) {
             examData = null; // Invalid data, fetch from API
           }
         }
-        
+
         // If no stored data or wrong attempt, we can't proceed
         if (!examData) {
           throw new Error("Exam data not found. Please start the exam again.");
         }
-        
+
         const attempt = examData.examAttempt;
         const exam = examData.exam;
-        
+
         // Initialize answers from existing attempt
         const existingAnswers: { [questionId: string]: string[] } = {};
         const existingDescriptions: { [questionId: string]: string } = {};
-        
+
         if (attempt.answers) {
           (attempt.answers as any[]).forEach((answer: any) => {
             existingAnswers[answer.questionId] = answer.selectedOptions || [];
-            existingDescriptions[answer.questionId] = answer.userDescription || "";
+            existingDescriptions[answer.questionId] =
+              answer.userDescription || "";
           });
         }
-        
+
         setAnswers(existingAnswers);
         setUserDescriptions(existingDescriptions);
-        
+
         // Set time limit from exam data
         setTimeLeft((exam.timeLimit || 60) * 60); // Convert minutes to seconds
-        
+
         // Set exam data
         setExamData({
           status: true,
@@ -113,12 +122,15 @@ export default function TakeExamPage({ params }: TakeExamPageProps) {
             courseId: exam.courseId,
             questions: exam.questions || [],
             createdAt: exam.createdAt || "",
-            updatedAt: exam.updatedAt || ""
-          }
+            updatedAt: exam.updatedAt || "",
+          },
         });
       } catch (err: any) {
         console.error("Error fetching exam attempt:", err);
-        setError(err.message || "Failed to fetch exam attempt. Please go back and start the exam again.");
+        setError(
+          err.message ||
+            "Failed to fetch exam attempt. Please go back and start the exam again."
+        );
       } finally {
         setIsLoading(false);
       }
@@ -132,7 +144,7 @@ export default function TakeExamPage({ params }: TakeExamPageProps) {
     if (timeLeft <= 0 || !examData) return;
 
     const timer = setInterval(() => {
-      setTimeLeft(prev => {
+      setTimeLeft((prev) => {
         if (prev <= 1) {
           // Auto-submit when time runs out
           handleSubmitExam();
@@ -149,21 +161,27 @@ export default function TakeExamPage({ params }: TakeExamPageProps) {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
-    
+
     if (hours > 0) {
-      return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+      return `${hours}:${minutes.toString().padStart(2, "0")}:${secs
+        .toString()
+        .padStart(2, "0")}`;
     }
-    return `${minutes}:${secs.toString().padStart(2, '0')}`;
+    return `${minutes}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const handleAnswerChange = (questionId: string, option: string, isMultiple: boolean) => {
-    setAnswers(prev => {
+  const handleAnswerChange = (
+    questionId: string,
+    option: string,
+    isMultiple: boolean
+  ) => {
+    setAnswers((prev) => {
       const currentAnswers = prev[questionId] || [];
-      
+
       if (isMultiple) {
         // Multiple choice - toggle option
         const newAnswers = currentAnswers.includes(option)
-          ? currentAnswers.filter(a => a !== option)
+          ? currentAnswers.filter((a) => a !== option)
           : [...currentAnswers, option];
         return { ...prev, [questionId]: newAnswers };
       } else {
@@ -174,9 +192,9 @@ export default function TakeExamPage({ params }: TakeExamPageProps) {
   };
 
   const handleDescriptionChange = (questionId: string, description: string) => {
-    setUserDescriptions(prev => ({
+    setUserDescriptions((prev) => ({
       ...prev,
-      [questionId]: description
+      [questionId]: description,
     }));
   };
 
@@ -187,17 +205,22 @@ export default function TakeExamPage({ params }: TakeExamPageProps) {
     setError("");
 
     try {
-      const answersArray: ExamAnswer[] = examData.exam.questions.map(question => ({
-        questionId: question._id,
-        question: question.question,
-        selectedOptions: answers[question._id] || [],
-        correctAnswers: [],
-        isCorrect: null,
-        answerDescription: "",
-        userDescription: userDescriptions[question._id] || ""
-      }));
+      const answersArray: ExamAnswer[] = examData.exam.questions.map(
+        (question) => ({
+          questionId: question._id,
+          question: question.question,
+          selectedOptions: answers[question._id] || [],
+          correctAnswers: [],
+          isCorrect: null,
+          answerDescription: "",
+          userDescription: userDescriptions[question._id] || "",
+        })
+      );
 
-      await examAttemptService.saveProgress(examData.examAttempt._id!, answersArray);
+      await examAttemptService.saveProgress(
+        examData.examAttempt._id!,
+        answersArray
+      );
       setLastSaved(new Date());
       console.log("Progress saved successfully");
     } catch (err: any) {
@@ -215,18 +238,22 @@ export default function TakeExamPage({ params }: TakeExamPageProps) {
     setError("");
 
     try {
-      const answersArray: ExamAnswer[] = examData.exam.questions.map(question => ({
-        questionId: question._id,
-        question: question.question,
-        selectedOptions: answers[question._id] || [],
-        correctAnswers: [],
-        isCorrect: null,
-        answerDescription: "",
-        userDescription: userDescriptions[question._id] || ""
-      }));
+      const answersArray: ExamAnswer[] = examData.exam.questions.map(
+        (question) => ({
+          questionId: question._id,
+          question: question.question,
+          selectedOptions: answers[question._id] || [],
+          correctAnswers: [],
+          isCorrect: null,
+          answerDescription: "",
+          userDescription: userDescriptions[question._id] || "",
+        })
+      );
 
       const endTime = new Date().toISOString();
-      const timeSpent = Math.floor((examData.exam.timeLimit * 60 - timeLeft) / 60);
+      const timeSpent = Math.floor(
+        (examData.exam.timeLimit * 60 - timeLeft) / 60
+      );
 
       await examAttemptService.submitExam(
         examData.examAttempt._id!,
@@ -236,10 +263,12 @@ export default function TakeExamPage({ params }: TakeExamPageProps) {
       );
 
       // Clean up stored exam data
-      localStorage.removeItem('currentExamData');
+      localStorage.removeItem("currentExamData");
 
       // Navigate to results page
-      router.push(`/user-dashboard/exam-attempts/${examData.examAttempt._id}/result`);
+      router.push(
+        `/user-dashboard/exam-attempts/${examData.examAttempt._id}/result`
+      );
     } catch (err: any) {
       console.error("Error submitting exam:", err);
       setError(err.message || "Failed to submit exam");
@@ -282,7 +311,9 @@ export default function TakeExamPage({ params }: TakeExamPageProps) {
       <div className="space-y-6">
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-2xl font-bold text-[var(--foreground)]">Take Exam</h1>
+            <h1 className="text-2xl font-bold text-[var(--foreground)]">
+              Take Exam
+            </h1>
           </div>
           <Link
             href="/user-dashboard/practice-tests"
@@ -313,15 +344,20 @@ export default function TakeExamPage({ params }: TakeExamPageProps) {
                 {examData.exam.title}
               </h1>
               <p className="text-sm text-[var(--foreground-muted)]">
-                Question {currentQuestionIndex + 1} of {examData.exam.questions.length}
+                Question {currentQuestionIndex + 1} of{" "}
+                {examData.exam.questions.length}
               </p>
             </div>
-            
+
             <div className="flex items-center gap-4">
               {/* Timer */}
               <div className="flex items-center gap-2 bg-[var(--input-bg)] px-3 py-2 rounded-[var(--radius-md)]">
                 <HiOutlineClock className="w-5 h-5 text-[var(--primary)]" />
-                <span className={`font-mono font-bold ${timeLeft < 300 ? 'text-red-600' : 'text-[var(--foreground)]'}`}>
+                <span
+                  className={`font-mono font-bold ${
+                    timeLeft < 300 ? "text-red-600" : "text-[var(--foreground)]"
+                  }`}
+                >
                   {formatTime(timeLeft)}
                 </span>
               </div>
@@ -351,9 +387,15 @@ export default function TakeExamPage({ params }: TakeExamPageProps) {
           {/* Progress Bar */}
           <div className="mt-4">
             <div className="w-full bg-[var(--input-bg)] rounded-full h-2">
-              <div 
-                className="bg-[var(--primary)] h-2 rounded-full transition-all duration-300" 
-                style={{ width: `${((currentQuestionIndex + 1) / examData.exam.questions.length) * 100}%` }}
+              <div
+                className="bg-[var(--primary)] h-2 rounded-full transition-all duration-300"
+                style={{
+                  width: `${
+                    ((currentQuestionIndex + 1) /
+                      examData.exam.questions.length) *
+                    100
+                  }%`,
+                }}
               ></div>
             </div>
           </div>
@@ -371,7 +413,9 @@ export default function TakeExamPage({ params }: TakeExamPageProps) {
           {/* Question Navigation */}
           <div className="lg:col-span-1">
             <div className="bg-[var(--card-bg)] border border-[var(--border)] rounded-[var(--radius-lg)] p-4 sticky top-24">
-              <h3 className="font-semibold text-[var(--foreground)] mb-4">Question Navigation</h3>
+              <h3 className="font-semibold text-[var(--foreground)] mb-4">
+                Question Navigation
+              </h3>
               <div className="grid grid-cols-5 lg:grid-cols-3 gap-2">
                 {examData.exam.questions.map((question, index) => (
                   <button
@@ -379,10 +423,10 @@ export default function TakeExamPage({ params }: TakeExamPageProps) {
                     onClick={() => goToQuestion(index)}
                     className={`p-2 text-sm rounded-[var(--radius-md)] transition-colors ${
                       index === currentQuestionIndex
-                        ? 'bg-[var(--primary)] text-white'
-                        : getQuestionStatus(index) === 'answered'
-                        ? 'bg-green-100 text-green-800 border border-green-200'
-                        : 'bg-[var(--input-bg)] text-[var(--foreground)] hover:bg-[var(--border)]'
+                        ? "bg-[var(--primary)] text-white"
+                        : getQuestionStatus(index) === "answered"
+                        ? "bg-green-100 text-green-800 border border-green-200"
+                        : "bg-[var(--input-bg)] text-[var(--foreground)] hover:bg-[var(--border)]"
                     }`}
                   >
                     {index + 1}
@@ -415,11 +459,21 @@ export default function TakeExamPage({ params }: TakeExamPageProps) {
                       className="flex items-start gap-3 p-3 border border-[var(--border)] rounded-[var(--radius-md)] hover:bg-[var(--input-bg)] cursor-pointer transition-colors"
                     >
                       <input
-                        type={currentQuestion.multipleChoiceQuestions ? "checkbox" : "radio"}
+                        type={
+                          currentQuestion.multipleChoiceQuestions
+                            ? "checkbox"
+                            : "radio"
+                        }
                         name={`question-${currentQuestion._id}`}
                         value={option}
                         checked={currentAnswers.includes(option)}
-                        onChange={() => handleAnswerChange(currentQuestion._id, option, currentQuestion.multipleChoiceQuestions)}
+                        onChange={() =>
+                          handleAnswerChange(
+                            currentQuestion._id,
+                            option,
+                            currentQuestion.multipleChoiceQuestions
+                          )
+                        }
                         className="mt-1"
                       />
                       <span className="text-[var(--foreground)]">{option}</span>
@@ -428,7 +482,7 @@ export default function TakeExamPage({ params }: TakeExamPageProps) {
                 </div>
 
                 {/* User Description */}
-                <div className="mb-6">
+                {/* <div className="mb-6">
                   <label className="block text-sm font-medium text-[var(--foreground-muted)] mb-2">
                     Your Explanation (Optional)
                   </label>
@@ -439,7 +493,7 @@ export default function TakeExamPage({ params }: TakeExamPageProps) {
                     className="w-full px-3 py-2 border border-[var(--border)] rounded-[var(--radius-md)] bg-[var(--background)] text-[var(--foreground)] resize-none"
                     rows={3}
                   />
-                </div>
+                </div> */}
               </div>
 
               {/* Navigation Buttons */}
@@ -465,7 +519,9 @@ export default function TakeExamPage({ params }: TakeExamPageProps) {
 
                 <button
                   onClick={nextQuestion}
-                  disabled={currentQuestionIndex === examData.exam.questions.length - 1}
+                  disabled={
+                    currentQuestionIndex === examData.exam.questions.length - 1
+                  }
                   className="flex items-center gap-2 px-4 py-2 bg-[var(--primary)] text-white rounded-[var(--radius-md)] hover:bg-[var(--primary-hover)] transition-colors disabled:opacity-50"
                 >
                   Next
@@ -485,7 +541,8 @@ export default function TakeExamPage({ params }: TakeExamPageProps) {
               Submit Exam
             </h3>
             <p className="text-[var(--foreground-muted)] mb-6">
-              Are you sure you want to submit your exam? You cannot change your answers after submission.
+              Are you sure you want to submit your exam? You cannot change your
+              answers after submission.
             </p>
             <div className="flex justify-end gap-3">
               <button
@@ -510,4 +567,4 @@ export default function TakeExamPage({ params }: TakeExamPageProps) {
       )}
     </div>
   );
-} 
+}
