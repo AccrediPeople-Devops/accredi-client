@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { 
-  HiOutlineCheckCircle, 
+import {
+  HiOutlineCheckCircle,
   HiOutlineXCircle,
   HiOutlineClock,
   HiOutlineChartBar,
-  HiOutlineBookOpen
+  HiOutlineBookOpen,
 } from "react-icons/hi";
 import examAttemptService from "@/app/components/user-dashboard/services/examAttempt.service";
 import { ExamAttemptResponse, ExamAttempt } from "@/app/types/examAttempt";
@@ -64,7 +64,9 @@ export default function ExamResultPage({ params }: ExamResultPageProps) {
   const [examResult, setExamResult] = useState<ExamResultResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
-  const [expandedQuestions, setExpandedQuestions] = useState<{ [questionId: string]: boolean }>({});
+  const [expandedQuestions, setExpandedQuestions] = useState<{
+    [questionId: string]: boolean;
+  }>({});
 
   useEffect(() => {
     const fetchExamResult = async () => {
@@ -98,9 +100,9 @@ export default function ExamResultPage({ params }: ExamResultPageProps) {
   };
 
   const toggleQuestionExpansion = (questionId: string) => {
-    setExpandedQuestions(prev => ({
+    setExpandedQuestions((prev) => ({
       ...prev,
-      [questionId]: !prev[questionId]
+      [questionId]: !prev[questionId],
     }));
   };
 
@@ -127,7 +129,9 @@ export default function ExamResultPage({ params }: ExamResultPageProps) {
       <div className="space-y-6">
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-2xl font-bold text-[var(--foreground)]">Exam Results</h1>
+            <h1 className="text-2xl font-bold text-[var(--foreground)]">
+              Exam Results
+            </h1>
           </div>
           <Link
             href="/user-dashboard/exam-attempts"
@@ -149,7 +153,9 @@ export default function ExamResultPage({ params }: ExamResultPageProps) {
     <div className="space-y-6">
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--foreground)]">Exam Results</h1>
+          <h1 className="text-2xl font-bold text-[var(--foreground)]">
+            Exam Results
+          </h1>
           <p className="text-[var(--foreground-muted)]">
             Your performance on {result.examId.title}
           </p>
@@ -166,48 +172,72 @@ export default function ExamResultPage({ params }: ExamResultPageProps) {
       <div className="bg-[var(--input-bg)] p-6 rounded-[var(--radius-lg)]">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="text-center">
-            <div className={`text-4xl font-bold ${getScoreColor(result.percentage)} mb-2`}>
-              {result.percentage}%
+            <div
+              className={`text-4xl font-bold ${getScoreColor(
+                result.percentage
+              )} mb-2`}
+            >
+              {Math.round(result.percentage || 0)}%
             </div>
-            <div className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${getScoreBadge(result.percentage)}`}>
-              {result.percentage >= 80 ? "Excellent" : result.percentage >= 60 ? "Good" : "Needs Improvement"}
+            <div
+              className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${getScoreBadge(
+                result.percentage
+              )}`}
+            >
+              {result.percentage >= 80
+                ? "Excellent"
+                : result.percentage >= 60
+                ? "Good"
+                : "Needs Improvement"}
             </div>
           </div>
-          
+
           <div className="text-center">
             <div className="text-2xl font-bold text-[var(--foreground)] mb-1">
               {result.correctAnswers}/{result.totalQuestions}
             </div>
-            <div className="text-sm text-[var(--foreground-muted)]">Correct Answers</div>
+            <div className="text-sm text-[var(--foreground-muted)]">
+              Correct Answers
+            </div>
           </div>
-          
+
           <div className="text-center">
             <div className="text-2xl font-bold text-[var(--foreground)] mb-1">
               {result.incorrectAnswers}
             </div>
-            <div className="text-sm text-[var(--foreground-muted)]">Incorrect Answers</div>
+            <div className="text-sm text-[var(--foreground-muted)]">
+              Incorrect Answers
+            </div>
           </div>
-          
+
           <div className="text-center">
             <div className="text-2xl font-bold text-[var(--foreground)] mb-1">
               {result.timeSpent || 0}
             </div>
-            <div className="text-sm text-[var(--foreground-muted)]">Minutes Spent</div>
+            <div className="text-sm text-[var(--foreground-muted)]">
+              Minutes Spent
+            </div>
           </div>
         </div>
       </div>
 
       {/* Exam Details */}
       <div className="bg-[var(--input-bg)] p-6 rounded-[var(--radius-lg)]">
-        <h2 className="text-lg font-semibold text-[var(--foreground)] mb-4">Exam Details</h2>
+        <h2 className="text-lg font-semibold text-[var(--foreground)] mb-4">
+          Exam Details
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <p className="text-sm text-[var(--foreground-muted)]">Course</p>
-            <p className="font-medium text-[var(--foreground)]">{result.courseId.title}</p>
+            <p className="font-medium text-[var(--foreground)]">
+              {result.courseId.title}
+            </p>
           </div>
           <div>
             <p className="text-sm text-[var(--foreground-muted)]">Exam</p>
-            <p className="font-medium text-[var(--foreground)]">{result.examId.title}</p>
+            <p className="font-medium text-[var(--foreground)]">
+              {result.examId.title}
+            </p>
           </div>
           <div>
             <p className="text-sm text-[var(--foreground-muted)]">Started</p>
@@ -226,8 +256,10 @@ export default function ExamResultPage({ params }: ExamResultPageProps) {
 
       {/* Question Review */}
       <div className="bg-[var(--input-bg)] p-6 rounded-[var(--radius-lg)]">
-        <h2 className="text-lg font-semibold text-[var(--foreground)] mb-4">Question Review</h2>
-        
+        <h2 className="text-lg font-semibold text-[var(--foreground)] mb-4">
+          Question Review
+        </h2>
+
         <div className="space-y-4">
           {result.answers.map((answer, index) => (
             <div
@@ -250,23 +282,34 @@ export default function ExamResultPage({ params }: ExamResultPageProps) {
                         <HiOutlineXCircle className="w-5 h-5 text-red-600" />
                       )}
                     </div>
-                    <p className="text-[var(--foreground)] font-medium">{answer.question}</p>
+                    <p className="text-[var(--foreground)] font-medium">
+                      {answer.question}
+                    </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                      answer.isCorrect ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                    }`}>
-                      {answer.isCorrect ? 'Correct' : 'Incorrect'}
+                    <span
+                      className={`px-2 py-1 text-xs font-medium rounded-full ${
+                        answer.isCorrect
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {answer.isCorrect ? "Correct" : "Incorrect"}
                     </span>
                     <svg
                       className={`w-5 h-5 text-[var(--foreground-muted)] transition-transform ${
-                        expandedQuestions[answer.questionId] ? 'rotate-180' : ''
+                        expandedQuestions[answer.questionId] ? "rotate-180" : ""
                       }`}
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
                     </svg>
                   </div>
                 </div>
@@ -277,15 +320,17 @@ export default function ExamResultPage({ params }: ExamResultPageProps) {
                   <div className="space-y-4">
                     {/* Your Answer */}
                     <div>
-                      <h4 className="font-medium text-[var(--foreground)] mb-2">Your Answer:</h4>
+                      <h4 className="font-medium text-[var(--foreground)] mb-2">
+                        Your Answer:
+                      </h4>
                       <div className="space-y-1">
                         {answer.selectedOptions.map((option, optionIndex) => (
                           <div
                             key={optionIndex}
                             className={`px-3 py-2 rounded-[var(--radius-md)] ${
                               answer.correctAnswers.includes(option)
-                                ? 'bg-green-100 text-green-800 border border-green-200'
-                                : 'bg-red-100 text-red-800 border border-red-200'
+                                ? "bg-green-100 text-green-800 border border-green-200"
+                                : "bg-red-100 text-red-800 border border-red-200"
                             }`}
                           >
                             {option}
@@ -301,7 +346,9 @@ export default function ExamResultPage({ params }: ExamResultPageProps) {
 
                     {/* Correct Answer */}
                     <div>
-                      <h4 className="font-medium text-[var(--foreground)] mb-2">Correct Answer:</h4>
+                      <h4 className="font-medium text-[var(--foreground)] mb-2">
+                        Correct Answer:
+                      </h4>
                       <div className="space-y-1">
                         {answer.correctAnswers.map((option, optionIndex) => (
                           <div
@@ -317,7 +364,9 @@ export default function ExamResultPage({ params }: ExamResultPageProps) {
                     {/* Explanation */}
                     {answer.answerDescription && (
                       <div>
-                        <h4 className="font-medium text-[var(--foreground)] mb-2">Explanation:</h4>
+                        <h4 className="font-medium text-[var(--foreground)] mb-2">
+                          Explanation:
+                        </h4>
                         <p className="text-[var(--foreground-muted)] bg-[var(--input-bg)] p-3 rounded-[var(--radius-md)]">
                           {answer.answerDescription}
                         </p>
@@ -327,7 +376,9 @@ export default function ExamResultPage({ params }: ExamResultPageProps) {
                     {/* Your Explanation */}
                     {answer.userDescription && (
                       <div>
-                        <h4 className="font-medium text-[var(--foreground)] mb-2">Your Explanation:</h4>
+                        <h4 className="font-medium text-[var(--foreground)] mb-2">
+                          Your Explanation:
+                        </h4>
                         <p className="text-[var(--foreground-muted)] bg-[var(--input-bg)] p-3 rounded-[var(--radius-md)]">
                           {answer.userDescription}
                         </p>
@@ -358,4 +409,4 @@ export default function ExamResultPage({ params }: ExamResultPageProps) {
       </div>
     </div>
   );
-} 
+}

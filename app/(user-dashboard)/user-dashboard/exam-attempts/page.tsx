@@ -21,23 +21,38 @@ export default function UserExamAttemptsPage() {
     try {
       setIsLoading(true);
       setError("");
-      
+
       const response = await examAttemptService.getMyAttempts();
-      
+
       // Handle different response formats
       let attempts: ExamAttempt[] = [];
       if (Array.isArray(response)) {
         attempts = response;
-      } else if (response && typeof response === 'object' && 'examAttempts' in response && Array.isArray((response as any).examAttempts)) {
+      } else if (
+        response &&
+        typeof response === "object" &&
+        "examAttempts" in response &&
+        Array.isArray((response as any).examAttempts)
+      ) {
         attempts = (response as any).examAttempts;
-      } else if (response && typeof response === 'object' && 'data' in response && Array.isArray((response as any).data)) {
+      } else if (
+        response &&
+        typeof response === "object" &&
+        "data" in response &&
+        Array.isArray((response as any).data)
+      ) {
         attempts = (response as any).data;
-      } else if (response && typeof response === 'object' && 'attempts' in response && Array.isArray((response as any).attempts)) {
+      } else if (
+        response &&
+        typeof response === "object" &&
+        "attempts" in response &&
+        Array.isArray((response as any).attempts)
+      ) {
         attempts = (response as any).attempts;
       } else {
         attempts = [];
       }
-      
+
       setExamAttempts(attempts);
     } catch (err: any) {
       console.error("Error fetching exam attempts:", err);
@@ -97,7 +112,9 @@ export default function UserExamAttemptsPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--foreground)]">My Exam Attempts</h1>
+          <h1 className="text-2xl font-bold text-[var(--foreground)]">
+            My Exam Attempts
+          </h1>
           <p className="text-[var(--foreground-muted)]">
             View and manage your exam attempts
           </p>
@@ -155,82 +172,104 @@ export default function UserExamAttemptsPage() {
         </div>
       ) : (
         <div className="grid gap-4">
-          {Array.isArray(examAttempts) && examAttempts.map((attempt) => (
-            <div
-              key={attempt._id}
-              className="bg-[var(--input-bg)] p-6 rounded-[var(--radius-lg)] border border-[var(--border)]"
-            >
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h3 className="text-lg font-medium text-[var(--foreground)]">
-                    Exam Attempt
-                  </h3>
-                  <p className="text-sm text-[var(--foreground-muted)]">
-                    Started: {attempt.startTime ? formatDate(attempt.startTime) : "N/A"}
-                  </p>
+          {Array.isArray(examAttempts) &&
+            examAttempts.map((attempt) => (
+              <div
+                key={attempt._id}
+                className="bg-[var(--input-bg)] p-6 rounded-[var(--radius-lg)] border border-[var(--border)]"
+              >
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h3 className="text-lg font-medium text-[var(--foreground)]">
+                      Exam Attempt
+                    </h3>
+                    <p className="text-sm text-[var(--foreground-muted)]">
+                      Started:{" "}
+                      {attempt.startTime
+                        ? formatDate(attempt.startTime)
+                        : "N/A"}
+                    </p>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    {getStatusBadge(attempt.isCompleted, attempt.isResultShown)}
+                  </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  {getStatusBadge(attempt.isCompleted, attempt.isResultShown)}
-                </div>
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                <div>
-                  <p className="text-sm text-[var(--foreground-muted)]">Total Questions</p>
-                  <p className="text-lg font-medium text-[var(--foreground)]">
-                    {attempt.totalQuestions}
-                  </p>
-                </div>
-                {attempt.isCompleted && (
-                  <>
-                    <div>
-                      <p className="text-sm text-[var(--foreground-muted)]">Score</p>
-                      <p className={`text-lg font-medium ${getScoreColor(attempt.percentage)}`}>
-                        {attempt.percentage}%
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-[var(--foreground-muted)]">Correct Answers</p>
-                      <p className="text-lg font-medium text-[var(--foreground)]">
-                        {attempt.correctAnswers}/{attempt.totalQuestions}
-                      </p>
-                    </div>
-                  </>
-                )}
-              </div>
-
-              <div className="flex justify-between items-center">
-                <div className="text-sm text-[var(--foreground-muted)]">
-                  {attempt.timeSpent && (
-                    <span>Time spent: {attempt.timeSpent} minutes</span>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                  <div>
+                    <p className="text-sm text-[var(--foreground-muted)]">
+                      Total Questions
+                    </p>
+                    <p className="text-lg font-medium text-[var(--foreground)]">
+                      {attempt.totalQuestions}
+                    </p>
+                  </div>
+                  {attempt.isCompleted && (
+                    <>
+                      <div>
+                        <p className="text-sm text-[var(--foreground-muted)]">
+                          Score
+                        </p>
+                        <p
+                          className={`text-lg font-medium ${getScoreColor(
+                            attempt.percentage
+                          )}`}
+                        >
+                          {Math.round(attempt.percentage || 0)}%
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-[var(--foreground-muted)]">
+                          Correct Answers
+                        </p>
+                        <p className="text-lg font-medium text-[var(--foreground)]">
+                          {attempt.correctAnswers}/{attempt.totalQuestions}
+                        </p>
+                      </div>
+                    </>
                   )}
                 </div>
-                <div className="flex space-x-2">
-                  {!attempt.isCompleted ? (
-                    <button
-                      onClick={() => router.push(`/user-dashboard/exam-attempts/${attempt._id}/take`)}
-                      className="px-4 py-2 bg-[var(--primary)] text-white rounded-[var(--radius-md)] hover:bg-[var(--primary-hover)] transition-colors"
-                    >
-                      Continue Exam
-                    </button>
-                  ) : attempt.isResultShown ? (
-                    <button
-                      onClick={() => router.push(`/user-dashboard/exam-attempts/${attempt._id}/result`)}
-                      className="px-4 py-2 bg-[var(--primary)] text-white rounded-[var(--radius-md)] hover:bg-[var(--primary-hover)] transition-colors"
-                    >
-                      View Result
-                    </button>
-                  ) : (
-                    <span className="px-4 py-2 text-[var(--foreground-muted)] bg-[var(--background)] rounded-[var(--radius-md)]">
-                      Pending Review
-                    </span>
-                  )}
+
+                <div className="flex justify-between items-center">
+                  <div className="text-sm text-[var(--foreground-muted)]">
+                    {attempt.timeSpent && (
+                      <span>Time spent: {attempt.timeSpent} minutes</span>
+                    )}
+                  </div>
+                  <div className="flex space-x-2">
+                    {!attempt.isCompleted ? (
+                      <button
+                        onClick={() =>
+                          router.push(
+                            `/user-dashboard/exam-attempts/${attempt._id}/take`
+                          )
+                        }
+                        className="px-4 py-2 bg-[var(--primary)] text-white rounded-[var(--radius-md)] hover:bg-[var(--primary-hover)] transition-colors"
+                      >
+                        Continue Exam
+                      </button>
+                    ) : attempt.isResultShown ? (
+                      <button
+                        onClick={() =>
+                          router.push(
+                            `/user-dashboard/exam-attempts/${attempt._id}/result`
+                          )
+                        }
+                        className="px-4 py-2 bg-[var(--primary)] text-white rounded-[var(--radius-md)] hover:bg-[var(--primary-hover)] transition-colors"
+                      >
+                        View Result
+                      </button>
+                    ) : (
+                      <span className="px-4 py-2 text-[var(--foreground-muted)] bg-[var(--background)] rounded-[var(--radius-md)]">
+                        Pending Review
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
         </div>
       )}
     </div>
   );
-} 
+}
