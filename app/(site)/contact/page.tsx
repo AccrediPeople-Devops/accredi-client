@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Breadcrumb from "@/app/components/site/Breadcrumb";
 import siteCourseService from "@/app/components/site/siteCourse.service";
+import Head from "next/head";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -45,7 +46,6 @@ export default function ContactPage() {
           .sort();
         setCourses([...courseTitles, "Other"]); // Add 'Other' as the last option
       } catch (error) {
-        console.error("Error fetching courses:", error);
         // Fallback to static courses if API fails
         setCourses([
           "Project Management (PMP)",
@@ -125,7 +125,6 @@ export default function ContactPage() {
       }
 
       const result = await response.json();
-      console.log("Form submitted successfully:", result);
 
       setSubmitted(true);
 
@@ -145,7 +144,6 @@ export default function ContactPage() {
         });
       }, 5000);
     } catch (error) {
-      console.error("Error submitting form:", error);
       setError(
         "Failed to send message. Please try again or contact us directly."
       );
@@ -157,14 +155,24 @@ export default function ContactPage() {
   const breadcrumbItems = [{ label: "Contact" }];
 
   return (
-    <div className="min-h-screen site-section-bg">
+    <>
+      <Head>
+        <title>Contact Us - AccrediPeople Certifications</title>
+        <meta name="description" content="Get in touch with AccrediPeople Certifications. Contact our team for course inquiries, corporate training solutions, and professional certification guidance." />
+        <meta name="keywords" content="contact us, course inquiry, corporate training, certification guidance, customer support, AccrediPeople contact" />
+        <meta property="og:title" content="Contact Us - AccrediPeople Certifications" />
+        <meta property="og:description" content="Get in touch with AccrediPeople Certifications. Contact our team for course inquiries, corporate training solutions, and professional certification guidance." />
+        <meta property="og:url" content="https://accredipeoplecertifications.com/contact" />
+        <meta property="og:type" content="website" />
+      </Head>
+      <div className="min-h-screen site-section-bg">
       {/* Hero Section */}
       <section className="relative overflow-hidden site-section-bg">
         {/* Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-20 left-20 w-96 h-96 bg-[#4F46E5]/5 site-light:bg-[#4F46E5]/10 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-20 right-20 w-80 h-80 bg-[#10B981]/5 site-light:bg-[#10B981]/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#F59E0B]/5 site-light:bg-[#F59E0B]/10 rounded-full blur-3xl animate-pulse delay-2000"></div>
+          <div className="absolute top-20 left-20 w-96 h-96 bg-[#4F46E5]/5 site-light:bg-[#4F46E5]/10 rounded-full blur-3xl "></div>
+          <div className="absolute bottom-20 right-20 w-80 h-80 bg-[#10B981]/5 site-light:bg-[#10B981]/10 rounded-full blur-3xl  "></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#F59E0B]/5 site-light:bg-[#F59E0B]/10 rounded-full blur-3xl  "></div>
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -176,11 +184,11 @@ export default function ContactPage() {
           {/* Main Content */}
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-3 site-glass backdrop-blur-sm rounded-full px-8 py-4 mb-8 hover:bg-white/20 site-light:hover:bg-white/60 transition-all duration-300">
-              <div className="w-3 h-3 bg-[#10B981] rounded-full animate-pulse"></div>
+              <div className="w-3 h-3 bg-[#10B981] rounded-full "></div>
               <span className="site-text-accent font-bold text-sm uppercase tracking-wider">
                 Get In Touch
               </span>
-              <div className="w-3 h-3 bg-[#4F46E5] rounded-full animate-pulse delay-500"></div>
+              <div className="w-3 h-3 bg-[#4F46E5] rounded-full  "></div>
             </div>
 
             <h1 className="text-5xl lg:text-7xl font-black mb-8 leading-tight">
@@ -284,6 +292,31 @@ export default function ContactPage() {
                         className="text-emerald-400 site-light:text-emerald-600 hover:underline text-lg"
                       >
                         +1 253-400-8265
+                      </a>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 bg-gradient-to-br from-[#0077B5] to-[#005885] rounded-2xl flex items-center justify-center flex-shrink-0">
+                      <svg
+                        className="w-7 h-7 text-white"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <h4 className="font-bold site-text-primary mb-1">
+                        Follow Us
+                      </h4>
+                      <a
+                        href="https://www.linkedin.com/company/accredi-people/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-400 site-light:text-blue-600 hover:underline text-lg"
+                      >
+                        LinkedIn Company Page
                       </a>
                     </div>
                   </div>
@@ -613,6 +646,7 @@ export default function ContactPage() {
           className="absolute inset-0 site-light:grayscale-0 grayscale"
         ></iframe>
       </section>
-    </div>
+      </div>
+    </>
   );
 }

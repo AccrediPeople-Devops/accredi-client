@@ -210,7 +210,6 @@ export default function ContactCTASection() {
                       onError={(e) => {
                         const target = e.currentTarget as HTMLImageElement;
                         target.style.display = 'none';
-                        console.warn(`Failed to load payment logo: ${payment.src}`);
                       }}
                       onLoad={(e) => {
                         const target = e.currentTarget as HTMLImageElement;

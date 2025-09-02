@@ -17,9 +17,37 @@ import ScheduleCalendarModal from "@/app/components/ScheduleCalendarModal";
 import GlobalLoader from "@/app/components/GlobalLoader";
 import { useSimpleEnhancedLoader } from "@/app/hooks/useEnhancedGlobalLoader";
 
+
 interface CoursePageProps {
   params: Promise<{ slug: string }>;
 }
+
+// Simple function to format ISO date string to DD/MM/YYYY
+const formatDateString = (isoDateString: string): string => {
+  try {
+    // Extract just the date part (YYYY-MM-DD) from ISO string
+    const datePart = isoDateString.split('T')[0];
+    const [year, month, day] = datePart.split('-');
+    return `${day}/${month}/${year}`;
+  } catch (error) {
+    return isoDateString; // Return original if formatting fails
+  }
+};
+
+// Function to check if a date is in the future
+const isDateInFuture = (isoDateString: string): boolean => {
+  try {
+    const scheduleDate = new Date(isoDateString);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set to beginning of today
+    scheduleDate.setHours(0, 0, 0, 0); // Set to beginning of schedule date
+    return scheduleDate >= today;
+  } catch (error) {
+    return false; // If date parsing fails, consider it invalid
+  }
+};
+
+
 
 export default function CoursePage({ params }: CoursePageProps) {
   const unwrappedParams = use(params);
@@ -110,17 +138,12 @@ export default function CoursePage({ params }: CoursePageProps) {
       setError("");
 
       try {
-        console.log("Fetching course with slug:", courseSlug);
         const response = await siteCourseService.getPublicCourseBySlug(
           courseSlug
         );
 
         if (response.status && response.course) {
           setCourse(response.course);
-          console.log("Course data loaded:", response.course);
-          console.log("Course schedules:", response.course.schedules);
-          console.log("Course FAQ:", response.course.faqId);
-          console.log("Course brochure:", response.course.broucher);
           
           // Add a small delay to prevent flash
           await new Promise(resolve => setTimeout(resolve, 500));
@@ -133,7 +156,6 @@ export default function CoursePage({ params }: CoursePageProps) {
           setDataLoaded();
         }
       } catch (err: any) {
-        console.error("Error fetching course:", err);
         setError("Failed to load course data");
         setDataLoaded();
       } finally {
@@ -269,7 +291,6 @@ export default function CoursePage({ params }: CoursePageProps) {
 
   const handleBrochureSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Brochure download requested:", brochureFormData);
 
     try {
       // Check if course has a brochure file
@@ -307,15 +328,11 @@ export default function CoursePage({ params }: CoursePageProps) {
             // Clean up the blob URL
             window.URL.revokeObjectURL(blobUrl);
 
-            console.log("Brochure downloaded via fetch:", brochureUrl);
           } else {
             throw new Error("Fetch failed");
           }
         } catch (fetchError) {
-          console.warn(
-            "Fetch failed, using direct download method:",
-            fetchError
-          );
+          // Fetch failed, using direct download method
 
           // Fallback: Direct download with download attribute
           const link = document.createElement("a");
@@ -330,7 +347,6 @@ export default function CoursePage({ params }: CoursePageProps) {
           link.click();
           document.body.removeChild(link);
 
-          console.log("Brochure downloaded via direct link:", brochureUrl);
         }
       } else {
         // Fallback: Generate a dummy PDF or show message
@@ -339,7 +355,6 @@ export default function CoursePage({ params }: CoursePageProps) {
         );
       }
     } catch (error) {
-      console.error("Error downloading brochure:", error);
       alert("Failed to download brochure. Please try again.");
     } finally {
       // Close modal and reset form
@@ -431,17 +446,12 @@ export default function CoursePage({ params }: CoursePageProps) {
 
     try {
       const scheduleId = selectedSchedule._id || selectedSchedule.id;
-      console.log("Verifying coupon:", {
-        discountCode: enrollFormData.couponCode,
-        scheduleId: scheduleId,
-      });
 
       const response = await couponCodeService.verifyCoupon(
         enrollFormData.couponCode,
         scheduleId
       );
 
-      console.log("Coupon verification response:", response);
 
       if (response.status && response.discountPrice) {
         setAppliedCoupon({
@@ -458,16 +468,13 @@ export default function CoursePage({ params }: CoursePageProps) {
           enrollFormData.couponCode === "SAVE50" ||
           enrollFormData.couponCode === "TEST50"
         ) {
-          console.info(
-            "Note: Using test coupon codes while verification service is being set up"
-          );
+          // Note: Using test coupon codes while verification service is being set up
         }
       } else {
         setCouponError("Invalid coupon code");
         setAppliedCoupon(null);
       }
     } catch (error: any) {
-      console.error("Coupon verification error:", error);
       setCouponError(error.message || "Failed to verify coupon code");
       setAppliedCoupon(null);
     } finally {
@@ -507,7 +514,6 @@ export default function CoursePage({ params }: CoursePageProps) {
         selectedCurrency: getCurrentCurrencyCode(),
       };
 
-      console.log(`Processing ${paymentType} payment:`, paymentData);
 
       // const response = await fetch(
       //   "http://api.accredipeoplecertifications.com/api/payment/v1/create-checkout-session",
@@ -543,7 +549,6 @@ export default function CoursePage({ params }: CoursePageProps) {
         window.location.href = response?.data?.sessionUrl;
       } else {
         // Handle specific error cases
-        console.log("Payment failed:", response);
         const errorMessage = response.data.message || "Payment failed";
 
         // Check if user already purchased the course
@@ -585,7 +590,6 @@ export default function CoursePage({ params }: CoursePageProps) {
         }
       }
     } catch (error: any) {
-      console.error("Payment error:", error);
       // Handle network errors or other exceptions - show dialog instead of alert
       const errorMessage =
         error.message ||
@@ -697,11 +701,8 @@ export default function CoursePage({ params }: CoursePageProps) {
 
   // Process schedule data from API
   const processScheduleData = () => {
-    console.log("Processing schedule data for course:", course._id);
-    console.log("Raw schedules:", course.schedules);
 
     if (!course.schedules || course.schedules.length === 0) {
-      console.log("No schedules found for this course");
       return {
         "live-online": [],
         "self-paced": [],
@@ -716,6 +717,11 @@ export default function CoursePage({ params }: CoursePageProps) {
     };
 
     course.schedules.forEach((schedule: any) => {
+      // Skip schedules with past start dates (except self-paced which don't have specific dates)
+      if (schedule.scheduleType !== "self-paced" && schedule.startDate && !isDateInFuture(schedule.startDate)) {
+        return; // Skip this schedule as it's in the past
+      }
+
       const processedSchedule = {
         id: schedule._id,
         courseId: schedule.courseId,
@@ -746,18 +752,11 @@ export default function CoursePage({ params }: CoursePageProps) {
           location: `${schedule.city}, ${schedule.state}`,
           dates:
             schedule.startDate && schedule.endDate
-              ? [
-                  new Date(schedule.startDate).toLocaleDateString(),
-                  new Date(schedule.endDate).toLocaleDateString(),
-                ]
+              ? [formatDateString(schedule.startDate), formatDateString(schedule.endDate)]
               : ["TBD"],
           duration:
             schedule.startDate && schedule.endDate
-              ? `${Math.ceil(
-                  (new Date(schedule.endDate).getTime() -
-                    new Date(schedule.startDate).getTime()) /
-                    (1000 * 3600 * 24)
-                )}`
+              ? "TBD"
               : "TBD",
           time: "9:00 AM - 5:00 PM CST",
           seatsLeft: Math.floor(Math.random() * 10) + 1, // Mock seats for now
@@ -778,18 +777,11 @@ export default function CoursePage({ params }: CoursePageProps) {
           ...processedSchedule,
           dates:
             schedule.startDate && schedule.endDate
-              ? [
-                  new Date(schedule.startDate).toLocaleDateString(),
-                  new Date(schedule.endDate).toLocaleDateString(),
-                ]
+              ? [formatDateString(schedule.startDate), formatDateString(schedule.endDate)]
               : ["TBD"],
           duration:
             schedule.startDate && schedule.endDate
-              ? `${Math.ceil(
-                  (new Date(schedule.endDate).getTime() -
-                    new Date(schedule.startDate).getTime()) /
-                    (1000 * 3600 * 24)
-                )}`
+              ? "TBD"
               : "TBD",
           time: "9:00 AM - 5:00 PM CST",
           seatsLeft: Math.floor(Math.random() * 10) + 1, // Mock seats for now
@@ -838,9 +830,9 @@ export default function CoursePage({ params }: CoursePageProps) {
       <section className="relative overflow-hidden site-section-bg">
         {/* Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-20 left-20 w-96 h-96 bg-[#4F46E5]/5 site-light:bg-[#4F46E5]/10 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-20 right-20 w-80 h-80 bg-[#10B981]/5 site-light:bg-[#10B981]/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#F59E0B]/5 site-light:bg-[#F59E0B]/10 rounded-full blur-3xl animate-pulse delay-2000"></div>
+          <div className="absolute top-20 left-20 w-96 h-96 bg-[#4F46E5]/5 site-light:bg-[#4F46E5]/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-20 w-80 h-80 bg-[#10B981]/5 site-light:bg-[#10B981]/10 rounded-full blur-3xl"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#F59E0B]/5 site-light:bg-[#F59E0B]/10 rounded-full blur-3xl"></div>
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -858,7 +850,7 @@ export default function CoursePage({ params }: CoursePageProps) {
                 {/* Category Badge */}
                 <div className="flex justify-start">
                   <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-4 py-2">
-                    <div className="w-2 h-2 bg-[#4F46E5] rounded-full animate-pulse"></div>
+                    <div className="w-2 h-2 bg-[#4F46E5] rounded-full "></div>
                     <span className="text-[#4F46E5] text-sm font-semibold uppercase tracking-wider">
                       {courseData.category}
                     </span>
@@ -887,7 +879,7 @@ export default function CoursePage({ params }: CoursePageProps) {
                     alt={course.title}
                     width={800}
                     height={600}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover rounded-3xl"
                     priority
                   />
                 </div>
@@ -953,7 +945,7 @@ export default function CoursePage({ params }: CoursePageProps) {
           <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-4 py-2 mb-6">
-                <div className="w-2 h-2 bg-[#4F46E5] rounded-full animate-pulse"></div>
+                <div className="w-2 h-2 bg-[#4F46E5] rounded-full "></div>
                 <span className="text-[#4F46E5] text-sm font-semibold uppercase tracking-wider">
                   About This Course
                 </span>
@@ -986,7 +978,7 @@ export default function CoursePage({ params }: CoursePageProps) {
           <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-4 py-2 mb-6">
-                <div className="w-2 h-2 bg-[#10B981] rounded-full animate-pulse"></div>
+                <div className="w-2 h-2 bg-[#10B981] rounded-full "></div>
                 <span className="text-[#10B981] text-sm font-semibold uppercase tracking-wider">
                   Course Highlights
                 </span>
@@ -1033,14 +1025,14 @@ export default function CoursePage({ params }: CoursePageProps) {
               {getSampleCertificateUrl(course) && (
                 <div className="flex justify-center items-center">
                   <div className="relative w-full flex justify-center">
-                    <div className="site-glass backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500 group relative">
+                    <div className="site-glass backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500 group relative w-full max-w-2xl">
                       <div className="relative overflow-hidden">
                         <Image
                           src={getSampleCertificateUrl(course) || "/placeholder.png"}
                           alt="Sample Certificate"
-                          width={400}
-                          height={300}
-                          className="w-auto h-auto max-w-full group-hover:scale-105 transition-transform duration-500"
+                          width={600}
+                          height={450}
+                          className="w-full h-auto group-hover:scale-105 transition-transform duration-500"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
                       </div>
@@ -1048,7 +1040,7 @@ export default function CoursePage({ params }: CoursePageProps) {
                       {/* Certificate Badge */}
                       <div className="absolute top-4 left-4">
                         <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-3 py-1.5">
-                          <div className="w-2 h-2 bg-[#F59E0B] rounded-full animate-pulse"></div>
+                          <div className="w-2 h-2 bg-[#F59E0B] rounded-full "></div>
                           <span className="text-[#F59E0B] text-xs font-semibold uppercase tracking-wider">
                             Sample Certificate
                           </span>
@@ -1075,8 +1067,8 @@ export default function CoursePage({ params }: CoursePageProps) {
                       </div>
 
                       {/* Decorative Elements */}
-                      <div className="absolute -top-4 -right-4 w-8 h-8 bg-[#F59E0B] rounded-full opacity-60 animate-pulse"></div>
-                      <div className="absolute -bottom-4 -left-4 w-6 h-6 bg-[#10B981] rounded-full opacity-60 animate-pulse delay-1000"></div>
+                      <div className="absolute -top-4 -right-4 w-8 h-8 bg-[#F59E0B] rounded-full opacity-60 "></div>
+                      <div className="absolute -bottom-4 -left-4 w-6 h-6 bg-[#10B981] rounded-full opacity-60  "></div>
                     </div>
                   </div>
                 </div>
@@ -1154,12 +1146,12 @@ export default function CoursePage({ params }: CoursePageProps) {
                         <div
                           className={`absolute -top-4 ${
                             isEven ? "-right-4" : "-left-4"
-                          } w-8 h-8 bg-[#4F46E5] rounded-full opacity-60 animate-pulse`}
+                          } w-8 h-8 bg-[#4F46E5] rounded-full opacity-60 `}
                         ></div>
                         <div
                           className={`absolute -bottom-4 ${
                             isEven ? "-left-4" : "-right-4"
-                          } w-6 h-6 bg-[#10B981] rounded-full opacity-60 animate-pulse delay-1000`}
+                          } w-6 h-6 bg-[#10B981] rounded-full opacity-60  `}
                         ></div>
                       </div>
                     </div>
@@ -1182,7 +1174,7 @@ export default function CoursePage({ params }: CoursePageProps) {
           <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-4 py-2 mb-6">
-                <div className="w-2 h-2 bg-[#06B6D4] rounded-full animate-pulse"></div>
+                <div className="w-2 h-2 bg-[#06B6D4] rounded-full "></div>
                 <span className="text-[#06B6D4] text-sm font-semibold uppercase tracking-wider">
                   Course Curriculum
                 </span>
@@ -1262,7 +1254,7 @@ export default function CoursePage({ params }: CoursePageProps) {
           {/* Header */}
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-4 py-2 mb-6">
-              <div className="w-2 h-2 bg-[#8B5CF6] rounded-full animate-pulse"></div>
+              <div className="w-2 h-2 bg-[#8B5CF6] rounded-full "></div>
               <span className="text-[#8B5CF6] text-sm font-semibold uppercase tracking-wider">
                 Explore Our Schedules
               </span>
@@ -1543,7 +1535,7 @@ export default function CoursePage({ params }: CoursePageProps) {
                               </div>
                               {schedule.seatsLeft && (
                                 <div className="inline-flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-[#F59E0B] to-[#EF4444] text-white rounded-full text-sm font-bold">
-                                  <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                                  <div className="w-2 h-2 bg-white rounded-full "></div>
                                   Limited Seats Available
                                 </div>
                               )}
@@ -1686,12 +1678,9 @@ export default function CoursePage({ params }: CoursePageProps) {
 
                       {/* Enroll Button */}
                       <div className="lg:col-span-3">
-                        <button
-                          onClick={() => {
-                            setSelectedSchedule(schedule);
-                            setShowEnrollModal(true);
-                          }}
-                          className="w-full group px-6 py-4 bg-gradient-to-r from-[#FF6B35] to-[#E55A2B] hover:from-[#E55A2B] hover:to-[#CC4A1D] text-white font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:shadow-[#FF6B35]/25"
+                        <Link
+                          href={`/courses/enroll?course=${courseSlug}&schedule=${schedule.id || schedule._id}&mode=${schedule.mode || selectedMode}`}
+                          className="w-full group px-6 py-4 bg-gradient-to-r from-[#FF6B35] to-[#E55A2B] hover:from-[#E55A2B] hover:to-[#CC4A1D] text-white font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:shadow-[#FF6B35]/25 block text-center"
                         >
                           <span className="flex items-center justify-center gap-2">
                             <svg
@@ -1709,7 +1698,7 @@ export default function CoursePage({ params }: CoursePageProps) {
                             </svg>
                             ENROLL NOW
                           </span>
-                        </button>
+                        </Link>
 
                         {/* View Dates Button - Only for live-online and classroom with dates */}
                         {(selectedMode === "live-online" ||
@@ -1769,7 +1758,7 @@ export default function CoursePage({ params }: CoursePageProps) {
           <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-4 py-2 mb-6">
-                <div className="w-2 h-2 bg-[#8B5CF6] rounded-full animate-pulse"></div>
+                <div className="w-2 h-2 bg-[#8B5CF6] rounded-full "></div>
                 <span className="text-[#8B5CF6] text-sm font-semibold uppercase tracking-wider">
                   Help Center
                 </span>

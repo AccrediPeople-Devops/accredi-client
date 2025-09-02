@@ -47,13 +47,7 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
     // Convert days array to numbers
     const selectedDays = days.map(day => parseInt(day));
     
-    console.log("Calendar Debug:", {
-      startDate,
-      endDate,
-      days,
-      selectedDays,
-      weekType
-    });
+
     
     for (let date = new Date(start); date <= end; date.setDate(date.getDate() + 1)) {
       const dayOfWeek = date.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
@@ -61,11 +55,11 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
       
       if (selectedDays.includes(adjustedDay)) {
         dates.push(new Date(date));
-        console.log("Class date found:", date.toDateString(), "Day:", adjustedDay);
+
       }
     }
     
-    console.log("Total class dates:", dates.length);
+
     return dates;
   }, [startDate, endDate, days]);
 

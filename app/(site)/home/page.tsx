@@ -8,12 +8,7 @@ import ProfessionalTrainingSection from "@/app/components/site/ProfessionalTrain
 import TestimonialsSection from "@/app/components/site/TestimonialsSection";
 import ClientLogosSection from "@/app/components/site/ClientLogosSection";
 import ContactCTASection from "@/app/components/site/ContactCTASection";
-import { 
-  ScrollAnimationWrapper, 
-  FadeIn, 
-  SlideUp, 
-  AnimatedHero 
-} from "@/app/components/animations/ScrollAnimationWrapper";
+
 import GlobalLoader from "@/app/components/GlobalLoader";
 import { useSimpleEnhancedLoader } from "@/app/hooks/useEnhancedGlobalLoader";
 import React from "react";
@@ -36,59 +31,33 @@ export default function HomePage() {
   }
 
   return (
-    <div className="will-animate">
-      {/* Hero Section with enhanced animation */}
-      <AnimatedHero className="gpu-accelerated">
+    <div>
+      {/* Hero Section */}
       <HeroSection />
-      </AnimatedHero>
 
-      {/* Mobile certifications section with fade-in */}
-      <FadeIn className="block md:hidden w-full py-8 px-5" delay={200}>
+      {/* Mobile certifications section */}
+      <div className="block md:hidden w-full py-8 px-5">
         <CertificationsSection />
-      </FadeIn>
+      </div>
 
-      {/* Our Approach Section with slide-up animation */}
-      <SlideUp delay={300}>
+      {/* Our Approach Section */}
       <div id="our-approach">
         <OurApproachSection />
       </div>
-      </SlideUp>
 
-      {/* Modes of Training with staggered animation */}
-      <ScrollAnimationWrapper 
-        animationType="slideUp" 
-        delay={400}
-        duration={700}
-        className="gpu-accelerated"
-      >
+      {/* Modes of Training */}
       <ModesOfTrainingSection />
-      </ScrollAnimationWrapper>
 
       {/* Professional Training Section */}
-      <ScrollAnimationWrapper 
-        animationType="fadeIn" 
-        delay={500}
-        duration={800}
-      >
       <ProfessionalTrainingSection />
-      </ScrollAnimationWrapper>
 
-      {/* Testimonials with slide-up animation */}
-      <SlideUp delay={600}>
+      {/* Testimonials */}
       <div id="testimonials">
         <TestimonialsSection />
       </div>
-      </SlideUp>
 
-      {/* Contact CTA with scale-in animation */}
-      <ScrollAnimationWrapper 
-        animationType="scaleIn" 
-        delay={700}
-        duration={600}
-        className="gpu-accelerated"
-      >
+      {/* Contact CTA */}
       <ContactCTASection />
-      </ScrollAnimationWrapper>
     </div>
   );
 } 

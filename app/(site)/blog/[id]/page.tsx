@@ -121,7 +121,6 @@ export default function BlogDetailsPage({ params }: { params: Promise<{ id: stri
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Review submitted:', { ...formData, rating });
     // Reset form
     setFormData({ name: '', email: '', review: '' });
     setRating(0);
@@ -142,8 +141,8 @@ export default function BlogDetailsPage({ params }: { params: Promise<{ id: stri
       <section className="relative py-20 lg:py-32 overflow-hidden site-section-bg">
         {/* Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-20 left-20 w-96 h-96 bg-[#4F46E5]/5 site-light:bg-[#4F46E5]/10 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-20 right-20 w-80 h-80 bg-[#10B981]/5 site-light:bg-[#10B981]/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+          <div className="absolute top-20 left-20 w-96 h-96 bg-[#4F46E5]/5 site-light:bg-[#4F46E5]/10 rounded-full blur-3xl "></div>
+          <div className="absolute bottom-20 right-20 w-80 h-80 bg-[#10B981]/5 site-light:bg-[#10B981]/10 rounded-full blur-3xl  "></div>
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -155,7 +154,7 @@ export default function BlogDetailsPage({ params }: { params: Promise<{ id: stri
           {/* Article Header */}
           <div className="max-w-4xl mx-auto text-center mb-16">
             <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-4 py-2 mb-6">
-              <div className="w-2 h-2 bg-[#4F46E5] rounded-full animate-pulse"></div>
+              <div className="w-2 h-2 bg-[#4F46E5] rounded-full "></div>
               <span className="text-[#4F46E5] text-sm font-semibold uppercase tracking-wider">{blogPost.category}</span>
         </div>
 

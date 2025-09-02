@@ -24,7 +24,6 @@ class CouponCodeService {
       const response = await axiosInstance.get("/coupon-codes/v1");
       return response.data;
     } catch (error) {
-      console.error("Error fetching coupon codes:", error);
       throw error;
     }
   }
@@ -36,14 +35,12 @@ class CouponCodeService {
    */
   async getCouponCodeById(id: string) {
     try {
-      console.log("CouponCodeService: Fetching coupon code with ID:", id);
       
       // Try direct endpoint first
       try {
         const response = await axiosInstance.get(`/coupon-codes/v1/${id}`);
         return response.data;
       } catch (directError) {
-        console.log("Direct endpoint failed, using fallback method");
         
         // Fallback: fetch all and find the matching one
         const allResponse = await this.getAllCouponCodes();
@@ -59,7 +56,6 @@ class CouponCodeService {
         
         const foundCouponCode = couponCodes.find((code: any) => code._id === id);
         if (foundCouponCode) {
-          console.log("CouponCodeService: Found coupon code in all codes:", foundCouponCode);
           return { status: true, couponCode: foundCouponCode };
         }
         
@@ -70,7 +66,6 @@ class CouponCodeService {
         };
       }
     } catch (error: any) {
-      console.error("CouponCodeService: Error fetching coupon code:", error);
       
       // Return a structured error
       return { 
@@ -87,11 +82,9 @@ class CouponCodeService {
    */
   async createCouponCode(data: CouponCode) {
     try {
-      console.log("Creating coupon code with data:", JSON.stringify(data, null, 2));
       const response = await axiosInstance.post("/coupon-codes/v1", data);
       return response.data;
     } catch (error) {
-      console.error("Error creating coupon code:", error);
       throw error;
     }
   }
@@ -104,18 +97,13 @@ class CouponCodeService {
    */
   async updateCouponCode(id: string, data: Partial<CouponCode>) {
     try {
-      console.log("Updating coupon code with ID:", id);
-      console.log("Update data:", JSON.stringify(data, null, 2));
       
       const response = await axiosInstance.put(`/coupon-codes/v1/${id}`, data);
       return response.data;
     } catch (error: any) {
-      console.error("Coupon code update error:", error);
       
       // Log more detailed error information
       if (error.response) {
-        console.error("Error response data:", error.response.data);
-        console.error("Error response status:", error.response.status);
       }
       
       throw error;
@@ -132,7 +120,6 @@ class CouponCodeService {
       const response = await axiosInstance.delete(`/coupon-codes/v1/${id}`);
       return response.data;
     } catch (error) {
-      console.error("Error deleting coupon code:", error);
       throw error;
     }
   }
@@ -150,7 +137,6 @@ class CouponCodeService {
       });
       return response.data;
     } catch (error) {
-      console.error("Error toggling coupon code status:", error);
       throw error;
     }
   }
@@ -160,7 +146,6 @@ class CouponCodeService {
    * This will be removed once /coupon-codes/v1/verify is implemented
    */
   private async verifyCouponFallback(discountCode: string, scheduleId: string) {
-    console.log("CouponCodeService: Using fallback verification method");
     
     // For now, return a mock response for testing
     // This should be removed once the real endpoint is working
@@ -187,27 +172,17 @@ class CouponCodeService {
    */
   async verifyCoupon(discountCode: string, scheduleId: string) {
     try {
-      console.log("CouponCodeService: Attempting to verify coupon");
-      console.log("API URL:", axiosInstance.defaults.baseURL);
-      console.log("Endpoint: /coupon-codes/v1/verify");
-      console.log("Full URL:", `${axiosInstance.defaults.baseURL}/coupon-codes/v1/verify`);
-      console.log("Request data:", { discountCode, scheduleId });
 
       const response = await axiosInstance.post("/coupon-codes/v1/verify", {
         discountCode,
         scheduleId
       });
       
-      console.log("CouponCodeService: Verification successful", response.data);
       return response.data;
     } catch (error: any) {
-      console.error("CouponCodeService: Verification failed", error);
       
       // Handle specific error cases
       if (error.response?.status === 404) {
-        console.error("CouponCodeService: 404 - Verify endpoint not found");
-        console.error("This suggests the /coupon-codes/v1/verify endpoint is not implemented yet");
-        console.warn("CouponCodeService: Using fallback verification method");
         
         // Use fallback method until backend is ready
         return await this.verifyCouponFallback(discountCode, scheduleId);

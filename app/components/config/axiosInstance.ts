@@ -14,13 +14,28 @@ const token = getToken();
 
 const axiosInstance = axios.create({
   baseURL: config.apiUrl,
+  timeout: 30000, // 30 seconds timeout
   headers: {
     Authorization: token ? `Bearer ${token}` : undefined,
   },
 });
 
 axiosInstance.interceptors.request.use((config) => {
-  config.headers.Authorization = `Bearer ${localStorage.getItem("token")}`;
+  // Only set Authorization if we have a token and we're on client side
+  if (typeof window !== "undefined") {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+  }
+  
+  // Don't override Content-Type if it's already set (for multipart/form-data)
+  if (!config.headers["Content-Type"] && config.data instanceof FormData) {
+    // Let axios set the Content-Type for FormData automatically
+  } else if (!config.headers["Content-Type"]) {
+    config.headers["Content-Type"] = "application/json";
+  }
+  
   return config;
 });
 

@@ -37,7 +37,6 @@ export default function FAQsPage() {
     setError("");
     try {
       const res = await courseService.getAllCourses();
-      console.log("Courses with FAQs:", res);
       
       if (res?.courses) {
         // Extract courses that have FAQ data
@@ -49,10 +48,8 @@ export default function FAQsPage() {
           }));
         
         setFaqs(coursesWithFAQs);
-        console.log("Extracted FAQs:", coursesWithFAQs);
       }
     } catch (err: any) {
-      console.error("Error fetching FAQs:", err);
       setError(err.response?.data?.message || "Error fetching FAQs");
     } finally {
       setIsLoading(false);

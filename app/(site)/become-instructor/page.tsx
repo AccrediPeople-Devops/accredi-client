@@ -128,19 +128,11 @@ export default function BecomeInstructorPage() {
       let resumeData = null;
       if (formData.cv) {
         setIsUploadingResume(true);
-        console.log('BecomeInstructorPage: Starting resume upload for file:', formData.cv.name);
-        console.log('BecomeInstructorPage: File details:', {
-          name: formData.cv.name,
-          size: formData.cv.size,
-          type: formData.cv.type
-        });
         
         try {
           const uploadResponse = await becomeInstructorService.uploadResume(formData.cv);
-          console.log('BecomeInstructorPage: Upload response:', uploadResponse);
           
           if (!uploadResponse.success) {
-            console.error('BecomeInstructorPage: Upload failed:', uploadResponse.message);
             setSubmitStatus({
               type: "error",
               message: uploadResponse.message
@@ -154,9 +146,7 @@ export default function BecomeInstructorPage() {
             key: uploadResponse.data.key
           };
           
-          console.log('BecomeInstructorPage: Formatted resume data:', resumeData);
         } catch (uploadError) {
-          console.error('BecomeInstructorPage: Upload error caught:', uploadError);
           setSubmitStatus({
             type: "error",
             message: "Upload failed unexpectedly. Please try again."
@@ -186,7 +176,6 @@ export default function BecomeInstructorPage() {
         message: formData.message.trim()
       };
 
-      console.log('BecomeInstructorPage: Submitting form data:', apiFormData);
 
       // Submit form data
       const response = await becomeInstructorService.submitBecomeInstructorForm(apiFormData);
@@ -227,7 +216,6 @@ export default function BecomeInstructorPage() {
         });
       }
     } catch (error) {
-      console.error("Unexpected error during form submission:", error);
       setSubmitStatus({
         type: "error",
         message: "An unexpected error occurred. Please try again later."
@@ -244,16 +232,16 @@ export default function BecomeInstructorPage() {
       <section className="relative py-12 lg:py-22 overflow-hidden site-section-bg">
         {/* Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-20 left-20 w-96 h-96 bg-[#4F46E5]/5 site-light:bg-[#4F46E5]/10 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-20 right-20 w-80 h-80 bg-[#10B981]/5 site-light:bg-[#10B981]/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#F59E0B]/5 site-light:bg-[#F59E0B]/10 rounded-full blur-3xl animate-pulse delay-2000"></div>
+          <div className="absolute top-20 left-20 w-96 h-96 bg-[#4F46E5]/5 site-light:bg-[#4F46E5]/10 rounded-full blur-3xl "></div>
+          <div className="absolute bottom-20 right-20 w-80 h-80 bg-[#10B981]/5 site-light:bg-[#10B981]/10 rounded-full blur-3xl  "></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#F59E0B]/5 site-light:bg-[#F59E0B]/10 rounded-full blur-3xl  "></div>
         </div>
 
         <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             {/* Category Badge */}
             <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-4 py-2 mb-6">
-              <div className="w-2 h-2 bg-[#4F46E5] rounded-full animate-pulse"></div>
+              <div className="w-2 h-2 bg-[#4F46E5] rounded-full "></div>
               <span className="text-[#4F46E5] text-sm font-semibold uppercase tracking-wider">Join Our Team</span>
             </div>
 

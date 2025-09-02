@@ -75,7 +75,6 @@ const Navbar = () => {
         // Basic validation: check if token has 3 parts (JWT format)
         const tokenParts = token.split('.');
         if (tokenParts.length !== 3) {
-          console.warn("Invalid token format, clearing tokens");
           localStorage.removeItem("token");
           localStorage.removeItem("refreshToken");
           setCurrentUser(null);
@@ -84,7 +83,6 @@ const Navbar = () => {
         }
 
         const tokenPayload = JSON.parse(atob(token.split('.')[1]));
-        console.log("Token payload in Navbar:", tokenPayload);
         
         // Get stored email from localStorage (set during login)
         const userEmail = localStorage.getItem("userEmail");
@@ -105,18 +103,15 @@ const Navbar = () => {
           profileImage: undefined
         };
         
-        console.log("Created user object from token:", userFromToken);
         setCurrentUser(userFromToken);
         
       } catch (tokenError) {
-        console.error("Error decoding token:", tokenError);
         localStorage.removeItem("token");
         localStorage.removeItem("refreshToken");
         localStorage.removeItem("userEmail");
         setCurrentUser(null);
       }
     } catch (err) {
-      console.error("Error checking auth status:", err);
       setCurrentUser(null);
     } finally {
       setIsCheckingAuth(false);
@@ -147,9 +142,7 @@ const Navbar = () => {
     const fetchCoursesAndCategories = async () => {
       setIsLoadingCourses(true);
       try {
-        console.log("Fetching courses for navbar...");
         const coursesResponse = await siteCourseService.getPublicCourses();
-        console.log("Raw courses response:", coursesResponse);
         
         let coursesData: Course[] = [];
         if (coursesResponse?.status && coursesResponse?.courses) {
@@ -162,10 +155,8 @@ const Navbar = () => {
           );
         }
 
-        console.log("Processed courses for navbar:", coursesData.length);
 
         if (coursesData.length === 0) {
-          console.warn("No courses found - showing fallback categories");
           // Set some fallback categories for better UX
           const fallbackCategories: CategoryWithCourses[] = [
             {
@@ -217,7 +208,6 @@ const Navbar = () => {
         const categoriesMap = new Map<string, CategoryWithCourses>();
         
         coursesData.forEach(course => {
-          console.log("Processing course:", course.title, "Category:", course.categoryId);
           if (course.categoryId && typeof course.categoryId === 'object') {
             const category = course.categoryId as any;
             const categoryId = category._id;
@@ -236,16 +226,13 @@ const Navbar = () => {
           .filter(category => category.courses.length > 0) // Only show categories that have courses
           .sort((a, b) => b.courses.length - a.courses.length); // Sort by number of courses
 
-        console.log("Categories with courses:", categoriesWithCourses.map(cat => `${cat.name}: ${cat.courses.length} courses`));
 
         setCategories(categoriesWithCourses);
         if (categoriesWithCourses.length > 0) {
           setActiveDomain(categoriesWithCourses[0]);
         }
       } catch (error: any) {
-        console.error("Error fetching courses for navbar:", error);
         // Always set fallback categories on error
-        console.warn("Setting fallback categories due to error");
         const fallbackCategories: CategoryWithCourses[] = [
           {
             _id: 'fallback-1',
@@ -301,19 +288,15 @@ const Navbar = () => {
       (window as any).clearTokens = () => {
         localStorage.removeItem("token");
         localStorage.removeItem("refreshToken");
-        console.log("Tokens cleared manually");
         window.location.reload();
       };
       
       // Add debug function to manually fetch courses
       (window as any).debugCourses = async () => {
-        console.log("=== DEBUG: Manual course fetch ===");
         try {
           const response = await siteCourseService.getPublicCourses();
-          console.log("Debug courses response:", response);
           return response;
         } catch (error) {
-          console.error("Debug courses error:", error);
           return error;
         }
       };

@@ -34,7 +34,6 @@ class ResourceService {
       const response = await axiosInstance.get("/resources/v1");
       return response.data;
     } catch (error) {
-      console.error("Error fetching resources:", error);
       throw error;
     }
   }
@@ -46,14 +45,12 @@ class ResourceService {
    */
   async getResourceById(id: string) {
     try {
-      console.log("ResourceService: Fetching resource with ID:", id);
       
       // Try direct endpoint first
       try {
         const response = await axiosInstance.get(`/resources/v1/${id}`);
         return response.data;
       } catch (directError) {
-        console.log("Direct endpoint failed, using fallback method");
         
         // Fallback: fetch all and find the matching one
         const allResponse = await this.getAllResources();
@@ -69,7 +66,6 @@ class ResourceService {
         
         const foundResource = resources.find((resource: any) => resource._id === id);
         if (foundResource) {
-          console.log("ResourceService: Found resource in all resources:", foundResource);
           return { status: true, resource: foundResource };
         }
         
@@ -80,7 +76,6 @@ class ResourceService {
         };
       }
     } catch (error: any) {
-      console.error("ResourceService: Error fetching resource:", error);
       
       // Return a structured error
       return { 
@@ -100,7 +95,6 @@ class ResourceService {
       const response = await axiosInstance.get(`/resources/v1/course/${courseId}`);
       return response.data;
     } catch (error) {
-      console.error("Error fetching resources by course ID:", error);
       throw error;
     }
   }
@@ -112,11 +106,9 @@ class ResourceService {
    */
   async createResource(data: Resource) {
     try {
-      console.log("Creating resource with data:", JSON.stringify(data, null, 2));
       const response = await axiosInstance.post("/resources/v1", data);
       return response.data;
     } catch (error) {
-      console.error("Error creating resource:", error);
       throw error;
     }
   }
@@ -129,18 +121,13 @@ class ResourceService {
    */
   async updateResource(id: string, data: Partial<Resource>) {
     try {
-      console.log("Updating resource with ID:", id);
-      console.log("Update data:", JSON.stringify(data, null, 2));
       
       const response = await axiosInstance.put(`/resources/v1/${id}`, data);
       return response.data;
     } catch (error: any) {
-      console.error("Resource update error:", error);
       
       // Log more detailed error information
       if (error.response) {
-        console.error("Error response data:", error.response.data);
-        console.error("Error response status:", error.response.status);
       }
       
       throw error;
@@ -157,7 +144,6 @@ class ResourceService {
       const response = await axiosInstance.delete(`/resources/v1/${id}`);
       return response.data;
     } catch (error) {
-      console.error("Error deleting resource:", error);
       throw error;
     }
   }
@@ -171,26 +157,21 @@ class ResourceService {
     try {
       // Try multiple approaches to restore the resource
       try {
-        console.log("Trying PUT to /resources/v1/{id}/undo-delete with isActive");
         const response = await axiosInstance.put(`/resources/v1/${id}/undo-delete`, {
           isActive: true
         });
         return response.data;
       } catch (firstError: any) {
-        console.log("First restore attempt failed:", firstError.message);
         
         try {
-          console.log("Trying PUT with standard endpoint");
           const response = await axiosInstance.put(`/resources/v1/${id}`, {
             isDeleted: false,
             isActive: true
           });
           return response.data;
         } catch (secondError: any) {
-          console.log("Second restore attempt failed:", secondError.message);
           
           // Try PATCH as last resort
-          console.log("Trying PATCH as final attempt");
       const response = await axiosInstance.patch(`/resources/v1/${id}`, {
             isDeleted: false,
             isActive: true
@@ -199,7 +180,6 @@ class ResourceService {
         }
       }
     } catch (error) {
-      console.error("All restore attempts failed:", error);
       throw error;
     }
   }

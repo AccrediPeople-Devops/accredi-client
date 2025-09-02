@@ -97,7 +97,6 @@ export default function ReferEarnPage() {
         });
       }
     } catch (error) {
-      console.error('Unexpected error during form submission:', error);
       setSubmitStatus({
         type: 'error',
         message: 'An unexpected error occurred. Please try again later.'
@@ -135,9 +134,9 @@ export default function ReferEarnPage() {
       <section className="relative overflow-hidden site-section-bg">
         {/* Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-20 left-20 w-96 h-96 bg-[#7C3AED]/5 site-light:bg-[#7C3AED]/10 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-20 right-20 w-80 h-80 bg-[#F59E0B]/5 site-light:bg-[#F59E0B]/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#10B981]/5 site-light:bg-[#10B981]/10 rounded-full blur-3xl animate-pulse delay-2000"></div>
+          <div className="absolute top-20 left-20 w-96 h-96 bg-[#7C3AED]/5 site-light:bg-[#7C3AED]/10 rounded-full blur-3xl "></div>
+          <div className="absolute bottom-20 right-20 w-80 h-80 bg-[#F59E0B]/5 site-light:bg-[#F59E0B]/10 rounded-full blur-3xl  "></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#10B981]/5 site-light:bg-[#10B981]/10 rounded-full blur-3xl  "></div>
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -149,9 +148,9 @@ export default function ReferEarnPage() {
           {/* Main Content */}
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-3 site-glass backdrop-blur-sm rounded-full px-8 py-4 mb-8 hover:bg-white/20 site-light:hover:bg-white/60 transition-all duration-300">
-              <div className="w-3 h-3 bg-[#7C3AED] rounded-full animate-pulse"></div>
+              <div className="w-3 h-3 bg-[#7C3AED] rounded-full "></div>
               <span className="site-text-accent font-bold text-sm uppercase tracking-wider">Refer & Earn Program</span>
-              <div className="w-3 h-3 bg-[#F59E0B] rounded-full animate-pulse delay-500"></div>
+              <div className="w-3 h-3 bg-[#F59E0B] rounded-full  "></div>
             </div>
 
             <h1 className="text-5xl lg:text-7xl font-black mb-8 leading-tight">
@@ -193,7 +192,7 @@ export default function ReferEarnPage() {
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-4 py-2 mb-6">
-              <div className="w-2 h-2 bg-[#10B981] rounded-full animate-pulse"></div>
+              <div className="w-2 h-2 bg-[#10B981] rounded-full "></div>
               <span className="text-[#10B981] text-sm font-semibold uppercase tracking-wider">Process</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-black site-text-primary mb-6">
@@ -234,7 +233,7 @@ export default function ReferEarnPage() {
             {/* Content */}
             <div>
               <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-4 py-2 mb-6">
-                <div className="w-2 h-2 bg-[#7C3AED] rounded-full animate-pulse"></div>
+                <div className="w-2 h-2 bg-[#7C3AED] rounded-full "></div>
                 <span className="text-[#7C3AED] text-sm font-semibold uppercase tracking-wider">Get Started</span>
               </div>
 

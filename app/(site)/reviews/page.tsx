@@ -53,7 +53,6 @@ export default function ReviewsPage() {
         setDataLoaded();
       }
     } catch (error) {
-      console.error("Error fetching reviews:", error);
       setError("Failed to load reviews");
       setDataLoaded();
     } finally {
@@ -118,7 +117,7 @@ export default function ReviewsPage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="text-center">
               <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-6 py-3 mb-6">
-                <div className="w-2 h-2 bg-amber-400 site-light:bg-amber-600 rounded-full animate-pulse"></div>
+                <div className="w-2 h-2 bg-amber-400 site-light:bg-amber-600 rounded-full "></div>
                 <span className="text-amber-400 site-light:text-amber-600 text-sm font-semibold uppercase tracking-wider">Student Testimonials</span>
               </div>
               <h1 className="text-4xl md:text-6xl font-black site-text-primary mb-6">
@@ -195,7 +194,7 @@ export default function ReviewsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-6 py-3 mb-6">
-              <div className="w-2 h-2 bg-amber-400 site-light:bg-amber-600 rounded-full animate-pulse"></div>
+              <div className="w-2 h-2 bg-amber-400 site-light:bg-amber-600 rounded-full "></div>
               <span className="text-amber-400 site-light:text-amber-600 text-sm font-semibold uppercase tracking-wider">Student Testimonials</span>
             </div>
             <h1 className="text-4xl md:text-6xl font-black site-text-primary mb-6">
@@ -275,7 +274,7 @@ export default function ReviewsPage() {
                             alt={review.name}
                             width={64}
                             height={64}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover rounded-full"
                           />
                         </div>
                         <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-[#10B981] rounded-lg flex items-center justify-center shadow-lg">
@@ -397,7 +396,7 @@ export default function ReviewsPage() {
                     alt={selectedReview.name}
                     width={64}
                     height={64}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover rounded-full"
                     unoptimized
                   />
                 </div>

@@ -11,6 +11,7 @@ import config from "@/app/components/config/config";
 import GlobalLoader from "@/app/components/GlobalLoader";
 import { useSimpleEnhancedLoader } from "@/app/hooks/useEnhancedGlobalLoader";
 
+
 export default function ProfilePage() {
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -80,7 +81,6 @@ export default function ProfilePage() {
           }
         }
       } catch (error) {
-        console.error("Error fetching user:", error);
         router.push("/login");
       } finally {
         setIsLoading(false);
@@ -145,7 +145,6 @@ export default function ProfilePage() {
         toast.error(response.message || "Failed to update profile");
       }
     } catch (error: any) {
-      console.error("Error updating profile:", error);
       toast.error(error.response?.data?.message || "Error updating profile");
     } finally {
       setIsSaving(false);
@@ -210,7 +209,7 @@ export default function ProfilePage() {
                       alt={currentUser.fullName}
                       width={128}
                       height={128}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover rounded-full"
                     />
                   ) : (
                     <span className="text-white font-bold text-4xl">
@@ -394,11 +393,7 @@ export default function ProfilePage() {
                 <h4 className="font-semibold site-text-primary">Member Since</h4>
               </div>
               <p className="site-text-secondary text-sm">
-                {new Date(currentUser.createdAt).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
-                })}
+                {currentUser.createdAt}
               </p>
             </div>
           </div>

@@ -37,12 +37,26 @@ class GeolocationService {
    */
   async getUserIP(): Promise<string> {
     try {
-      // Use a public IP service to get user's IP
-      const response = await fetch("https://api.ipify.org?format=json");
+      // Use a public IP service to get user's IP with timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+      
+      const response = await fetch("https://api.ipify.org?format=json", {
+        signal: controller.signal,
+        headers: {
+          'Accept': 'application/json',
+        }
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.json();
       return data.ip;
     } catch (error) {
-      console.error("Error fetching user IP:", error);
       // Fallback IP for testing
       return "49.43.241.226";
     }
@@ -55,11 +69,41 @@ class GeolocationService {
    */
   async getGeolocationByIP(ip: string): Promise<GeolocationData> {
     try {
-      const response = await axiosInstance.get(`/geolocation/v1?ip=${ip}`);
+      const response = await axiosInstance.get(`/geolocation/v1?ip=${ip}`, {
+        timeout: 10000 // 10 second timeout for this specific call
+      });
       return response.data;
-    } catch (error) {
-      console.error("Error fetching geolocation data:", error);
-      throw error;
+    } catch (error: any) {
+      // Return fallback data if API fails
+      return {
+        status: false,
+        message: "Geolocation service unavailable",
+        geoplugin_request: ip,
+        geoplugin_status: 0,
+        geoplugin_credit: "",
+        geoplugin_region: "",
+        geoplugin_areaCode: null,
+        geoplugin_dmaCode: null,
+        geoplugin_countryName: "United States",
+        geoplugin_countryCode: "US",
+        geoplugin_euVATrate: null,
+        geoplugin_continentName: "North America",
+        geoplugin_inEU: null,
+        geoplugin_continentCode: "NA",
+        geoplugin_city: "New York",
+        geoplugin_regionName: "New York",
+        geoplugin_regionCode: "NY",
+        geoplugin_postal_code: "10001",
+        geoplugin_longitude: -74.0059,
+        geoplugin_latitude: 40.7128,
+        geoplugin_locationAccuracyRadius: null,
+        geoplugin_timezone: "America/New_York",
+        geoplugin_currencyCode: "USD",
+        geoplugin_currencySymbol: "$",
+        geoplugin_currencyConverter: 1,
+        geoplugin_currencySymbol_UTF8: "$",
+        languages: ["en"]
+      };
     }
   }
 
@@ -72,7 +116,6 @@ class GeolocationService {
       const userIP = await this.getUserIP();
       return await this.getGeolocationByIP(userIP);
     } catch (error) {
-      console.error("Error fetching current user geolocation:", error);
       throw error;
     }
   }

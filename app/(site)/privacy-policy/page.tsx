@@ -6,16 +6,16 @@ export default function PrivacyPolicyPage() {
     <div className="min-h-screen site-bg-primary">
       {/* Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-20 left-10 w-32 h-32 bg-[#4F46E5]/10 rounded-full blur-2xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-10 w-40 h-40 bg-[#B39DDB]/10 rounded-full blur-2xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/4 w-24 h-24 bg-[#10B981]/10 rounded-full blur-2xl animate-pulse delay-2000"></div>
+        <div className="absolute top-20 left-10 w-32 h-32 bg-[#4F46E5]/10 rounded-full blur-2xl "></div>
+        <div className="absolute bottom-20 right-10 w-40 h-40 bg-[#B39DDB]/10 rounded-full blur-2xl  "></div>
+        <div className="absolute top-1/2 left-1/4 w-24 h-24 bg-[#10B981]/10 rounded-full blur-2xl  "></div>
       </div>
 
       <div className="relative z-10 container mx-auto px-4 py-12">
         {/* Header */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-6 py-3 mb-6 hover:bg-white/20 transition-all duration-300">
-            <div className="w-2 h-2 bg-[#4F46E5] rounded-full animate-pulse"></div>
+            <div className="w-2 h-2 bg-[#4F46E5] rounded-full "></div>
             <span className="site-text-primary text-sm font-bold uppercase tracking-wider">Legal Information</span>
           </div>
           <h1 className="text-4xl lg:text-5xl font-black site-text-primary mb-4 leading-tight">

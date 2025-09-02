@@ -9,16 +9,12 @@ class AdminAuditLogService {
    */
   async getAdminAuditLogs(params: AdminAuditLogParams = {}) {
     try {
-      console.log("Fetching admin audit logs with params:", params);
       const response = await axiosInstance.get("/admin-audit-logs/v1", { params });
-      console.log("Admin audit logs response:", response.data);
       return response.data;
     } catch (error: any) {
-      console.error("Error fetching admin audit logs:", error);
       
       // If the endpoint doesn't exist (404) or other server errors, return mock data for development
       if (error.response?.status === 404 || error.response?.status >= 500) {
-        console.log("API endpoint not available, returning mock data");
         return {
           status: "success",
           data: this.getMockAuditLogs(),

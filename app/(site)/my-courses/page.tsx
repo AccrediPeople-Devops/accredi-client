@@ -72,7 +72,6 @@ export default function MyCoursesPage() {
               setDataLoaded();
               
             } catch (coursesError) {
-              console.error("Error fetching courses:", coursesError);
               setError("Failed to load courses");
               setDataLoaded();
             }
@@ -83,7 +82,6 @@ export default function MyCoursesPage() {
           }
         }
       } catch (error) {
-        console.error("Error fetching user:", error);
         router.push("/login");
       } finally {
         setIsLoading(false);

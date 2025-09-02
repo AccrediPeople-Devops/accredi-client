@@ -17,7 +17,7 @@ class SiteCourseService {
       const response = await axiosInstance.get("/courses");
       return response.data;
     } catch (error) {
-      console.error("Error fetching public courses:", error);
+
       throw error;
     }
   }
@@ -39,7 +39,6 @@ class SiteCourseService {
       const categoriesMap = new Map();
       
       coursesResponse.courses.forEach((course: any, index: number) => {
-        console.log(`Course ${index + 1}:`, course.title, "Category:", course.categoryId?.name, "ID:", course.categoryId?._id);
         
         if (course.categoryId && typeof course.categoryId === 'object') {
           const category = course.categoryId;
@@ -58,12 +57,9 @@ class SiteCourseService {
             });
           }
         } else if (course.categoryId === null) {
-          console.log(`Course "${course.title}" has null categoryId`);
         }
       });
 
-      console.log("Categories map size:", categoriesMap.size);
-      console.log("Categories found:", Array.from(categoriesMap.keys()));
 
       const categories = Array.from(categoriesMap.values());
       
@@ -72,7 +68,6 @@ class SiteCourseService {
         courseCategories: categories
       };
     } catch (error) {
-      console.error("Error fetching public course categories:", error);
       return { status: false, courseCategories: [] };
     }
   }
@@ -84,7 +79,6 @@ class SiteCourseService {
    */
   async getPublicCourseById(id: string) {
     try {
-      console.log("SiteCourseService: Fetching public course with ID:", id);
       
       const coursesResponse = await this.getPublicCourses();
       
@@ -97,7 +91,6 @@ class SiteCourseService {
 
       const foundCourse = coursesResponse.courses.find((course: any) => course._id === id);
       if (foundCourse) {
-        console.log("SiteCourseService: Found course:", foundCourse.title);
         return { status: true, course: foundCourse };
       }
       
@@ -106,7 +99,6 @@ class SiteCourseService {
         message: `Course not found with ID: ${id}`
       };
     } catch (error: any) {
-      console.error("SiteCourseService: Error fetching course:", error);
       return { 
         status: false, 
         message: error.response?.data?.message || `Error fetching course with ID: ${id}`
@@ -121,7 +113,6 @@ class SiteCourseService {
    */
   async getPublicCourseBySlug(slugOrId: string) {
     try {
-      console.log("SiteCourseService: Fetching public course with slug/ID:", slugOrId);
       
       const coursesResponse = await this.getPublicCourses();
       
@@ -138,7 +129,6 @@ class SiteCourseService {
       if (isValidObjectId(slugOrId)) {
         foundCourse = coursesResponse.courses.find((course: any) => course._id === slugOrId);
         if (foundCourse) {
-          console.log("SiteCourseService: Found course by ID:", foundCourse.title);
           return { status: true, course: foundCourse };
         }
       }
@@ -150,7 +140,6 @@ class SiteCourseService {
       });
 
       if (foundCourse) {
-        console.log("SiteCourseService: Found course by slug:", foundCourse.title);
         return { status: true, course: foundCourse };
       }
       
@@ -159,7 +148,6 @@ class SiteCourseService {
         message: `Course not found with slug/ID: ${slugOrId}`
       };
     } catch (error: any) {
-      console.error("SiteCourseService: Error fetching course by slug:", error);
       return { 
         status: false, 
         message: error.response?.data?.message || `Error fetching course with slug/ID: ${slugOrId}`
@@ -174,7 +162,6 @@ class SiteCourseService {
    */
   async getPublicCoursesByCategory(categoryId: string) {
     try {
-      console.log("SiteCourseService: Fetching courses for category:", categoryId);
       
       const coursesResponse = await this.getPublicCourses();
       
@@ -190,13 +177,11 @@ class SiteCourseService {
         );
       });
       
-      console.log(`SiteCourseService: Found ${filteredCourses.length} courses for category ${categoryId}`);
       return { 
         status: true, 
         courses: filteredCourses 
       };
     } catch (error) {
-      console.error("SiteCourseService: Error getting courses by category:", error);
       return { status: false, courses: [] };
     }
   }
@@ -208,7 +193,6 @@ class SiteCourseService {
    */
   async getRecentPublicCourses(limit: number = 4) {
     try {
-      console.log("SiteCourseService: Fetching recent public courses, limit:", limit);
       
       const coursesResponse = await this.getPublicCourses();
       
@@ -226,13 +210,11 @@ class SiteCourseService {
       // Return only the requested number of courses
       const recentCourses = sortedCourses.slice(0, limit);
       
-      console.log(`SiteCourseService: Returning ${recentCourses.length} recent courses`);
       return { 
         status: true, 
         courses: recentCourses 
       };
     } catch (error) {
-      console.error("SiteCourseService: Error getting recent courses:", error);
       return { status: false, courses: [] };
     }
   }
@@ -244,7 +226,6 @@ class SiteCourseService {
    */
   async searchPublicCourses(query: string) {
     try {
-      console.log("SiteCourseService: Searching courses with query:", query);
       
       const coursesResponse = await this.getPublicCourses();
       
@@ -262,13 +243,11 @@ class SiteCourseService {
         );
       });
       
-      console.log(`SiteCourseService: Found ${filteredCourses.length} courses matching "${query}"`);
       return { 
         status: true, 
         courses: filteredCourses 
       };
     } catch (error) {
-      console.error("SiteCourseService: Error searching courses:", error);
       return { status: false, courses: [] };
     }
   }
@@ -296,7 +275,6 @@ class SiteCourseService {
         activeCourses
       };
     } catch (error) {
-      console.error("SiteCourseService: Error getting course stats:", error);
       return {
         totalCourses: 0,
         totalCategories: 0,

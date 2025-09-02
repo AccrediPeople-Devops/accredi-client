@@ -52,9 +52,9 @@ function PaymentCancelContent() {
     <div className="min-h-screen site-section-bg relative overflow-hidden">
       {/* Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-20 left-20 w-96 h-96 bg-[#EF4444]/5 site-light:bg-[#EF4444]/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-20 w-80 h-80 bg-[#F59E0B]/5 site-light:bg-[#F59E0B]/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#6B7280]/5 site-light:bg-[#6B7280]/10 rounded-full blur-3xl animate-pulse delay-2000"></div>
+        <div className="absolute top-20 left-20 w-96 h-96 bg-[#EF4444]/5 site-light:bg-[#EF4444]/10 rounded-full blur-3xl "></div>
+        <div className="absolute bottom-20 right-20 w-80 h-80 bg-[#F59E0B]/5 site-light:bg-[#F59E0B]/10 rounded-full blur-3xl  "></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#6B7280]/5 site-light:bg-[#6B7280]/10 rounded-full blur-3xl  "></div>
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -274,7 +274,7 @@ function PaymentCancelLoading() {
     <div className="min-h-screen site-section-bg flex items-center justify-center">
       <div className="site-glass backdrop-blur-xl rounded-3xl p-8 shadow-2xl max-w-lg w-full mx-4">
         <div className="text-center">
-          <div className="w-20 h-20 bg-gradient-to-br from-[#EF4444] to-[#DC2626] rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
+          <div className="w-20 h-20 bg-gradient-to-br from-[#EF4444] to-[#DC2626] rounded-full flex items-center justify-center mx-auto mb-6 ">
             <svg
               className="w-10 h-10 text-white"
               fill="none"

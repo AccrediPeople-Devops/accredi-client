@@ -18,12 +18,12 @@ export default function SiteLayoutWrapper({ children }: { children: React.ReactN
           images: [
             '/Logo/Only_Transperent/full_trimmed_transparent_base.png',
             '/Website Images/HeroSectionHomePage/AdobeStock_258949460.jpeg',
-            '/Website Images/CategoryIcons/PMP Training/AdobeStock_274794823.jpeg',
+            '/Website Images/CoursePage/PMP Training/AdobeStock_274794823.jpeg',
             '/Website Images/CategoryIcons/Agile & Scrum - Image.png',
             '/Website Images/CategoryIcons/CC- Transprt.png',
           ],
           fonts: [
-            { family: 'Inter', src: '/fonts/inter.woff2' }
+            // Inter font will be loaded from Google Fonts or system fallback
           ]
         };
         

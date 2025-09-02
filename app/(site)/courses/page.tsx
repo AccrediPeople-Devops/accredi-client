@@ -10,11 +10,7 @@ import siteCourseService from "@/app/components/site/siteCourse.service";
 import config from "@/app/components/config/config";
 import { createCourseSlug, stripHtml } from "@/app/utils/textUtils";
 import RichTextRenderer from "@/app/components/RichTextRenderer";
-import { 
-  StaggeredAnimation, 
-  FadeIn, 
-  SlideUp 
-} from "@/app/components/animations/ScrollAnimationWrapper";
+
 import GlobalLoader from "@/app/components/GlobalLoader";
 import { useSimpleEnhancedLoader } from "@/app/hooks/useEnhancedGlobalLoader";
 
@@ -43,12 +39,10 @@ export default function CoursesPage() {
       setError("");
       
       try {
-        console.log("Fetching categories and courses...");
         
         // Fetch courses only - categories are embedded in course objects
         const coursesResponse = await siteCourseService.getPublicCourses();
 
-        console.log("Courses response:", coursesResponse);
 
         let coursesData: Course[] = [];
 
@@ -69,11 +63,9 @@ export default function CoursesPage() {
           );
         }
 
-        console.log("Processed courses:", coursesData.length);
 
         // Log first course structure for debugging
         if (coursesData.length > 0) {
-          console.log("First course structure:", JSON.stringify(coursesData[0], null, 2));
         }
 
         // Extract unique categories from courses
@@ -95,7 +87,6 @@ export default function CoursesPage() {
 
         // Log category-course mapping
         categoriesWithCourses.forEach(category => {
-          console.log(`Category "${category.name}" has ${category.courses.length} courses`);
         });
 
         setCategories(categoriesWithCourses);
@@ -103,14 +94,12 @@ export default function CoursesPage() {
         setFilteredCourses(coursesData);
         
         if (coursesData.length === 0) {
-          console.warn("No courses found in the response");
         }
         
         // Mark data as loaded for global loader
         setDataLoaded();
         
       } catch (err: any) {
-        console.error("Error fetching data:", err);
         setError("Failed to load courses and categories");
         setDataLoaded(); // Still mark as loaded even on error
       } finally {
@@ -211,17 +200,17 @@ export default function CoursesPage() {
     <div className="min-h-screen bg-gradient-to-br from-[#0F0F23] via-[#1A1A3E] to-[#2D1B69] relative overflow-hidden">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-[#4F46E5]/20 to-[#7C3AED]/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-[#10B981]/20 to-[#F59E0B]/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-br from-[#7C3AED]/10 to-[#4F46E5]/10 rounded-full blur-3xl animate-pulse delay-500"></div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-[#4F46E5]/20 to-[#7C3AED]/20 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-[#10B981]/20 to-[#F59E0B]/20 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-br from-[#7C3AED]/10 to-[#4F46E5]/10 rounded-full blur-3xl"></div>
       </div>
 
       {/* Floating Geometric Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-2 h-2 bg-white/20 rounded-full animate-bounce delay-300"></div>
-        <div className="absolute top-40 right-20 w-3 h-3 bg-[#4F46E5]/30 rounded-full animate-bounce delay-700"></div>
-        <div className="absolute bottom-32 left-1/4 w-2 h-2 bg-[#10B981]/30 rounded-full animate-bounce delay-1000"></div>
-        <div className="absolute bottom-20 right-1/3 w-3 h-3 bg-[#F59E0B]/30 rounded-full animate-bounce delay-500"></div>
+        <div className="absolute top-20 left-10 w-2 h-2 bg-white/20 rounded-full"></div>
+        <div className="absolute top-40 right-20 w-3 h-3 bg-[#4F46E5]/30 rounded-full"></div>
+        <div className="absolute bottom-32 left-1/4 w-2 h-2 bg-[#10B981]/30 rounded-full"></div>
+        <div className="absolute bottom-20 right-1/3 w-3 h-3 bg-[#F59E0B]/30 rounded-full"></div>
       </div>
 
       <div className="relative z-10">
@@ -321,7 +310,7 @@ export default function CoursesPage() {
                         alt={category.name}
                         width={20}
                         height={20}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover rounded-full"
                         unoptimized
                       />
                     </div>
@@ -356,16 +345,10 @@ export default function CoursesPage() {
                   </div>
                 </div>
 
-                <StaggeredAnimation
-                  animationType={viewMode === "grid" ? "slideUp" : "fadeIn"}
-                  stagger={viewMode === "grid" ? 100 : 150}
-                  duration={600}
-                  className={viewMode === "grid" 
+                <div className={viewMode === "grid" 
                   ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
                   : "space-y-6"
-                  }
-                  itemClassName="gpu-accelerated"
-                >
+                  }>
                   {filteredCourses.map(course => (
                     <Link
                       key={course._id}
@@ -452,7 +435,7 @@ export default function CoursesPage() {
                       )}
                     </Link>
                   ))}
-                </StaggeredAnimation>
+                </div>
               </>
             ) : (
               <div className="text-center py-16">

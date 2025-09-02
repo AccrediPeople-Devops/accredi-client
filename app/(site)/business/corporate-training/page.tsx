@@ -1,5 +1,18 @@
 import Link from 'next/link';
 import { HiArrowLeft, HiCheckCircle, HiUsers, HiTrendingUp, HiClock, HiCurrencyDollar, HiLocationMarker, HiHeart, HiCalendar } from 'react-icons/hi';
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Customized Corporate Training Solutions - AccrediPeople Certifications",
+  description: "Transform your workforce with our customized corporate training solutions. On-site, cost-effective training programs designed for your organization's specific needs.",
+  keywords: "corporate training, customized training, on-site training, workforce development, corporate solutions, business training",
+  openGraph: {
+    title: "Customized Corporate Training Solutions - AccrediPeople Certifications",
+    description: "Transform your workforce with our customized corporate training solutions. On-site, cost-effective training programs designed for your organization's specific needs.",
+    url: "https://accredipeoplecertifications.com/business/corporate-training",
+    type: "website",
+  },
+};
 
 export default function CorporateTrainingPage() {
   const keyBenefits = [
@@ -60,9 +73,9 @@ export default function CorporateTrainingPage() {
           
           <div className="text-center">
             <div className="inline-flex items-center gap-3 site-glass backdrop-blur-sm rounded-full px-8 py-4 mb-8 hover:bg-white/20 transition-all duration-300">
-              <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
+              <div className="w-3 h-3 bg-blue-500 rounded-full "></div>
               <span className="site-text-accent font-bold text-sm uppercase tracking-wider">💼 For Business</span>
-              <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse delay-500"></div>
+              <div className="w-3 h-3 bg-green-500 rounded-full  "></div>
             </div>
 
             <h1 className="text-4xl lg:text-5xl xl:text-6xl font-black mb-6 leading-tight">

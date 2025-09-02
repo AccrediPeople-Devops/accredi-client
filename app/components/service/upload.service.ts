@@ -22,7 +22,6 @@ class UploadService {
       });
       return res.data;
     } catch (error) {
-      console.error("Error uploading file:", error);
       throw error;
     }
   }

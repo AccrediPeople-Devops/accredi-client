@@ -22,11 +22,9 @@ class EnterpriseService {
    */
   async submitEnterpriseForm(formData: EnterpriseFormData): Promise<EnterpriseFormResponse> {
     try {
-      console.log('EnterpriseService: Submitting form data:', formData);
       
       const response = await axiosInstance.post('/form/enterprise', formData);
       
-      console.log('EnterpriseService: Form submission response:', response.data);
       
       return {
         success: true,
@@ -34,23 +32,19 @@ class EnterpriseService {
         data: response.data
       };
     } catch (error: any) {
-      console.error('EnterpriseService: Error submitting form:', error);
       
       let errorMessage = 'An error occurred while submitting the form. Please try again.';
       
       if (error.response) {
         // Server responded with error status
-        console.error('EnterpriseService: Response error:', error.response.data);
         errorMessage = error.response.data?.message || 
                      error.response.data?.error || 
                      `Server error (${error.response.status}). Please try again.`;
       } else if (error.request) {
         // Request was made but no response received
-        console.error('EnterpriseService: No response received:', error.request);
         errorMessage = 'Network error. Please check your connection and try again.';
       } else {
         // Something else happened
-        console.error('EnterpriseService: Request setup error:', error.message);
         errorMessage = error.message || errorMessage;
       }
       

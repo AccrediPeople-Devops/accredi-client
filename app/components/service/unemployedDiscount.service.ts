@@ -21,7 +21,6 @@ export const unemployedDiscountService = {
         message: response.data.message || 'Thank you! We\'ve received your request and will get back to you soon.'
       };
     } catch (error: any) {
-      console.error('Unemployed discount form submission error:', error);
       return {
         success: false,
         message: error.response?.data?.message || 'Failed to submit form. Please try again.'

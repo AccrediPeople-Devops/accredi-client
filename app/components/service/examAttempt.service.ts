@@ -28,7 +28,6 @@ class ExamAttemptService {
       
       return attempts;
     } catch (error: any) {
-      console.error("Error fetching exam attempts:", error);
       
       // If it's a 404, the endpoint might not exist yet
       if (error.response?.status === 404) {
@@ -45,7 +44,6 @@ class ExamAttemptService {
       const response = await axiosInstance.get(`/exam-attempts/v1/${attemptId}`);
       return response.data.examAttempt || response.data;
     } catch (error: any) {
-      console.error("Error fetching exam attempt:", error);
       throw new Error(error.response?.data?.message || "Failed to fetch exam attempt");
     }
   }
@@ -56,7 +54,6 @@ class ExamAttemptService {
       const response = await axiosInstance.put(`/exam-attempts/v1/${attemptId}`, updateData);
       return response.data;
     } catch (error: any) {
-      console.error("Error updating exam attempt:", error);
       throw new Error(error.response?.data?.message || "Failed to update exam attempt");
     }
   }
@@ -67,7 +64,6 @@ class ExamAttemptService {
       const response = await axiosInstance.delete(`/exam-attempts/v1/${attemptId}`);
       return response.data;
     } catch (error: any) {
-      console.error("Error deleting exam attempt:", error);
       throw new Error(error.response?.data?.message || "Failed to delete exam attempt");
     }
   }
@@ -78,7 +74,6 @@ class ExamAttemptService {
       const response = await axiosInstance.put(`/exam-attempts/v1/exam/${examId}/show-results`);
       return response.data;
     } catch (error: any) {
-      console.error("Error showing exam results:", error);
       throw new Error(error.response?.data?.message || "Failed to show exam results");
     }
   }

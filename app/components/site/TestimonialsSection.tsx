@@ -36,7 +36,6 @@ export default function TestimonialsSection() {
         setReviews(response.review);
       }
     } catch (error) {
-      console.error("Error fetching reviews:", error);
       setError("Failed to load reviews");
     } finally {
       setLoading(false);

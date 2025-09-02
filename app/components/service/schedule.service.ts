@@ -18,7 +18,6 @@ class ScheduleService {
       // Check if we have a token
       const token = localStorage.getItem('token');
       if (!token) {
-        console.error("ScheduleService: No authentication token found");
         return {
           status: false,
           message: "Authentication required. Please log in again.",
@@ -26,17 +25,12 @@ class ScheduleService {
         };
       }
       
-      console.log("ScheduleService: Fetching all schedules with token:", token.substring(0, 20) + "...");
       const response = await axiosInstance.get("/schedules/v1");
-      console.log("ScheduleService: All schedules response:", response.data);
       
       // Simply return the response data, let the component handle it
       return response.data;
     } catch (error: any) {
-      console.error("ScheduleService: Error fetching all schedules:", error);
       if (error.response) {
-        console.error("ScheduleService: Response status:", error.response.status);
-        console.error("ScheduleService: Response data:", error.response.data);
         
         if (error.response.status === 401) {
           return { 
@@ -69,15 +63,12 @@ class ScheduleService {
    */
   async getScheduleById(id: string) {
     try {
-      console.log("ScheduleService: Fetching schedule with ID:", id);
       
       try {
         // First try the direct endpoint
         const response = await axiosInstance.get(`/schedules/v1/${id}`);
-        console.log("ScheduleService: Direct endpoint response:", response.data);
         return response.data;
       } catch (directError) {
-        console.log("ScheduleService: Direct endpoint failed, using fallback method");
         
         // If the direct endpoint fails, use fallback method
         const allResponse = await this.getAllSchedules();
@@ -97,19 +88,15 @@ class ScheduleService {
         const foundSchedule = schedules.find((schedule: any) => schedule._id === id);
         
         if (foundSchedule) {
-          console.log("ScheduleService: Found schedule in list:", foundSchedule);
           return { status: true, schedule: foundSchedule };
         }
         
         // If we couldn't find it, return a not found error
-        console.error("ScheduleService: Schedule not found with ID:", id);
         return { status: false, message: `Schedule not found with ID: ${id}` };
       }
     } catch (error: any) {
-      console.error("ScheduleService: Error fetching schedule:", error);
       
       if (error.response) {
-        console.error("ScheduleService: Response data:", error.response.data);
         return { 
           status: false, 
           message: error.response.data?.message || `Error fetching schedule with ID: ${id}`
@@ -146,9 +133,7 @@ class ScheduleService {
       
       return { status: true, schedules: filteredSchedules };
     } catch (error: any) {
-      console.error("Error fetching schedules by course:", error);
       if (error.response) {
-        console.error("Response data:", error.response.data);
         return { status: false, message: error.response.data?.message || "Error fetching schedules" };
       }
       throw error;
@@ -162,9 +147,7 @@ class ScheduleService {
    */
   async createSchedule(data: any) {
     try {
-      console.log("Sending schedule data:", JSON.stringify(data));
       const response = await axiosInstance.post("/schedules/v1", data);
-      console.log("API response:", response.data);
       
       // Format the response if needed
       if (response.data && !response.data.status && response.data._id) {
@@ -173,11 +156,7 @@ class ScheduleService {
       
       return response.data;
     } catch (error: any) {
-      console.error("Error creating schedule:", error);
       if (error.response) {
-        console.error("Response data:", error.response.data);
-        console.error("Response status:", error.response.status);
-        console.error("Response headers:", error.response.headers);
         // Return the error message from the server if available
         return { 
           status: false, 
@@ -196,11 +175,8 @@ class ScheduleService {
    */
   async updateSchedule(id: string, data: any) {
     try {
-      console.log("ScheduleService: Updating schedule with ID:", id);
-      console.log("ScheduleService: Update data:", JSON.stringify(data));
       
       const response = await axiosInstance.put(`/schedules/v1/${id}`, data);
-      console.log("ScheduleService: Update response:", response.data);
       
       // Format the response if needed
       if (response.data) {
@@ -225,14 +201,9 @@ class ScheduleService {
       }
       
       // If the response is empty, try to fetch the updated schedule
-      console.log("ScheduleService: Empty response from update, fetching the schedule");
       return await this.getScheduleById(id);
     } catch (error: any) {
-      console.error("ScheduleService: Error updating schedule:", error);
       if (error.response) {
-        console.error("ScheduleService: Response data:", error.response.data);
-        console.error("ScheduleService: Response status:", error.response.status);
-        console.error("ScheduleService: Response headers:", error.response.headers);
         
         // Return the error message from the server if available
         return { 
@@ -251,9 +222,7 @@ class ScheduleService {
    */
   async deleteSchedule(id: string) {
     try {
-      console.log("ScheduleService: Attempting to delete schedule with ID:", id);
       const response = await axiosInstance.delete(`/schedules/v1/${id}`);
-      console.log("ScheduleService: Delete response:", response.data);
       
       // Format the response consistently
       if (response.data) {
@@ -270,13 +239,7 @@ class ScheduleService {
       
       return response.data;
     } catch (error: any) {
-      console.error("ScheduleService: Error deleting schedule:", error);
       if (error.response) {
-        console.error("ScheduleService: Server response:", {
-          status: error.response.status,
-          statusText: error.response.statusText,
-          data: error.response.data
-        });
         return { 
           status: false, 
           message: error.response.data?.message || "Error deleting schedule"
@@ -299,7 +262,6 @@ class ScheduleService {
       });
       return response.data;
     } catch (error: any) {
-      console.error("Error updating schedule status:", error);
       if (error.response) {
         return { 
           status: false, 
@@ -317,12 +279,10 @@ class ScheduleService {
    */
   async restoreSchedule(id: string) {
     try {
-      console.log("ScheduleService: Attempting to restore schedule with ID:", id);
       
       // Try different endpoint format (with and without hyphen)
       try {
         const response = await axiosInstance.put(`/schedules/v1/${id}/undo-delete`);
-        console.log("ScheduleService: Restore response (with hyphen):", response.data);
         
         // Format the response consistently regardless of the backend format
         if (response.data) {
@@ -337,12 +297,10 @@ class ScheduleService {
         
         return response.data;
       } catch (primaryError: any) {
-        console.warn("ScheduleService: Primary undo-delete endpoint failed:", primaryError.message);
         
         // Try alternative endpoint without hyphen (undodelete)
         try {
           const altResponse = await axiosInstance.put(`/schedules/v1/${id}/undodelete`);
-          console.log("ScheduleService: Restore response (without hyphen):", altResponse.data);
           
           if (altResponse.data) {
             if (altResponse.data.status && altResponse.data.schedule) {
@@ -356,18 +314,11 @@ class ScheduleService {
           
           return altResponse.data;
         } catch (secondaryError: any) {
-          console.error("ScheduleService: Both restoration endpoints failed");
           throw primaryError; // Throw the original error
         }
       }
     } catch (error: any) {
-      console.error("ScheduleService: Error restoring schedule:", error);
       if (error.response) {
-        console.error("ScheduleService: Server response:", {
-          status: error.response.status,
-          statusText: error.response.statusText,
-          data: error.response.data
-        });
         return { 
           status: false, 
           message: error.response.data?.message || "Error restoring schedule"

@@ -21,7 +21,6 @@ export const militaryDiscountService = {
         message: response.data.message || 'Thank you for your service! We\'ve received your request and will get back to you shortly.'
       };
     } catch (error: any) {
-      console.error('Military discount form submission error:', error);
       return {
         success: false,
         message: error.response?.data?.message || 'Failed to submit form. Please try again.'

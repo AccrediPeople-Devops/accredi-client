@@ -1,13 +1,23 @@
-"use client";
-
-import React, { useState } from "react";
+import React from "react";
 import Image from "next/image";
 import Breadcrumb from "@/app/components/site/Breadcrumb";
 import OurApproachSection from "@/app/components/site/OurApproachSection";
 import Link from "next/link";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "About Us - AccrediPeople Certifications",
+  description: "Learn about AccrediPeople Certifications - Empowering professionals with world-class certification training programs. Discover our mission, values, and commitment to excellence.",
+  keywords: "about us, AccrediPeople, certification training, professional development, company information",
+  openGraph: {
+    title: "About Us - AccrediPeople Certifications",
+    description: "Learn about AccrediPeople Certifications - Empowering professionals with world-class certification training programs. Discover our mission, values, and commitment to excellence.",
+    url: "https://accredipeoplecertifications.com/about",
+    type: "website",
+  },
+};
 
 export default function AboutPage() {
-  const [activeValue, setActiveValue] = useState(0);
 
   const aboutImages = [
     "/Website Images/AboutUs/AdobeStock_603966594.jpeg",
@@ -61,9 +71,9 @@ export default function AboutPage() {
       <section className="relative  overflow-hidden site-section-bg">
         {/* Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-20 left-20 w-96 h-96 bg-[#4F46E5]/5 site-light:bg-[#4F46E5]/10 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-20 right-20 w-80 h-80 bg-[#B39DDB]/5 site-light:bg-[#B39DDB]/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#10B981]/5 site-light:bg-[#10B981]/10 rounded-full blur-3xl animate-pulse delay-2000"></div>
+          <div className="absolute top-20 left-20 w-96 h-96 bg-[#4F46E5]/5 site-light:bg-[#4F46E5]/10 rounded-full blur-3xl "></div>
+          <div className="absolute bottom-20 right-20 w-80 h-80 bg-[#B39DDB]/5 site-light:bg-[#B39DDB]/10 rounded-full blur-3xl  "></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#10B981]/5 site-light:bg-[#10B981]/10 rounded-full blur-3xl  "></div>
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -77,9 +87,9 @@ export default function AboutPage() {
             {/* Left Content */}
             <div>
               <div className="inline-flex items-center gap-3 site-glass backdrop-blur-sm rounded-full px-8 py-4 mb-8 hover:bg-white/20 site-light:hover:bg-white/60 transition-all duration-300">
-                <div className="w-3 h-3 bg-[#10B981] rounded-full animate-pulse"></div>
+                <div className="w-3 h-3 bg-[#10B981] rounded-full "></div>
                 <span className="site-text-accent font-bold text-sm uppercase tracking-wider">About Us</span>
-                <div className="w-3 h-3 bg-[#4F46E5] rounded-full animate-pulse delay-500"></div>
+                <div className="w-3 h-3 bg-[#4F46E5] rounded-full  "></div>
               </div>
 
               <h1 className="text-5xl lg:text-6xl font-black mb-6 leading-tight">
@@ -117,17 +127,17 @@ export default function AboutPage() {
                     alt="Learning and Growth"
                     width={320}
                     height={320}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover rounded-2xl"
                   />
                 </div>
                 
                 {/* Floating Stats */}
-                <div className="absolute -top-4 -right-4 w-20 h-20 bg-gradient-to-br from-[#4F46E5]/90 to-[#7C3AED]/90 backdrop-blur-sm rounded-2xl border border-white/20 flex flex-col items-center justify-center animate-pulse">
+                <div className="absolute -top-4 -right-4 w-20 h-20 bg-gradient-to-br from-[#4F46E5]/90 to-[#7C3AED]/90 backdrop-blur-sm rounded-2xl border border-white/20 flex flex-col items-center justify-center ">
                   <span className="text-lg font-bold text-white">98%</span>
                   <span className="text-xs text-white/80">Success</span>
                 </div>
                 
-                {/* <div className="absolute -bottom-4 -left-4 w-20 h-20 bg-gradient-to-br from-[#10B981]/90 to-[#059669]/90 backdrop-blur-sm rounded-2xl border border-white/20 flex flex-col items-center justify-center animate-pulse delay-500">
+                {/* <div className="absolute -bottom-4 -left-4 w-20 h-20 bg-gradient-to-br from-[#10B981]/90 to-[#059669]/90 backdrop-blur-sm rounded-2xl border border-white/20 flex flex-col items-center justify-center  ">
                   <span className="text-lg font-bold text-white">100K+</span>
                   <span className="text-xs text-white/80">Learners</span>
                 </div> */}
@@ -148,7 +158,7 @@ export default function AboutPage() {
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-4 py-2 mb-6">
-              <div className="w-2 h-2 bg-[#4F46E5] rounded-full animate-pulse"></div>
+              <div className="w-2 h-2 bg-[#4F46E5] rounded-full "></div>
               <span className="text-[#4F46E5] text-sm font-semibold uppercase tracking-wider">Our Foundation</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-black site-text-primary mb-6">
@@ -205,7 +215,7 @@ export default function AboutPage() {
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-4 py-2 mb-6">
-              <div className="w-2 h-2 bg-[#10B981] rounded-full animate-pulse"></div>
+              <div className="w-2 h-2 bg-[#10B981] rounded-full "></div>
               <span className="text-[#10B981] text-sm font-semibold uppercase tracking-wider">What Drives Us</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-black site-text-primary mb-6">
@@ -221,10 +231,7 @@ export default function AboutPage() {
             {coreValues.map((value, index) => (
               <div 
                 key={index} 
-                className={`site-glass backdrop-blur-xl rounded-3xl p-8 shadow-xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500 cursor-pointer group ${
-                  activeValue === index ? 'ring-2 ring-[#4F46E5] scale-105' : 'hover:scale-105'
-                }`}
-                onClick={() => setActiveValue(index)}
+                className="site-glass backdrop-blur-xl rounded-3xl p-8 shadow-xl hover:bg-white/15 site-light:hover:bg-white/70 transition-all duration-500 group hover:scale-105"
               >
                 <div className="text-center">
                   <div className="text-5xl mb-6 group-hover:scale-110 transition-transform duration-300">{value.icon}</div>
@@ -276,11 +283,11 @@ export default function AboutPage() {
                     </div>
                   </div>
                   
-                  {/* <div className="absolute -top-4 -right-4 w-16 h-16 bg-gradient-to-br from-[#4F46E5]/30 to-[#7C3AED]/30 backdrop-blur-sm rounded-full border border-[#4F46E5]/30 site-light:border-[#4F46E5]/50 flex items-center justify-center animate-pulse">
+                  {/* <div className="absolute -top-4 -right-4 w-16 h-16 bg-gradient-to-br from-[#4F46E5]/30 to-[#7C3AED]/30 backdrop-blur-sm rounded-full border border-[#4F46E5]/30 site-light:border-[#4F46E5]/50 flex items-center justify-center ">
                     <span className="text-sm font-bold text-[#4F46E5]">100K+</span>
                   </div> */}
                   
-                  <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-gradient-to-br from-[#10B981]/30 to-[#059669]/30 backdrop-blur-sm rounded-full border border-[#10B981]/30 site-light:border-[#10B981]/50 flex items-center justify-center animate-pulse delay-500">
+                  <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-gradient-to-br from-[#10B981]/30 to-[#059669]/30 backdrop-blur-sm rounded-full border border-[#10B981]/30 site-light:border-[#10B981]/50 flex items-center justify-center  ">
                     <span className="text-sm font-bold text-[#10B981]">98%</span>
                   </div>
                 </div>
@@ -289,26 +296,6 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
-
-
-      <style jsx>{`
-        @keyframes marquee {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-100%); }
-        }
-        
-        .marquee {
-          animation: marquee 15s linear infinite;
-        }
-        
-        .marquee:nth-child(2) {
-          animation-delay: -5s;
-        }
-        
-        .marquee:nth-child(3) {
-          animation-delay: -10s;
-        }
-      `}</style>
     </div>
   );
 } 

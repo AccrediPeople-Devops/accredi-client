@@ -26,10 +26,8 @@ export default function CertificationsSection() {
           setCategories(activeCategories);
         }
       } catch (err: any) {
-        console.error("Error fetching course categories:", err);
         // If it's an authentication error, just show empty state
         if (err.response?.status === 401 || err.message === "Authentication required") {
-          console.warn("Authentication failed, showing empty categories");
           setCategories([]);
         } else {
         setError("Failed to load categories");

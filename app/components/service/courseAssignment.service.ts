@@ -20,23 +20,19 @@ class CourseAssignmentService {
    */
   async assignCourseToUser(data: CourseAssignmentData): Promise<CourseAssignmentResponse> {
     try {
-      console.log("CourseAssignmentService: Assigning course to user:", data);
       
       // Check if we have a token
       const token = localStorage.getItem('token');
       if (!token) {
-        console.error("CourseAssignmentService: No authentication token found");
         return {
           success: false,
           message: "Authentication required. Please log in again."
         };
       }
       
-      console.log("CourseAssignmentService: Using token:", token.substring(0, 20) + "...");
       
       const response = await axiosInstance.post("/users/v1/manually-assign-course", data);
       
-      console.log("CourseAssignmentService: Assignment successful:", response.data);
       
       return {
         success: true,
@@ -44,14 +40,11 @@ class CourseAssignmentService {
         data: response.data
       };
     } catch (error: any) {
-      console.error("CourseAssignmentService: Error assigning course:", error);
       
       let errorMessage = 'An error occurred while assigning the course. Please try again.';
       
       if (error.response) {
         // Server responded with error status
-        console.error('CourseAssignmentService: Response error:', error.response.data);
-        console.error('CourseAssignmentService: Response status:', error.response.status);
         
         if (error.response.status === 401) {
           errorMessage = "Authentication failed. Please log in again.";
@@ -68,11 +61,9 @@ class CourseAssignmentService {
         }
       } else if (error.request) {
         // Request was made but no response received
-        console.error('CourseAssignmentService: No response received:', error.request);
         errorMessage = 'Network error. Please check your connection and try again.';
       } else {
         // Something else happened
-        console.error('CourseAssignmentService: Request setup error:', error.message);
         errorMessage = error.message || errorMessage;
       }
       
@@ -90,12 +81,10 @@ class CourseAssignmentService {
    */
   async getUserAssignedCourses(userId: string) {
     try {
-      console.log("CourseAssignmentService: Fetching assigned courses for user:", userId);
       
       // Check if we have a token
       const token = localStorage.getItem('token');
       if (!token) {
-        console.error("CourseAssignmentService: No authentication token found");
         return {
           success: true,
           courses: []
@@ -104,15 +93,12 @@ class CourseAssignmentService {
       
       const response = await axiosInstance.get(`/users/v1/${userId}/assigned-courses`);
       
-      console.log("CourseAssignmentService: Assigned courses response:", response.data);
       
       return response.data;
     } catch (error: any) {
-      console.error("CourseAssignmentService: Error fetching assigned courses:", error);
       
       // If the endpoint doesn't exist (404) or other server errors, return empty array
       if (error.response?.status === 404 || error.response?.status >= 500) {
-        console.log("API endpoint not available, returning empty array");
         return {
           success: true,
           courses: []
@@ -121,7 +107,6 @@ class CourseAssignmentService {
       
       // For authentication errors, return empty array instead of throwing
       if (error.response?.status === 401 || error.response?.status === 403) {
-        console.log("Authentication error, returning empty array");
         return {
           success: true,
           courses: []
@@ -141,23 +126,16 @@ class CourseAssignmentService {
    */
   async removeCourseFromUser(userId: string, courseId: string, scheduleId?: string): Promise<CourseAssignmentResponse> {
     try {
-      console.log("CourseAssignmentService: Removing course from user:", { userId, courseId, scheduleId });
-      console.log("CourseAssignmentService: User ID type:", typeof userId);
-      console.log("CourseAssignmentService: Course ID type:", typeof courseId);
-      console.log("CourseAssignmentService: Schedule ID type:", typeof scheduleId);
       
       // Check if we have a token
       const token = localStorage.getItem('token');
       if (!token) {
-        console.error("CourseAssignmentService: No authentication token found");
         return {
           success: false,
           message: "Authentication required. Please log in again."
         };
       }
       
-      console.log("CourseAssignmentService: Using token:", token.substring(0, 20) + "...");
-      console.log("CourseAssignmentService: Attempting to remove course with endpoint: DELETE /users/v1/manually-remove-course");
       
       const requestData = {
         userId: userId,
@@ -174,7 +152,6 @@ class CourseAssignmentService {
         }
       });
       
-      console.log("CourseAssignmentService: Course removal successful:", response.data);
       
       return {
         success: true,
@@ -182,14 +159,11 @@ class CourseAssignmentService {
         data: response.data
       };
     } catch (error: any) {
-      console.error("CourseAssignmentService: Error removing course:", error);
       
       let errorMessage = 'An error occurred while removing the course. Please try again.';
       
       if (error.response) {
         // Server responded with error status
-        console.error('CourseAssignmentService: Response error:', error.response.data);
-        console.error('CourseAssignmentService: Response status:', error.response.status);
         
         if (error.response.status === 401) {
           errorMessage = "Authentication failed. Please log in again.";
@@ -206,11 +180,9 @@ class CourseAssignmentService {
         }
       } else if (error.request) {
         // Request was made but no response received
-        console.error('CourseAssignmentService: No response received:', error.request);
         errorMessage = 'Network error. Please check your connection and try again.';
       } else {
         // Something else happened
-        console.error('CourseAssignmentService: Request setup error:', error.message);
         errorMessage = error.message || errorMessage;
       }
       

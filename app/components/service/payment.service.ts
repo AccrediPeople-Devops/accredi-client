@@ -32,7 +32,6 @@ class PaymentService {
 
       return response.data;
     } catch (error: any) {
-      console.error("Payment processing error:", error);
       return {
         status: false,
         message: error.message || "Payment processing failed",

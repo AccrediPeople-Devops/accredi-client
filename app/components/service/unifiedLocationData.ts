@@ -58,7 +58,6 @@ export class UnifiedLocationService {
       const { EnhancedLocationService } = require('./enhancedLocationData');
       return EnhancedLocationService.getAllCountries();
     } catch (error) {
-      console.error('Error loading countries:', error);
       return [];
     }
   }
@@ -71,7 +70,6 @@ export class UnifiedLocationService {
       const { EnhancedLocationService } = require('./enhancedLocationData');
       return EnhancedLocationService.getPopularCountries();
     } catch (error) {
-      console.error('Error loading popular countries:', error);
       return [];
     }
   }
@@ -84,7 +82,6 @@ export class UnifiedLocationService {
       const { EnhancedLocationService } = require('./enhancedLocationData');
       return EnhancedLocationService.getStatesByCountry(countryCode, scheduleFilter);
     } catch (error) {
-      console.error('Error loading states:', error);
       return [];
     }
   }
@@ -97,7 +94,6 @@ export class UnifiedLocationService {
       const { EnhancedLocationService } = require('./enhancedLocationData');
       return EnhancedLocationService.getCitiesByState(countryCode, stateCode, scheduleFilter);
     } catch (error) {
-      console.error('Error loading cities:', error);
       return [];
     }
   }
@@ -110,7 +106,6 @@ export class UnifiedLocationService {
       const { EnhancedLocationService } = require('./enhancedLocationData');
       return EnhancedLocationService.searchCountries(query);
     } catch (error) {
-      console.error('Error searching countries:', error);
       return [];
     }
   }
@@ -123,7 +118,6 @@ export class UnifiedLocationService {
       const { EnhancedLocationService } = require('./enhancedLocationData');
       return EnhancedLocationService.formatLocation(city, state, country);
     } catch (error) {
-      console.error('Error formatting location:', error);
       return [city, state, country].filter(Boolean).join(', ');
     }
   }
@@ -136,7 +130,6 @@ export class UnifiedLocationService {
       const { EnhancedLocationService } = require('./enhancedLocationData');
       return EnhancedLocationService.hasDetailedData(countryCode);
     } catch (error) {
-      console.error('Error checking detailed data:', error);
       return false;
     }
   }
@@ -149,7 +142,6 @@ export class UnifiedLocationService {
       const { EnhancedLocationService } = require('./enhancedLocationData');
       return EnhancedLocationService.createScheduleFilter(schedules);
     } catch (error) {
-      console.error('Error creating schedule filter:', error);
       return {};
     }
   }

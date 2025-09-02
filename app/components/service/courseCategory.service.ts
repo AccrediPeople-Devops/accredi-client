@@ -17,7 +17,6 @@ class CourseCategoryService {
         const response = await axiosInstance.get(`/courses-categories/v1/${id}`);
         return response.data;
       } catch (directError) {
-        console.log("Direct endpoint failed, using fallback method");
         
         // Fallback: Fetch all categories and find the matching one
         const allResponse = await this.getAllCourseCategories();
@@ -41,7 +40,6 @@ class CourseCategoryService {
         };
       }
     } catch (error: any) {
-      console.error("Error fetching category:", error);
       throw error;
     }
   }

@@ -8,16 +8,12 @@ class PaymentLogService {
    */
   async getAllPaymentLogs() {
     try {
-      console.log("Attempting to fetch payment logs from API...");
       const response = await axiosInstance.get("/payment/v1");
-      console.log("API response:", response);
       return response.data;
     } catch (error: any) {
-      console.error("API call failed:", error);
       
       // If the endpoint doesn't exist (404) or other server errors, return mock data
       if (error.response?.status === 404 || error.response?.status >= 500) {
-        console.log("API endpoint not available, returning mock data");
         return {
           status: "success",
           data: this.getMockPaymentLogs()

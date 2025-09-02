@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import Breadcrumb from "@/app/components/site/Breadcrumb";
 import { unemployedDiscountService, UnemployedDiscountFormData } from "@/app/components/service/unemployedDiscount.service";
+import Head from "next/head";
 
 export default function UnemployedDiscountPage() {
   const [formData, setFormData] = useState({
@@ -68,14 +69,24 @@ export default function UnemployedDiscountPage() {
   ];
 
   return (
-    <div className="min-h-screen site-section-bg">
+    <>
+      <Head>
+        <title>Training Discount Programs for Unemployed Professionals - AccrediPeople Certifications</title>
+        <meta name="description" content="Get special training discounts for unemployed professionals. Affordable certification programs to help you upskill and advance your career during job transitions." />
+        <meta name="keywords" content="unemployed discount, training discount, professional development, career transition, affordable certification, job training" />
+        <meta property="og:title" content="Training Discount Programs for Unemployed Professionals - AccrediPeople Certifications" />
+        <meta property="og:description" content="Get special training discounts for unemployed professionals. Affordable certification programs to help you upskill and advance your career during job transitions." />
+        <meta property="og:url" content="https://accredipeoplecertifications.com/unemployed-discount" />
+        <meta property="og:type" content="website" />
+      </Head>
+      <div className="min-h-screen site-section-bg">
       {/* Hero Section */}
       <section className="relative overflow-hidden site-section-bg">
         {/* Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-20 left-20 w-96 h-96 bg-[#4F46E5]/5 site-light:bg-[#4F46E5]/10 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-20 right-20 w-80 h-80 bg-[#10B981]/5 site-light:bg-[#10B981]/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#F59E0B]/5 site-light:bg-[#F59E0B]/10 rounded-full blur-3xl animate-pulse delay-2000"></div>
+          <div className="absolute top-20 left-20 w-96 h-96 bg-[#4F46E5]/5 site-light:bg-[#4F46E5]/10 rounded-full blur-3xl "></div>
+          <div className="absolute bottom-20 right-20 w-80 h-80 bg-[#10B981]/5 site-light:bg-[#10B981]/10 rounded-full blur-3xl  "></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#F59E0B]/5 site-light:bg-[#F59E0B]/10 rounded-full blur-3xl  "></div>
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -87,9 +98,9 @@ export default function UnemployedDiscountPage() {
           {/* Main Content */}
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-3 site-glass backdrop-blur-sm rounded-full px-8 py-4 mb-8 hover:bg-white/20 site-light:hover:bg-white/60 transition-all duration-300">
-              <div className="w-3 h-3 bg-[#4F46E5] rounded-full animate-pulse"></div>
+              <div className="w-3 h-3 bg-[#4F46E5] rounded-full "></div>
               <span className="site-text-accent font-bold text-sm uppercase tracking-wider">💼 Unemployment</span>
-              <div className="w-3 h-3 bg-[#10B981] rounded-full animate-pulse delay-500"></div>
+              <div className="w-3 h-3 bg-[#10B981] rounded-full  "></div>
             </div>
 
             <h1 className="text-5xl lg:text-7xl font-black mb-8 leading-tight">
@@ -113,7 +124,7 @@ export default function UnemployedDiscountPage() {
             {/* Content */}
             <div>
               <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-4 py-2 mb-6">
-                <div className="w-2 h-2 bg-[#4F46E5] rounded-full animate-pulse"></div>
+                <div className="w-2 h-2 bg-[#4F46E5] rounded-full "></div>
                 <span className="text-[#4F46E5] text-sm font-semibold uppercase tracking-wider">💼 Get Support</span>
               </div>
 
@@ -270,6 +281,7 @@ export default function UnemployedDiscountPage() {
           </div>
         </div>
       </section>
-    </div>
+      </div>
+    </>
   );
 } 

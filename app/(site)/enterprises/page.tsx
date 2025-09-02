@@ -114,7 +114,6 @@ export default function EnterprisesPage() {
         });
       }
     } catch (error) {
-      console.error('Unexpected error during form submission:', error);
       setSubmitStatus({
         type: 'error',
         message: 'An unexpected error occurred. Please try again later.'
@@ -181,8 +180,8 @@ export default function EnterprisesPage() {
         <div className="relative z-10">
           {/* Background Elements */}
           <div className="absolute inset-0 overflow-hidden">
-            <div className="absolute top-20 left-20 w-96 h-96 bg-[#4F46E5]/5 site-light:bg-[#4F46E5]/10 rounded-full blur-3xl animate-pulse"></div>
-            <div className="absolute bottom-20 right-20 w-80 h-80 bg-[#10B981]/5 site-light:bg-[#10B981]/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+            <div className="absolute top-20 left-20 w-96 h-96 bg-[#4F46E5]/5 site-light:bg-[#4F46E5]/10 rounded-full blur-3xl "></div>
+            <div className="absolute bottom-20 right-20 w-80 h-80 bg-[#10B981]/5 site-light:bg-[#10B981]/10 rounded-full blur-3xl  "></div>
           </div>
 
           <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
@@ -193,9 +192,9 @@ export default function EnterprisesPage() {
 
             <div className="text-center">
               <div className="inline-flex items-center gap-3 site-glass backdrop-blur-sm rounded-full px-8 py-4 mb-8 hover:bg-white/20 site-light:hover:bg-white/60 transition-all duration-300">
-                <div className="w-3 h-3 bg-[#4F46E5] rounded-full animate-pulse"></div>
+                <div className="w-3 h-3 bg-[#4F46E5] rounded-full "></div>
                 <span className="text-white font-bold text-sm uppercase tracking-wider">💼 For Business</span>
-                <div className="w-3 h-3 bg-[#10B981] rounded-full animate-pulse delay-500"></div>
+                <div className="w-3 h-3 bg-[#10B981] rounded-full  "></div>
               </div>
 
               <h1 className="text-4xl lg:text-5xl xl:text-6xl font-black mb-6 leading-tight">
@@ -236,7 +235,7 @@ export default function EnterprisesPage() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
                 <div>
                   <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-4 py-2 mb-6">
-                    <div className="w-2 h-2 bg-[#4F46E5] rounded-full animate-pulse"></div>
+                    <div className="w-2 h-2 bg-[#4F46E5] rounded-full "></div>
                     <span className="text-[#4F46E5] text-sm font-semibold uppercase tracking-wider">Step 1</span>
                   </div>
                   <h3 className="text-3xl font-black site-text-primary mb-6">Discover & Align</h3>
@@ -276,7 +275,7 @@ export default function EnterprisesPage() {
                 </div>
                 <div className="order-1 lg:order-2">
                   <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-4 py-2 mb-6">
-                    <div className="w-2 h-2 bg-[#10B981] rounded-full animate-pulse"></div>
+                    <div className="w-2 h-2 bg-[#10B981] rounded-full "></div>
                     <span className="text-[#10B981] text-sm font-semibold uppercase tracking-wider">Step 2</span>
                   </div>
                   <h3 className="text-3xl font-black site-text-primary mb-6">Design & Deliver</h3>
@@ -317,7 +316,7 @@ export default function EnterprisesPage() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
                 <div>
                   <div className="inline-flex items-center gap-2 site-glass backdrop-blur-sm rounded-full px-4 py-2 mb-6">
-                    <div className="w-2 h-2 bg-[#F59E0B] rounded-full animate-pulse"></div>
+                    <div className="w-2 h-2 bg-[#F59E0B] rounded-full "></div>
                     <span className="text-[#F59E0B] text-sm font-semibold uppercase tracking-wider">Step 3</span>
                   </div>
                   <h3 className="text-3xl font-black site-text-primary mb-6">Sustain & Scale</h3>

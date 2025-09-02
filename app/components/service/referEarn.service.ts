@@ -21,11 +21,9 @@ class ReferEarnService {
    */
   async submitReferEarnForm(formData: ReferEarnFormData): Promise<ReferEarnFormResponse> {
     try {
-      console.log('ReferEarnService: Submitting form data:', formData);
       
       const response = await axiosInstance.post('/form/refer-and-earn', formData);
       
-      console.log('ReferEarnService: Form submission response:', response.data);
       
       return {
         success: true,
@@ -33,23 +31,19 @@ class ReferEarnService {
         data: response.data
       };
     } catch (error: any) {
-      console.error('ReferEarnService: Error submitting form:', error);
       
       let errorMessage = 'An error occurred while submitting your request. Please try again.';
       
       if (error.response) {
         // Server responded with error status
-        console.error('ReferEarnService: Response error:', error.response.data);
         errorMessage = error.response.data?.message || 
                      error.response.data?.error || 
                      `Server error (${error.response.status}). Please try again.`;
       } else if (error.request) {
         // Request was made but no response received
-        console.error('ReferEarnService: No response received:', error.request);
         errorMessage = 'Network error. Please check your connection and try again.';
       } else {
         // Something else happened
-        console.error('ReferEarnService: Request setup error:', error.message);
         errorMessage = error.message || errorMessage;
       }
       

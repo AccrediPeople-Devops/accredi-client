@@ -183,7 +183,6 @@ export default function HeroSection() {
                     onError={(e) => {
                       const target = e.currentTarget as HTMLImageElement;
                       target.style.display = 'none';
-                      console.warn(`Failed to load client logo: ${logo.src}`);
                     }}
                     onLoad={(e) => {
                       const target = e.currentTarget as HTMLImageElement;
