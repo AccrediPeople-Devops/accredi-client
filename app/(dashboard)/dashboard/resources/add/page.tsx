@@ -53,7 +53,6 @@ export default function AddResourcePage() {
         setError("Failed to load courses. Invalid response format.");
       }
     } catch (err: any) {
-      console.error("Error fetching courses:", err);
       setError(err.response?.data?.message || "Failed to load courses");
     } finally {
       setIsLoading(false);
@@ -104,7 +103,6 @@ export default function AddResourcePage() {
     setError("");
 
     try {
-      console.log("Submitting resource data:", formData);
       const response = await resourceService.createResource(formData);
       
       if (response && (response.status || response.resource)) {
@@ -113,7 +111,6 @@ export default function AddResourcePage() {
         setError("Failed to create resource. Invalid response format.");
       }
     } catch (err: any) {
-      console.error("Error creating resource:", err);
       setError(err.response?.data?.message || "Failed to create resource");
     } finally {
       setIsSubmitting(false);

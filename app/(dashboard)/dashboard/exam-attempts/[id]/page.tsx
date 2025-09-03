@@ -26,7 +26,6 @@ export default function ExamAttemptPage({ params }: ExamAttemptPageProps) {
         const attempt = await examAttemptService.getExamAttemptById(id);
         setExamAttempt(attempt);
       } catch (err: any) {
-        console.error("Error fetching exam attempt:", err);
         setError(err.message || "Failed to fetch exam attempt");
       } finally {
         setIsLoading(false);

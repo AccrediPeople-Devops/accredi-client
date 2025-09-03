@@ -35,7 +35,6 @@ export default function CreateFaqPage() {
     setIsLoadingCourses(true);
     try {
       const res = await courseService.getAllCourses();
-      console.log("Courses fetched:", res);
       if (res?.courses) {
         setCourses(
           res.courses.filter(
@@ -44,7 +43,6 @@ export default function CreateFaqPage() {
         );
       }
     } catch (err: any) {
-      console.error("Error fetching courses:", err);
       setError("Error fetching courses. Please refresh the page.");
     } finally {
       setIsLoadingCourses(false);
@@ -115,9 +113,6 @@ export default function CreateFaqPage() {
     setError("");
 
     try {
-      console.log("=== CREATE FAQ OPERATION START ===");
-      console.log("Selected Course:", selectedCourse);
-      console.log("FAQs to create:", faqs);
 
       // Filter out empty FAQs and trim values
       const validFaqs = faqs
@@ -133,14 +128,10 @@ export default function CreateFaqPage() {
       }
 
       await faqService.createOrUpdateFaqs(selectedCourse, validFaqs);
-      console.log("FAQ create successful");
 
       // Redirect to FAQ list page
       router.push("/dashboard/faqs");
-      console.log("=== CREATE FAQ OPERATION SUCCESS ===");
     } catch (err: any) {
-      console.log("=== CREATE FAQ OPERATION FAILED ===");
-      console.error("Create failed:", err);
       setError(
         err.response?.data?.message ||
           err.message ||

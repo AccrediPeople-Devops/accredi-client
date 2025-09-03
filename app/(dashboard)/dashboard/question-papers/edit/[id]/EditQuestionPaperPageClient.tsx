@@ -42,35 +42,27 @@ export default function EditQuestionPaperPageClient({
         setIsLoadingInitial(true);
         setError("");
 
-        console.log("Fetching question paper with ID:", questionPaperId);
-        console.log("API endpoint should be: /question-papers/v1/" + questionPaperId);
         
         // Instead of using the direct endpoint which may return 404,
         // fetch all question papers and find the one with matching ID
         const papersResponse = await questionPaperService.getAllQuestionPapers();
-        console.log("All question papers response:", papersResponse);
         
         if (papersResponse) {
           let papers = [];
           
           // Handle different response formats
           if (papersResponse.questionPapers && Array.isArray(papersResponse.questionPapers)) {
-            console.log("Found question papers in standard format");
             papers = papersResponse.questionPapers;
           } else if (Array.isArray(papersResponse)) {
-            console.log("Found question papers as direct array");
             papers = papersResponse;
           } else if (papersResponse.data && Array.isArray(papersResponse.data)) {
-            console.log("Found question papers in data property");
             papers = papersResponse.data;
           }
           
           // Find the paper with the matching ID
           const foundPaper = papers.find((p: any) => p._id === questionPaperId);
-          console.log("Found paper:", foundPaper);
           
           if (foundPaper) {
-            console.log("Successfully found question paper:", foundPaper);
             setFormData({
               title: foundPaper.title,
               courseId: foundPaper.courseId,
@@ -79,9 +71,7 @@ export default function EditQuestionPaperPageClient({
             });
 
             // Fetch all courses for the dropdown
-            console.log("Fetching courses for dropdown");
             const coursesResponse = await courseService.getAllCourses();
-            console.log("Courses response:", coursesResponse);
             
             let courses = [];
             
@@ -109,7 +99,6 @@ export default function EditQuestionPaperPageClient({
         // If we couldn't find the paper, show an error
         throw new Error("Question paper not found");
       } catch (err: any) {
-        console.error("Error fetching data:", err);
         setError(err.message || "An error occurred while fetching data");
       } finally {
         setIsLoadingInitial(false);
@@ -194,12 +183,9 @@ export default function EditQuestionPaperPageClient({
         }
       }
 
-      console.log("Submitting updated question paper data:", formData);
-      console.log("API endpoint should be: /question-papers/v1/" + questionPaperId);
       
       // Submit the updated question paper
       const response = await questionPaperService.updateQuestionPaper(questionPaperId, formData);
-      console.log("Response from service:", response);
 
       // If we get any response back, consider it successful
       // The backend API might be sending back a different structure than expected
@@ -220,14 +206,12 @@ export default function EditQuestionPaperPageClient({
         } else {
           // If we can't determine a specific pattern but got a response,
           // assume success and redirect
-          console.log("No specific success indicator found, but got a response. Assuming success.");
           router.push("/dashboard/question-papers");
         }
       } else {
         setError("Failed to update question paper. No response from server.");
       }
     } catch (err: any) {
-      console.error("Error updating question paper:", err);
       setError(err.message || "An unexpected error occurred while updating the question paper");
     } finally {
       setIsLoading(false);

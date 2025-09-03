@@ -19,6 +19,7 @@ export default function DashboardLayout({
 }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { isLoading, setLoading } = useSimpleLoader(true);
+  const [isNavigating, setIsNavigating] = useState(false);
   const router = useRouter();
 
   // Check authentication on mount
@@ -33,7 +34,7 @@ export default function DashboardLayout({
           setLoading(false);
         }
       } catch (error) {
-        console.error("Auth check failed:", error);
+
         router.push("/login");
       }
     };
@@ -45,14 +46,35 @@ export default function DashboardLayout({
     setIsSidebarOpen(!isSidebarOpen);
   };
 
+  // Handle navigation with loading state
+  const handleNavigation = (path: string) => {
+    setIsNavigating(true);
+    router.push(path);
+    
+    // Auto-stop loading after 3 seconds as fallback
+    setTimeout(() => {
+      setIsNavigating(false);
+    }, 3000);
+  };
+
+  // Stop navigation loading when route changes
+  useEffect(() => {
+    // Reset navigation state when component mounts or route changes
+    setIsNavigating(false);
+  }, []);
+
   return (
     <ThemeProvider>
       <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] font-[var(--font-family)]">
-        <GlobalLoader isLoading={isLoading} />
-        <Sidebar isMobileOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+        <GlobalLoader isLoading={isLoading || isNavigating} />
+        <Sidebar 
+          isMobileOpen={isSidebarOpen} 
+          toggleSidebar={toggleSidebar}
+          onNavigate={handleNavigation}
+        />
 
         {/* Main content */}
-        <div className="md:ml-64 transition-all duration-300 ease-in-out">
+        <div className="md:ml-64 transition-all duration-200 ease-in-out">
           {/* Header */}
           <header className="h-16 bg-[var(--background)] border-b border-[var(--border)] flex items-center justify-between px-6 sticky top-0 z-10">
             <button

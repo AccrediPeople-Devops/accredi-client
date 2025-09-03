@@ -134,10 +134,10 @@ function EditCourseLinkContent({
         } else {
           // Failed to find the course link
           setError(response?.message || "Failed to find the course link");
-          console.error("Failed to fetch course link:", response);
+
         }
       } catch (error: any) {
-        console.error("Error fetching data:", error);
+
         setError(error.message || "An error occurred while fetching data");
       } finally {
         setIsLoadingData(false);
@@ -169,7 +169,7 @@ function EditCourseLinkContent({
           setSchedules([]);
         }
       } catch (error) {
-        console.error("Error fetching schedules:", error);
+
         setSchedules([]);
       } finally {
         setIsLoadingSchedules(false);
@@ -272,7 +272,7 @@ function EditCourseLinkContent({
         setError(response?.message || "Failed to update course link");
       }
     } catch (error: any) {
-      console.error("Error updating course link:", error);
+
       setError(error.message || "An error occurred while updating the course link");
     } finally {
       setIsLoading(false);

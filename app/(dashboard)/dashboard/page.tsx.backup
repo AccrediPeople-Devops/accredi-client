@@ -179,7 +179,66 @@ export default function Dashboard() {
         ))}
       </div>
     );
-  }, [dashboardData]);
+  };
+
+  // Function to render detailed stats - memoized for performance
+  const renderDetailedStats = useMemo(() => {
+    if (!dashboardData) return null;
+    
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+        <div className="bg-[var(--input-bg)] rounded-[var(--radius-lg)] p-4 border border-[var(--border)]">
+          <h3 className="text-lg font-medium text-[var(--foreground)] mb-3">Course Statistics</h3>
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span className="text-[var(--foreground-muted)]">Total Courses:</span>
+              <span className="font-medium text-[var(--foreground)]">{dashboardData.courses?.total || 0}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-[var(--foreground-muted)]">Active Courses:</span>
+              <span className="font-medium text-[var(--foreground)]">{dashboardData.courses?.active || 0}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-[var(--foreground-muted)]">Active Categories:</span>
+              <span className="font-medium text-[var(--foreground)]">{dashboardData.courseCategories?.active || 0}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-[var(--input-bg)] rounded-[var(--radius-lg)] p-4 border border-[var(--border)]">
+          <h3 className="text-lg font-medium text-[var(--foreground)] mb-3">User Statistics</h3>
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span className="text-[var(--foreground-muted)]">Total Users:</span>
+              <span className="font-medium text-[var(--foreground)]">{dashboardData.totalUsers || 0}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-[var(--foreground-muted)]">Customers:</span>
+              <span className="font-medium text-[var(--foreground)]">{dashboardData.customers || 0}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-[var(--input-bg)] rounded-[var(--radius-lg)] p-4 border border-[var(--border)]">
+          <h3 className="text-lg font-medium text-[var(--foreground)] mb-3">Platform Activity</h3>
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span className="text-[var(--foreground-muted)]">Reviews:</span>
+              <span className="font-medium text-[var(--foreground)]">{dashboardData.reviews?.total || 0}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-[var(--foreground-muted)]">Schedules:</span>
+              <span className="font-medium text-[var(--foreground)]">{dashboardData.schedules?.total || 0}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-[var(--foreground-muted)]">Question Papers:</span>
+              <span className="font-medium text-[var(--foreground)]">{dashboardData.questionPapers?.total || 0}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   // Function to render detailed stats - memoized for performance
   const renderDetailedStats = useMemo(() => {

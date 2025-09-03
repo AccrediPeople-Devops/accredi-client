@@ -126,7 +126,6 @@ export default function ResourceDetailsPage() {
               item.file = item.file.map((file: ResourceFile) => {
                 // Ensure file has a valid URL
                 if (!file.url) {
-                  console.warn('File missing URL:', file);
                   // If file has a path but no URL, construct a fallback URL
                   if (file.path) {
                     file.url = file.path;
@@ -139,7 +138,6 @@ export default function ResourceDetailsPage() {
           });
         }
         
-        console.log("Processed resource:", processedResource);
         setResource(processedResource);
         fetchCourseName(processedResource.courseId);
       } else if (response && !response.status) {
@@ -148,7 +146,6 @@ export default function ResourceDetailsPage() {
         setError("Failed to load resource data");
       }
     } catch (err: any) {
-      console.error("Error fetching resource:", err);
       setError(err.response?.data?.message || "Error loading resource");
     } finally {
       setIsLoading(false);
@@ -162,16 +159,13 @@ export default function ResourceDetailsPage() {
         setCourseName(response.course.title);
       }
     } catch (err) {
-      console.error("Error fetching course name:", err);
     }
   };
 
   const handleOpenResource = (url: string) => {
-    console.log("File URL:", url);
     
     // Handle undefined URL
     if (!url || typeof url !== 'string') {
-      console.error("Error: URL is undefined, empty, or not a string");
       return;
     }
     
@@ -191,7 +185,6 @@ export default function ResourceDetailsPage() {
         downloadUrl = `${cleanBaseUrl}${cleanUrl}`;
       }
       
-      console.log("Download URL:", downloadUrl);
       
       // Create an anchor element and set attributes for download
       const a = document.createElement('a');
@@ -208,7 +201,6 @@ export default function ResourceDetailsPage() {
           }
         }
       } catch (error) {
-        console.error("Error parsing filename from URL:", error);
       }
       
       a.download = filename;
@@ -217,7 +209,6 @@ export default function ResourceDetailsPage() {
       a.click(); // Trigger the download
       document.body.removeChild(a); // Clean up
     } catch (error) {
-      console.error("Error downloading file:", error);
     }
   };
 
@@ -401,7 +392,6 @@ export default function ResourceDetailsPage() {
                       <div className="space-y-2">
                         {item.file.map((file, fileIndex) => {
                           // Debug the file object
-                          console.log(`File ${fileIndex}:`, file);
                           return (
                             <div key={fileIndex} className="flex items-center bg-[var(--input-bg)] p-2 rounded-[var(--radius-sm)]">
                               <div className="flex-shrink-0 text-[var(--primary)] mr-2">
@@ -418,7 +408,6 @@ export default function ResourceDetailsPage() {
                                 )}
                               </div>
                               <button
-                                onClick={() => file && file.url ? handleOpenResource(file.url) : console.error("No URL found for file", file)}
                                 className="text-[var(--primary)] hover:underline flex items-center px-2 py-1 text-sm"
                               >
                                 <svg

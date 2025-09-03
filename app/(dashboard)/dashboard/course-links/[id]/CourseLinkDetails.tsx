@@ -48,7 +48,6 @@ export default function CourseLinkDetails({ id }: CourseLinkDetailsProps) {
           updatedAt: new Date().toISOString(),
         });
       } catch (err: any) {
-        console.error("Error fetching course link:", err);
         setError(err.message || "An error occurred while fetching the course link");
       } finally {
         setIsLoading(false);

@@ -102,7 +102,6 @@ export default function AddCoursePage() {
           setCategories(filteredCategories);
         }
       } catch (error) {
-        console.error("Error fetching categories:", error);
         setError("Failed to load course categories");
       } finally {
         setIsLoadingCategories(false);
@@ -213,7 +212,6 @@ export default function AddCoursePage() {
             throw new Error(`Failed to upload ${type}`);
           }
         } catch (err) {
-          console.error(`Error uploading ${type}:`, err);
           setError(`Failed to upload ${type}. Please try again.`);
         } finally {
           setIsUploadingImage(false);
@@ -236,7 +234,6 @@ export default function AddCoursePage() {
         }
       }
     } catch (error) {
-      console.error(`Error handling ${type}:`, error);
       setError(`Failed to process ${type}. Please try again.`);
       setIsUploadingImage(false);
     }
@@ -308,7 +305,6 @@ export default function AddCoursePage() {
         throw new Error("Failed to upload course badge");
       }
     } catch (err) {
-      console.error("Error uploading course badge:", err);
       setError("Failed to upload course badge. Please try again.");
     } finally {
       setIsUploadingImage(false);
@@ -404,12 +400,10 @@ export default function AddCoursePage() {
       // Prepare the data
       const preparedData = prepareDataForSubmission();
       
-      console.log("Submitting course data:", preparedData);
 
       // Submit the course data
       const response = await courseService.createCourse(preparedData);
       
-      console.log("API Response:", response);
 
       if (response && (response.course || response.status === "success" || response.status === true)) {
         // Successfully created course
@@ -418,7 +412,6 @@ export default function AddCoursePage() {
         throw new Error("Failed to create course");
       }
     } catch (err: any) {
-      console.error("Error creating course:", err);
       setError(err.message || "An error occurred while creating the course");
     } finally {
       setIsLoading(false);

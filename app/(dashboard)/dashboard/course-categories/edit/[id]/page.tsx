@@ -28,7 +28,6 @@ export default function EditCourseCategoryPage() {
           setError("Category not found");
         }
       } catch (err: any) {
-        console.error("Error fetching category:", err);
         setError(err.response?.data?.message || "Error fetching category");
       } finally {
         setIsLoading(false);
@@ -78,7 +77,6 @@ export default function EditCourseCategoryPage() {
         router.push("/dashboard/course-categories");
       }
     } catch (err: any) {
-      console.error("Error updating category:", err);
       setError(err.response?.data?.message || "Error updating category");
     } finally {
       setIsSubmitting(false);

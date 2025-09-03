@@ -175,7 +175,6 @@ function ScheduleEditForm({ id }: { id: string }) {
         } else {
           // Failed to find the schedule
           setError(response?.message || "Failed to find the schedule");
-          console.error("Failed to fetch schedule:", response);
           setIsLoadingData(false);
           return;
         }
@@ -200,7 +199,6 @@ function ScheduleEditForm({ id }: { id: string }) {
           isActive: scheduleData?.isActive !== false,
         });
       } catch (error: any) {
-        console.error("Error fetching data:", error);
         setError(error.message || "An error occurred while fetching data");
       } finally {
         setIsLoadingData(false);
@@ -463,7 +461,6 @@ function ScheduleEditForm({ id }: { id: string }) {
         setError(response?.message || "Failed to update schedule");
       }
     } catch (error: any) {
-      console.error("Error updating schedule:", error);
       setError(error.message || "An error occurred while updating the schedule");
     } finally {
       setIsLoading(false);

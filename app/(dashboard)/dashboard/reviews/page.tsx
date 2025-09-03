@@ -60,10 +60,6 @@ export default function ReviewsPage() {
         try {
           await uploadService.deleteImage(reviewToBeDeleted.image.key);
         } catch (error) {
-          console.error(
-            `Error deleting image with key ${reviewToBeDeleted.image.key}:`,
-            error
-          );
           // Continue with review deletion even if image deletion fails
         }
       }

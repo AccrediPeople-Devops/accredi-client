@@ -37,7 +37,6 @@ export default function CoursesPage() {
     setError("");
     try {
       const res = await courseService.getAllCourses();
-      console.log("Courses fetched:", res);
       if (res?.courses) {
         setCourses(res.courses);
       }
@@ -61,7 +60,6 @@ export default function CoursesPage() {
         );
       }
     } catch (err: any) {
-      console.error("Error fetching categories:", err);
     }
   };
 
@@ -120,40 +118,24 @@ export default function CoursesPage() {
     setIsDeleting(courseToDelete);
 
     try {
-      console.log("=== DELETE OPERATION START ===");
-      console.log("Course ID to delete:", courseToDelete);
 
       // Find the course in our current list to verify it exists
       const courseToDeleteObj = courses.find((c) => c._id === courseToDelete);
-      console.log("Course object found:", courseToDeleteObj);
 
       if (!courseToDeleteObj) {
         throw new Error("Course not found in current list");
       }
 
       // Use the same updateCourse approach that works in the edit page
-      console.log("Attempting soft delete with updateCourse...");
       const updateResult = await courseService.updateCourse(courseToDelete, {
         isDeleted: true,
       });
-      console.log("Soft delete successful, result:", updateResult);
 
       // Refresh the courses data to get the latest state
-      console.log("Refreshing courses data...");
       await fetchCourses();
-      console.log("Courses data refreshed successfully");
 
       setShowDeleteModal(false);
-      console.log("=== DELETE OPERATION SUCCESS ===");
     } catch (err: any) {
-      console.log("=== DELETE OPERATION FAILED ===");
-      console.error("Delete failed:", err);
-      console.error("Error message:", err.message);
-      console.error("Error response:", err.response?.data);
-      console.error("Error status:", err.response?.status);
-      console.error("Error config URL:", err.config?.url);
-      console.error("Error config method:", err.config?.method);
-      console.error("Error config data:", err.config?.data);
       setError(
         err.response?.data?.message ||
           err.message ||
@@ -166,40 +148,22 @@ export default function CoursesPage() {
 
   const handleToggleActive = async (courseId: string, isActive: boolean) => {
     try {
-      console.log("=== TOGGLE OPERATION START ===");
-      console.log("Course ID:", courseId);
-      console.log("New isActive value:", isActive);
 
       // Find the course in our current list to verify it exists
       const courseObj = courses.find((c) => c._id === courseId);
-      console.log("Course object found:", courseObj);
-      console.log("Current isActive value:", courseObj?.isActive);
 
       if (!courseObj) {
         throw new Error("Course not found in current list");
       }
 
       // Use the same updateCourse approach that works in the edit page
-      console.log("Calling updateCourse API with isActive...");
       const response = await courseService.updateCourse(courseId, {
         isActive: isActive,
       });
-      console.log("Toggle API response:", response);
 
       // Refresh the courses data to ensure we have the latest state from the server
-      console.log("Refreshing courses data after toggle...");
       await fetchCourses();
-      console.log("Courses data refreshed successfully");
-      console.log("=== TOGGLE OPERATION SUCCESS ===");
     } catch (err: any) {
-      console.log("=== TOGGLE OPERATION FAILED ===");
-      console.error("Error updating course status:", err);
-      console.error("Error message:", err.message);
-      console.error("Toggle error response:", err.response?.data);
-      console.error("Toggle error status:", err.response?.status);
-      console.error("Toggle error config URL:", err.config?.url);
-      console.error("Toggle error config method:", err.config?.method);
-      console.error("Toggle error config data:", err.config?.data);
       setError(
         err.response?.data?.message ||
           err.message ||

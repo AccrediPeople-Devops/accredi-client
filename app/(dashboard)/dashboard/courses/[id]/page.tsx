@@ -123,7 +123,6 @@ export default function CourseDetailsPage({ params }: { params: Promise<{ id: st
           }
         }
       } catch (error) {
-        console.error("Error fetching data:", error);
       } finally {
         setLoading(false);
       }
@@ -162,7 +161,6 @@ export default function CourseDetailsPage({ params }: { params: Promise<{ id: st
       setShowDeleteModal(false);
       router.push("/dashboard/courses");
     } catch (error) {
-      console.error("Error deleting course:", error);
       setIsDeleting(false);
       alert("Failed to delete course. Please try again.");
     }
@@ -178,7 +176,6 @@ export default function CourseDetailsPage({ params }: { params: Promise<{ id: st
         isActive: !course.isActive,
       });
     } catch (error) {
-      console.error("Error updating course status:", error);
       alert("Failed to update course status. Please try again.");
     }
   };

@@ -35,45 +35,36 @@ function QuestionPaperDetailPage({
         setIsLoading(true);
         setError("");
 
-        console.log("Fetching question paper with ID:", id);
         
         // Instead of using the direct endpoint which may return 404,
         // fetch all question papers and find the one with matching ID
         const papersResponse = await questionPaperService.getAllQuestionPapers();
-        console.log("All question papers response:", papersResponse);
         
         if (papersResponse) {
           let papers = [];
           
           // Handle different response formats
           if (papersResponse.questionPapers && Array.isArray(papersResponse.questionPapers)) {
-            console.log("Found question papers in standard format");
             papers = papersResponse.questionPapers;
           } else if (Array.isArray(papersResponse)) {
-            console.log("Found question papers as direct array");
             papers = papersResponse;
           } else if (papersResponse.data && Array.isArray(papersResponse.data)) {
-            console.log("Found question papers in data property");
             papers = papersResponse.data;
           }
           
           // Find the paper with the matching ID
           const foundPaper = papers.find((p: any) => p._id === id);
-          console.log("Found paper:", foundPaper);
           
           if (foundPaper) {
             setQuestionPaper(foundPaper);
             
             // Fetch course details if we have a courseId
             if (foundPaper.courseId) {
-              console.log("Fetching course details for course ID:", foundPaper.courseId);
               
               try {
                 // Skip direct endpoint fetch which may return 404
                 // Go directly to the fallback method
-                console.log("Using fallback method - fetch all courses");
                 const allCoursesResponse = await courseService.getAllCourses();
-                console.log("All courses response:", allCoursesResponse);
                 
                 let courses = [];
                 if (allCoursesResponse && allCoursesResponse.courses && Array.isArray(allCoursesResponse.courses)) {
@@ -95,7 +86,6 @@ function QuestionPaperDetailPage({
                   setCourseName(`Course ID: ${foundPaper.courseId}`);
                 }
               } catch (courseError) {
-                console.error("Error fetching course:", courseError);
                 // Fallback to a generic course name
                 setCourseName(`Course ID: ${foundPaper.courseId}`);
               }
@@ -108,7 +98,6 @@ function QuestionPaperDetailPage({
         // If we couldn't find the paper, show an error
         throw new Error("Question paper not found");
       } catch (err: any) {
-        console.error("Error fetching data:", err);
         setError(err.message || "An error occurred while fetching data");
       } finally {
         setIsLoading(false);
@@ -142,7 +131,6 @@ function QuestionPaperDetailPage({
         isActive: !questionPaper.isActive,
       });
     } catch (err: any) {
-      console.error("Error updating status:", err);
       alert("Failed to update status. Please try again.");
     }
   };
@@ -159,7 +147,6 @@ function QuestionPaperDetailPage({
       await questionPaperService.deleteQuestionPaper(questionPaper._id);
       router.push("/dashboard/question-papers");
     } catch (err: any) {
-      console.error("Error deleting question paper:", err);
       setError(err.message || "Failed to delete question paper. Please try again.");
     } finally {
       setIsDeleting(false);

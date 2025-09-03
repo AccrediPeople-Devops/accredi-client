@@ -35,42 +35,25 @@ export default function PaymentLogsPage() {
     setIsLoading(true);
     setError("");
     try {
-      console.log("Fetching payment logs...");
-      console.log("Current token:", typeof window !== "undefined" ? localStorage.getItem("token") : "Server side");
       
       const response = await paymentLogService.getAllPaymentLogs();
-      console.log("Payment logs fetched:", response);
       
       if (response?.data && Array.isArray(response.data)) {
-        console.log("Setting payment logs from response.data:", response.data.length, "items");
         setPaymentLogs(response.data);
         setFilteredLogs(response.data);
       } else if (Array.isArray(response)) {
-        console.log("Setting payment logs from direct array:", response.length, "items");
         setPaymentLogs(response);
         setFilteredLogs(response);
       } else if (response?.status === "success" && Array.isArray(response.data)) {
-        console.log("Setting payment logs from success response:", response.data.length, "items");
         setPaymentLogs(response.data);
         setFilteredLogs(response.data);
       } else {
-        console.log("Unexpected response format:", response);
-        console.log("Response type:", typeof response);
-        console.log("Response keys:", response ? Object.keys(response) : "null/undefined");
         setPaymentLogs([]);
         setFilteredLogs([]);
       }
     } catch (err: any) {
-      console.error("Error fetching payment logs:", err);
-      console.error("Error type:", typeof err);
-      console.error("Error response:", err.response);
-      console.error("Error message:", err.message);
-      console.error("Error stack:", err.stack);
       
       if (err.response) {
-        console.error("Response status:", err.response.status);
-        console.error("Response data:", err.response.data);
-        console.error("Response headers:", err.response.headers);
       }
       
       setError(err.response?.data?.message || err.message || "Error fetching payment logs");

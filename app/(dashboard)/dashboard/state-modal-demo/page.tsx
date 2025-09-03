@@ -127,7 +127,7 @@ export default function StateModalDemoPage() {
               <StateButton
                 selectedCountryCode="US"
                 selectedStateCode=""
-                onStateSelect={(state) => console.log('Selected:', state)}
+                onStateSelect={(state) => {}}
                 placeholder="Any State"
                 variant="default"
               />
@@ -139,7 +139,7 @@ export default function StateModalDemoPage() {
               <StateButton
                 selectedCountryCode="US"
                 selectedStateCode=""
-                onStateSelect={(state) => console.log('Selected:', state)}
+                onStateSelect={(state) => {}}
                 placeholder="Any State"
                 variant="outlined"
               />
@@ -151,7 +151,7 @@ export default function StateModalDemoPage() {
               <StateButton
                 selectedCountryCode="US"
                 selectedStateCode=""
-                onStateSelect={(state) => console.log('Selected:', state)}
+                onStateSelect={(state) => {}}
                 placeholder="Any State"
                 variant="minimal"
               />
@@ -164,21 +164,21 @@ export default function StateModalDemoPage() {
               <StateButton
                 selectedCountryCode="US"
                 selectedStateCode=""
-                onStateSelect={(state) => console.log('Selected:', state)}
+                onStateSelect={(state) => {}}
                 placeholder="Small Size"
                 size="sm"
               />
               <StateButton
                 selectedCountryCode="US"
                 selectedStateCode=""
-                onStateSelect={(state) => console.log('Selected:', state)}
+                onStateSelect={(state) => {}}
                 placeholder="Medium Size (Default)"
                 size="md"
               />
               <StateButton
                 selectedCountryCode="US"
                 selectedStateCode=""
-                onStateSelect={(state) => console.log('Selected:', state)}
+                onStateSelect={(state) => {}}
                 placeholder="Large Size"
                 size="lg"
               />

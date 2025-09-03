@@ -29,35 +29,27 @@ export default function QuestionPapersPage() {
         setIsLoading(true);
         setError("");
 
-        console.log("Fetching all question papers");
         
         // Fetch all question papers
         const papersResponse = await questionPaperService.getAllQuestionPapers();
-        console.log("Question papers response:", papersResponse);
         
         if (papersResponse) {
           let papers = [];
           
           // Handle different response formats
           if (papersResponse.questionPapers && Array.isArray(papersResponse.questionPapers)) {
-            console.log("Found question papers in standard format");
             papers = papersResponse.questionPapers;
           } else if (Array.isArray(papersResponse)) {
-            console.log("Found question papers as direct array");
             papers = papersResponse;
           } else if (papersResponse.data && Array.isArray(papersResponse.data)) {
-            console.log("Found question papers in data property");
             papers = papersResponse.data;
           }
           
           if (papers.length > 0) {
-            console.log("Successfully loaded question papers:", papers.length);
             setQuestionPapers(papers);
             
             // Fetch all courses for mapping
-            console.log("Fetching courses for mapping");
             const coursesResponse = await courseService.getAllCourses();
-            console.log("Courses response:", coursesResponse);
             
             if (coursesResponse) {
               let courses = [];
@@ -85,7 +77,6 @@ export default function QuestionPapersPage() {
         
         throw new Error(papersResponse?.message || "Failed to fetch question papers");
       } catch (err: any) {
-        console.error("Error fetching data:", err);
         setError(err.message || "An error occurred while fetching data");
       } finally {
         setIsLoading(false);
@@ -115,7 +106,6 @@ export default function QuestionPapersPage() {
         )
       );
     } catch (err: any) {
-      console.error("Error toggling status:", err);
       alert("Failed to update status. Please try again.");
     }
   };
@@ -140,7 +130,6 @@ export default function QuestionPapersPage() {
       );
       setShowDeleteModal(false);
     } catch (err: any) {
-      console.error("Error deleting question paper:", err);
       setError(err.message || "Failed to delete question paper. Please try again.");
     } finally {
       setIsDeleting(false);
@@ -158,7 +147,6 @@ export default function QuestionPapersPage() {
         )
       );
     } catch (err: any) {
-      console.error("Error restoring question paper:", err);
       alert("Failed to restore question paper. Please try again.");
     }
   };

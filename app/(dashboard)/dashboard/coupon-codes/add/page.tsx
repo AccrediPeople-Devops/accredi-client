@@ -64,7 +64,6 @@ export default function AddCouponCodePage() {
           setCourses(activeCourses);
         }
       } catch (error) {
-        console.error("Error fetching courses:", error);
         setError("Failed to load courses");
       } finally {
         setIsLoadingCourses(false);
@@ -146,7 +145,6 @@ export default function AddCouponCodePage() {
         throw new Error(response?.message || "Failed to create coupon code");
       }
     } catch (err: any) {
-      console.error("Error creating coupon code:", err);
       setError(err.message || "An error occurred while creating the coupon code");
     } finally {
       setIsLoading(false);

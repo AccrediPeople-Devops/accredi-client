@@ -45,8 +45,6 @@ export default function EditFaqPage() {
         faqService.getFaqsByCourse(courseId)
       ]);
 
-      console.log("Course data:", courseRes);
-      console.log("FAQ data:", faqRes);
 
       // Set course data
       if (courseRes?.course) {
@@ -66,7 +64,6 @@ export default function EditFaqPage() {
         }
       }
     } catch (err: any) {
-      console.error("Error fetching data:", err);
       setError(err.response?.data?.message || "Error fetching data. Please try again.");
     } finally {
       setIsLoadingData(false);
@@ -135,9 +132,6 @@ export default function EditFaqPage() {
     setError("");
 
     try {
-      console.log("=== UPDATE FAQ OPERATION START ===");
-      console.log("Course ID:", courseId);
-      console.log("FAQs to update:", faqs);
 
       // Filter out empty FAQs and trim values
       const validFaqs = faqs
@@ -156,19 +150,14 @@ export default function EditFaqPage() {
       if (faqId) {
         // Update existing FAQs using PUT endpoint
         await faqService.updateFaqs(faqId, courseId, validFaqs);
-        console.log("FAQ update successful (PUT)");
       } else {
         // Create new FAQs using POST endpoint
         await faqService.createOrUpdateFaqs(courseId, validFaqs);
-        console.log("FAQ create successful (POST)");
       }
 
       // Redirect to FAQ list page
       router.push("/dashboard/faqs");
-      console.log("=== UPDATE FAQ OPERATION SUCCESS ===");
     } catch (err: any) {
-      console.log("=== UPDATE FAQ OPERATION FAILED ===");
-      console.error("Update failed:", err);
       setError(
         err.response?.data?.message ||
           err.message ||

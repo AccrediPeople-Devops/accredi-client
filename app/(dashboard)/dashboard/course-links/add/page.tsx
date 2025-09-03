@@ -78,7 +78,7 @@ export default function AddCourseLinkPage() {
           setCourses(filteredCourses);
         }
       } catch (error) {
-        console.error("Error fetching courses:", error);
+
         setError("Failed to load courses. Please refresh the page.");
       } finally {
         setIsLoadingCourses(false);
@@ -112,7 +112,7 @@ export default function AddCourseLinkPage() {
           setSchedules([]);
         }
       } catch (error) {
-        console.error("Error fetching schedules:", error);
+
         setError("Failed to load schedules. Please try again.");
         setSchedules([]);
       } finally {
@@ -226,7 +226,7 @@ export default function AddCourseLinkPage() {
         setError(response?.message || "Failed to create course link");
       }
     } catch (error: any) {
-      console.error("Error creating course link:", error);
+
       setError(
         error.message || "An error occurred while creating the course link"
       );

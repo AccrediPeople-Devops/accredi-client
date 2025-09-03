@@ -54,7 +54,6 @@ export default function EditResourcePage() {
   useEffect(() => {
     if (resourceId) {
       Promise.all([fetchResource(), fetchCourses()]).catch(err => {
-        console.error("Error initializing page:", err);
       });
     }
   }, [resourceId]);
@@ -75,7 +74,6 @@ export default function EditResourcePage() {
         setError("Failed to load resource data");
       }
     } catch (err: any) {
-      console.error("Error fetching resource:", err);
       setError(err.response?.data?.message || "Error loading resource");
     } finally {
       setIsLoading(false);
@@ -88,10 +86,8 @@ export default function EditResourcePage() {
       if (response && response.courses) {
         setCourses(response.courses);
       } else {
-        console.error("Invalid course response format");
       }
     } catch (err: any) {
-      console.error("Error fetching courses:", err);
     }
   };
 
@@ -139,7 +135,6 @@ export default function EditResourcePage() {
     setError("");
 
     try {
-      console.log("Updating resource data:", formData);
       const response = await resourceService.updateResource(resourceId, formData);
       
       if (response && (response.status || response.resource)) {
@@ -148,7 +143,6 @@ export default function EditResourcePage() {
         setError("Failed to update resource. Invalid response format.");
       }
     } catch (err: any) {
-      console.error("Error updating resource:", err);
       setError(err.response?.data?.message || "Failed to update resource");
     } finally {
       setIsSubmitting(false);

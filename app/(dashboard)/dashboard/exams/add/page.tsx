@@ -46,7 +46,6 @@ export default function AddExamPage() {
 
         // Fetch courses
         const coursesResponse = await courseService.getAllCourses();
-        console.log("Courses response:", coursesResponse);
         
         if (coursesResponse) {
           let courses = [];
@@ -71,7 +70,6 @@ export default function AddExamPage() {
 
         // Fetch question papers
         const questionPapersResponse = await questionPaperService.getAllQuestionPapers();
-        console.log("Question papers response:", questionPapersResponse);
         
         if (questionPapersResponse) {
           let questionPapers = [];
@@ -99,7 +97,6 @@ export default function AddExamPage() {
           }
         }
       } catch (err: any) {
-        console.error("Error fetching data:", err);
         setError(err.message || "An error occurred while fetching data");
       } finally {
         setIsLoadingInitial(false);
@@ -179,11 +176,9 @@ export default function AddExamPage() {
         throw new Error("Time limit must be greater than 0 minutes");
       }
 
-      console.log("Submitting exam data:", formData);
       
       // Submit the exam
       const response = await examService.createExam(formData);
-      console.log("Response from service:", response);
 
       // If we get any response back, consider it successful
       // The backend API might be sending back a different structure than expected
@@ -204,14 +199,12 @@ export default function AddExamPage() {
         } else {
           // If we can't determine a specific pattern but got a response,
           // assume success and redirect
-          console.log("No specific success indicator found, but got a response. Assuming success.");
           router.push("/dashboard/exams");
         }
       } else {
         setError("Failed to create exam. No response from server.");
       }
     } catch (err: any) {
-      console.error("Error creating exam:", err);
       setError(err.message || "An unexpected error occurred while creating the exam");
     } finally {
       setIsLoading(false);

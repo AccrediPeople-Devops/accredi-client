@@ -47,7 +47,6 @@ export default function ExamAttemptEditPage({ params }: ExamAttemptEditPageProps
           endTime: attempt.endTime || "",
         });
       } catch (err: any) {
-        console.error("Error fetching exam attempt:", err);
         setError(err.message || "Failed to fetch exam attempt");
       } finally {
         setIsLoading(false);
@@ -101,14 +100,12 @@ export default function ExamAttemptEditPage({ params }: ExamAttemptEditPageProps
         isCompleted: true, // Mark as completed when updating
       };
 
-      console.log("Updating exam attempt with data:", updateData);
       
       await examAttemptService.updateExamAttempt(examAttempt._id, updateData);
       
       // Redirect back to the exam attempts list
       router.push("/dashboard/exam-attempts");
     } catch (err: any) {
-      console.error("Error updating exam attempt:", err);
       setError(err.message || "Failed to update exam attempt");
     } finally {
       setIsSaving(false);

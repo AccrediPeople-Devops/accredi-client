@@ -106,7 +106,6 @@ function CourseEditor({ courseId }: { courseId: string }) {
           setCategories(filteredCategories);
         }
       } catch (error) {
-        console.error("Error fetching categories:", error);
         setError("Failed to load categories");
       } finally {
         setIsLoadingCategories(false);
@@ -197,7 +196,6 @@ function CourseEditor({ courseId }: { courseId: string }) {
           setError("Failed to load course data");
         }
       } catch (error) {
-        console.error("Error fetching course:", error);
         setError("Error fetching course data");
       } finally {
         setIsLoadingCourse(false);
@@ -308,7 +306,6 @@ function CourseEditor({ courseId }: { courseId: string }) {
             throw new Error(`Failed to upload ${type}`);
           }
         } catch (err) {
-          console.error(`Error uploading ${type}:`, err);
           setError(`Failed to upload ${type}. Please try again.`);
         } finally {
           setIsUploadingImage(false);
@@ -331,7 +328,6 @@ function CourseEditor({ courseId }: { courseId: string }) {
         }
       }
     } catch (error) {
-      console.error(`Error handling ${type}:`, error);
       setError(`Failed to process ${type}. Please try again.`);
       setIsUploadingImage(false);
     }
@@ -403,7 +399,6 @@ function CourseEditor({ courseId }: { courseId: string }) {
         throw new Error("Failed to upload course badge");
       }
     } catch (err) {
-      console.error("Error uploading course badge:", err);
       setError("Failed to upload course badge. Please try again.");
     } finally {
       setIsUploadingImage(false);
@@ -546,14 +541,10 @@ function CourseEditor({ courseId }: { courseId: string }) {
         };
       }
 
-      console.log("Updating course with cleaned data:", cleanedData);
-      console.log("Course ID:", courseId);
-      console.log("Token exists:", !!token);
 
       // Submit the course data with better error handling
       const response = await courseService.updateCourse(courseId, cleanedData);
 
-      console.log("API Response:", response);
 
       if (response && (response.course || response.status === "success" || response.status === true)) {
         // Successfully updated course
@@ -562,7 +553,6 @@ function CourseEditor({ courseId }: { courseId: string }) {
         throw new Error("Failed to update course - Invalid response from server");
       }
     } catch (err: any) {
-      console.error("Error updating course:", err);
       
       // Handle specific error types
       if (err.response?.status === 401) {
@@ -576,7 +566,6 @@ function CourseEditor({ courseId }: { courseId: string }) {
       } else if (err.response?.status === 400) {
         const errorMessage = err.response?.data?.message || "Invalid data format. Please check all required fields.";
         setError(`Bad Request: ${errorMessage}`);
-        console.error("400 Error Details:", err.response?.data);
       } else if (err.response?.status === 404) {
         setError("Course not found. It may have been deleted.");
       } else if (err.message?.includes("Network Error") || err.code === "NETWORK_ERROR") {

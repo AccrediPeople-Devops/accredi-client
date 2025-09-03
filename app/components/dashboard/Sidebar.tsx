@@ -1,32 +1,26 @@
-import React, { useState, useEffect } from "react";
-import Link from "next/link";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import { useTheme } from "../../context/ThemeContext";
 
 interface SidebarProps {
   isMobileOpen: boolean;
   toggleSidebar: () => void;
+  onNavigate?: (path: string) => void;
 }
 
-export default function Sidebar({ isMobileOpen, toggleSidebar }: SidebarProps) {
+export default function Sidebar({ isMobileOpen, toggleSidebar, onNavigate }: SidebarProps) {
   const pathname = usePathname();
   const { currentTheme } = useTheme();
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
 
-  // Check if user is super admin
+  // Check if user is super admin - optimized to avoid unnecessary re-renders
   useEffect(() => {
-    const checkSuperAdminStatus = () => {
-      // TODO: Replace this with your actual super admin check
-      // This could come from your auth context, user profile, or token
-      const userRole = localStorage.getItem("userRole");
-      const isSuperAdminUser = userRole === "SUPER_ADMIN" || userRole === "super_admin";
-      setIsSuperAdmin(isSuperAdminUser);
-    };
-
-    checkSuperAdminStatus();
+    const userRole = localStorage.getItem("userRole");
+    const isSuperAdminUser = userRole === "SUPER_ADMIN" || userRole === "super_admin";
+    setIsSuperAdmin(isSuperAdminUser);
   }, []);
 
-  const menuSections = [
+  const menuSections = useMemo(() => [
     {
       title: "Main",
       items: [
@@ -349,16 +343,25 @@ export default function Sidebar({ isMobileOpen, toggleSidebar }: SidebarProps) {
         },
       ],
     },
-  ];
+  ], [isSuperAdmin]);
 
-  // Filter menu sections based on user role
-  const filteredMenuSections = menuSections.filter(section => {
-    // Show Administration section only to super admins
-    if (section.title === "Administration" && !isSuperAdmin) {
-      return false;
+  // Filter menu sections based on user role - memoized for performance
+  const filteredMenuSections = useMemo(() => 
+    menuSections.filter(section => {
+      // Show Administration section only to super admins
+      if (section.title === "Administration" && !isSuperAdmin) {
+        return false;
+      }
+      return true;
+    }), [menuSections, isSuperAdmin]
+  );
+
+  // Handle navigation with loading state
+  const handleNavigation = useCallback((path: string) => {
+    if (onNavigate) {
+      onNavigate(path);
     }
-    return true;
-  });
+  }, [onNavigate]);
 
   return (
     <>
@@ -404,10 +407,10 @@ export default function Sidebar({ isMobileOpen, toggleSidebar }: SidebarProps) {
 
                     return (
                       <li key={item.title}>
-                        <Link
-                          href={item.path}
+                        <button
+                          onClick={() => handleNavigation(item.path)}
                           className={`
-                            flex items-center px-4 py-2.5 text-sm font-medium rounded-[var(--radius-md)]
+                            flex items-center px-4 py-2.5 text-sm font-medium rounded-[var(--radius-md)] w-full text-left
                             ${
                               isActive
                                 ? "bg-[var(--primary)] text-[var(--primary-text)] shadow-sm"
@@ -429,7 +432,7 @@ export default function Sidebar({ isMobileOpen, toggleSidebar }: SidebarProps) {
                           {isActive && (
                             <span className="w-1 h-6 bg-[var(--primary-text)]/20 rounded-full ml-2"></span>
                           )}
-                        </Link>
+                        </button>
                       </li>
                     );
                   })}

@@ -91,10 +91,6 @@ export default function UserProfilePage() {
       // Use the specific user endpoint instead of fetching all users
       const response = await UserService.getUserById(userId);
       
-      console.log("=== API RESPONSE DEBUG ===");
-      console.log("Full response:", response);
-      console.log("Response status:", response?.status);
-      console.log("Response keys:", Object.keys(response || {}));
       
       if (!response || !response.status) {
         setUserProfile(null);
@@ -115,34 +111,21 @@ export default function UserProfilePage() {
       setUserProfile(profileData);
 
       // Extract assigned courses from the user data
-      console.log("=== COURSE DEBUGGING ===");
-      console.log("Found user:", userData);
-      console.log("User courses:", userData.courses);
       
       // Check if courses exist and is an array
       if (userData.courses && Array.isArray(userData.courses)) {
-        console.log("Course data found:", userData.courses);
-        console.log("Number of courses:", userData.courses.length);
         
-        // Log each course and its schedule
+        // Process each course and its schedule
         userData.courses.forEach((course: any, index: number) => {
-          console.log(`Course ${index + 1}:`, {
-            courseId: course._id,
-            title: course.title,
-            scheduleId: course.schedule?._id,
-            schedule: course.schedule
-          });
+          // Course processing logic can be added here if needed
         });
         
         setAssignedCourses(userData.courses);
       } else {
-        console.log("No courses found or not an array. Treating as no courses assigned.");
         setAssignedCourses([]);
       }
-      console.log("=== END COURSE DEBUGGING ===");
 
     } catch (err: any) {
-      console.error("Error fetching user profile:", err);
       if (err.response?.status === 404) {
         setError("User not found.");
       } else {
@@ -207,23 +190,14 @@ export default function UserProfilePage() {
     }
 
     try {
-      console.log("=== REMOVE COURSE DEBUG ===");
-      console.log("User ID from params:", userId);
-      console.log("Course ID:", courseId);
-      console.log("Schedule ID parameter:", scheduleId);
       
       // Find the course in assignedCourses to get the schedule ID
       const course = assignedCourses.find(c => c._id === courseId);
-      console.log("Found course:", course);
-      console.log("Course schedule:", course?.schedule);
-      console.log("Course schedule ID:", course?.schedule?._id);
       
       // Use the schedule ID from the found course if not provided
       const finalScheduleId = scheduleId || course?.schedule?._id;
-      console.log("Final schedule ID to send:", finalScheduleId);
       
       if (!finalScheduleId) {
-        console.error("No schedule ID found for course removal");
         alert("Error: Could not determine which course schedule to remove. Please try again.");
         return;
       }
@@ -232,15 +206,12 @@ export default function UserProfilePage() {
       const response = await courseAssignmentService.removeCourseFromUser(userId, courseId, finalScheduleId);
       
       if (response.success) {
-        console.log("Course removed successfully");
         // Refresh the course list
         fetchUserProfile();
       } else {
-        console.error("Failed to remove course:", response.message);
         alert("Failed to remove course: " + response.message);
       }
     } catch (error) {
-      console.error("Error removing course:", error);
       alert("Error removing course. Please try again.");
     }
   };

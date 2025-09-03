@@ -51,14 +51,12 @@ export default function CourseCategoryDetailsPage() {
               setCourses([]);
             }
           } catch (courseErr) {
-            console.error("Error fetching courses:", courseErr);
             setCourses([]);
           }
         } else {
           setError("Category not found");
         }
       } catch (err: any) {
-        console.error("Error fetching category details:", err);
         setError(err.response?.data?.message || "Error fetching category details");
       } finally {
         setIsLoading(false);

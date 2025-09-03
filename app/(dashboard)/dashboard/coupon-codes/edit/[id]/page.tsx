@@ -53,7 +53,6 @@ function CouponCodeEditor({ couponId }: { couponId: string }) {
           setCourses(response.courses);
         }
       } catch (error) {
-        console.error("Error fetching courses:", error);
         setError("Failed to load courses");
       } finally {
         setIsLoadingCourses(false);
@@ -86,7 +85,6 @@ function CouponCodeEditor({ couponId }: { couponId: string }) {
           setError("Failed to load coupon code");
         }
       } catch (err: any) {
-        console.error("Error fetching coupon code:", err);
         setError(err.message || "Error fetching coupon code");
       } finally {
         setIsLoadingCoupon(false);
@@ -149,7 +147,6 @@ function CouponCodeEditor({ couponId }: { couponId: string }) {
     if (preparedData.updatedAt) delete preparedData.updatedAt;
     if (preparedData.__v) delete preparedData.__v;
     
-    console.log('Final prepared data for API:', JSON.stringify(preparedData, null, 2));
     
     return preparedData;
   };
@@ -195,7 +192,6 @@ function CouponCodeEditor({ couponId }: { couponId: string }) {
         throw new Error("Failed to update coupon code");
       }
     } catch (err: any) {
-      console.error("Error updating coupon code:", err);
       
       let errorMessage = "An error occurred while updating the coupon code";
       

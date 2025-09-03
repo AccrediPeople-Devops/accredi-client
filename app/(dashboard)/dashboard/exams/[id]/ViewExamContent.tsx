@@ -37,7 +37,6 @@ export default function ViewExamContent({ id }: ViewExamContentProps) {
 
         // Fetch exam data
         const examResponse = await examService.getExamById(examId);
-        console.log("Exam response:", examResponse);
         
         if (!examResponse || !examResponse.status) {
           throw new Error(examResponse?.message || "Failed to fetch exam data");
@@ -63,7 +62,6 @@ export default function ViewExamContent({ id }: ViewExamContentProps) {
               setCourseName("Unknown Course");
             }
           } catch (err) {
-            console.error("Error fetching course:", err);
             setCourseName("Unknown Course");
           }
         }
@@ -81,12 +79,10 @@ export default function ViewExamContent({ id }: ViewExamContentProps) {
               setQuestionPaperName("Unknown Question Paper");
             }
           } catch (err) {
-            console.error("Error fetching question paper:", err);
             setQuestionPaperName("Unknown Question Paper");
           }
         }
       } catch (err: any) {
-        console.error("Error fetching exam data:", err);
         setError(err.message || "An error occurred while fetching exam data");
       } finally {
         setIsLoading(false);
@@ -115,7 +111,6 @@ export default function ViewExamContent({ id }: ViewExamContentProps) {
         setActionError(response?.message || "Failed to delete exam");
       }
     } catch (err: any) {
-      console.error("Error deleting exam:", err);
       setActionError(err.message || "An error occurred while deleting the exam");
     } finally {
       setIsActionLoading(false);
@@ -154,7 +149,6 @@ export default function ViewExamContent({ id }: ViewExamContentProps) {
         setActionError(response?.message || `Failed to ${newStatus ? 'activate' : 'deactivate'} exam`);
       }
     } catch (err: any) {
-      console.error("Error toggling exam status:", err);
       setActionError(err.message || "An error occurred while updating exam status");
     } finally {
       setIsActionLoading(false);
@@ -188,7 +182,6 @@ export default function ViewExamContent({ id }: ViewExamContentProps) {
         setActionError(response?.message || "Failed to restore exam");
       }
     } catch (err: any) {
-      console.error("Error restoring exam:", err);
       setActionError(err.message || "An error occurred while restoring the exam");
     } finally {
       setIsActionLoading(false);

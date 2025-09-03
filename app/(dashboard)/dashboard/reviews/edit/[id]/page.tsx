@@ -68,7 +68,6 @@ export default function EditReviewPage({ params }: { params: Promise<{ id: strin
         try {
           await ReviewService.updateReviewStatus(reviewId, formData.isActive);
         } catch (statusErr) {
-          console.error("Error updating active status:", statusErr);
         }
       }
 

@@ -41,7 +41,6 @@ export default function ExamAttemptsPage() {
       
       setExamAttempts(attempts);
     } catch (err: any) {
-      console.error("Error fetching exam attempts:", err);
       setError(err.message || "Failed to fetch exam attempts");
     } finally {
       setIsLoading(false);
@@ -57,7 +56,6 @@ export default function ExamAttemptsPage() {
       await examAttemptService.deleteExamAttempt(attemptId);
       setExamAttempts(prev => prev.filter(attempt => attempt._id !== attemptId));
     } catch (err: any) {
-      console.error("Error deleting exam attempt:", err);
       alert(err.message || "Failed to delete exam attempt");
     }
   };

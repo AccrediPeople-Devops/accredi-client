@@ -39,7 +39,6 @@ export default function AddReviewPage() {
         try {
           await ReviewService.updateReviewStatus(res.review._id, true);
         } catch (statusErr) {
-          console.error("Error setting initial active status:", statusErr);
         }
       }
 

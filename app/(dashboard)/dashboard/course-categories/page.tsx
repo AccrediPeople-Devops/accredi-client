@@ -37,7 +37,6 @@ export default function CourseCategoriesPage() {
                 courseCount: courseCount
               };
             } catch (error) {
-              console.error(`Error getting course count for category ${category._id}:`, error);
               return category;
             }
           })
@@ -79,7 +78,6 @@ export default function CourseCategoriesPage() {
       setCategoryToDelete(id);
       setIsDeleteModalOpen(true);
     } catch (err) {
-      console.error("Error checking category courses:", err);
       setDeleteError("Error checking if category has associated courses.");
     }
   };

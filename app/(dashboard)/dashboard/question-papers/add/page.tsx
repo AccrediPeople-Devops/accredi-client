@@ -34,26 +34,20 @@ export default function AddQuestionPaperPage() {
     const fetchCourses = async () => {
       try {
         setIsLoadingCourses(true);
-        console.log("Fetching all courses for dropdown");
         
         const response = await courseService.getAllCourses();
-        console.log("Courses response:", response);
         
         let courses = [];
         
         if (response && response.courses && Array.isArray(response.courses)) {
-          console.log("Found courses in standard format");
           courses = response.courses;
         } else if (Array.isArray(response)) {
-          console.log("Found courses as direct array");
           courses = response;
         } else if (response && response.data && Array.isArray(response.data)) {
-          console.log("Found courses in data property");
           courses = response.data;
         }
         
         if (courses.length > 0) {
-          console.log("Successfully loaded courses:", courses.length);
           setAvailableCourses(
             courses.map((course: any) => ({
               _id: course._id,
@@ -61,10 +55,8 @@ export default function AddQuestionPaperPage() {
             }))
           );
         } else {
-          console.warn("No courses found or empty course list");
         }
       } catch (err: any) {
-        console.error("Error fetching courses:", err);
         setError("Failed to load courses. Please try again.");
       } finally {
         setIsLoadingCourses(false);
@@ -149,11 +141,9 @@ export default function AddQuestionPaperPage() {
         }
       }
 
-      console.log("Submitting question paper data:", formData);
       
       // Submit the question paper
       const response = await questionPaperService.createQuestionPaper(formData);
-      console.log("Response from service:", response);
 
       // If we get any response back, consider it successful
       // The backend API might be sending back a different structure than expected
@@ -178,7 +168,6 @@ export default function AddQuestionPaperPage() {
         setError("Failed to create question paper. No response from server.");
       }
     } catch (err: any) {
-      console.error("Error creating question paper:", err);
       setError(err.message || "An unexpected error occurred while creating the question paper");
     } finally {
       setIsLoading(false);

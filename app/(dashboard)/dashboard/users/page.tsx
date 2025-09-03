@@ -33,10 +33,8 @@ export default function UsersPage() {
   const fetchCurrentUser = async () => {
     try {
       // Since /auth/v1/me doesn't exist, let's find current user from the users list
-      console.log("Finding current user from users list...");
       await findCurrentUserFromList();
     } catch (err: any) {
-      console.error("Error fetching current user:", err);
     }
   };
 
@@ -49,7 +47,6 @@ export default function UsersPage() {
       // Try to decode the token to get user email (if it's a JWT)
       try {
         const tokenPayload = JSON.parse(atob(token.split('.')[1]));
-        console.log("Token payload:", tokenPayload);
         
         // Fetch users and find the one matching the token
         const res = await UserService.getAllUsers();
@@ -62,22 +59,18 @@ export default function UsersPage() {
           
           if (foundUser) {
             setCurrentUser(foundUser);
-            console.log("Found current user from users list:", foundUser);
           } else {
             // Fallback: if we can't find by token, assume the first superadmin is the current user
             // This is just for testing - remove in production
             const superadmin = res.users.find((user: User) => user.role === "superadmin");
             if (superadmin) {
               setCurrentUser(superadmin);
-              console.log("Fallback: Using first superadmin as current user:", superadmin);
             }
           }
         }
       } catch (tokenError) {
-        console.error("Error decoding token:", tokenError);
       }
     } catch (err) {
-      console.error("Error in findCurrentUserFromList:", err);
     }
   };
 
@@ -103,29 +96,24 @@ export default function UsersPage() {
 
   // Permission check functions
   const canEditUser = (targetUser: User): boolean => {
-    console.log("canEditUser check:", { currentUser, targetUser: targetUser.role });
     if (!currentUser) {
-      console.log("No current user, returning false");
       return false;
     }
     
     // Superadmin cannot be edited
     if (targetUser.role === "superadmin") {
-      console.log("Target is superadmin, cannot edit");
       return false;
     }
     
     // Only superadmin can edit admins
     if (targetUser.role === "admin") {
       const canEdit = currentUser.role === "superadmin";
-      console.log("Target is admin, current user can edit:", canEdit);
       return canEdit;
     }
     
     // Both admin and superadmin can edit users
     if (targetUser.role === "user") {
       const canEdit = currentUser.role === "admin" || currentUser.role === "superadmin";
-      console.log("Target is user, current user can edit:", canEdit);
       return canEdit;
     }
     
@@ -133,29 +121,24 @@ export default function UsersPage() {
   };
 
   const canDeleteUser = (targetUser: User): boolean => {
-    console.log("canDeleteUser check:", { currentUser, targetUser: targetUser.role });
     if (!currentUser) {
-      console.log("No current user, returning false");
       return false;
     }
     
     // Superadmin cannot be deleted
     if (targetUser.role === "superadmin") {
-      console.log("Target is superadmin, cannot delete");
       return false;
     }
     
     // Only superadmin can delete admins
     if (targetUser.role === "admin") {
       const canDelete = currentUser.role === "superadmin";
-      console.log("Target is admin, current user can delete:", canDelete);
       return canDelete;
     }
     
     // Both admin and superadmin can delete users
     if (targetUser.role === "user") {
       const canDelete = currentUser.role === "admin" || currentUser.role === "superadmin";
-      console.log("Target is user, current user can delete:", canDelete);
       return canDelete;
     }
     
@@ -210,10 +193,7 @@ export default function UsersPage() {
         try {
           await uploadService.deleteImage(userToDeleteObj.profileImage.key);
         } catch (error) {
-          console.error(
-            `Error deleting profile image with key ${userToDeleteObj.profileImage.key}:`,
-            error
-          );
+          // Continue with user deletion even if image deletion fails
         }
       }
 
@@ -263,7 +243,6 @@ export default function UsersPage() {
 
   const handleCourseAssignmentSuccess = () => {
     // Optionally refresh user data or show success message
-    console.log("Course assigned successfully");
   };
 
   const getRoleColor = (role: string) => {
@@ -732,7 +711,6 @@ export default function UsersPage() {
         isOpen={showGlobalCourseAssignmentModal}
         onClose={() => setShowGlobalCourseAssignmentModal(false)}
         onSuccess={() => {
-          console.log("Course assigned successfully");
           setShowGlobalCourseAssignmentModal(false);
         }}
       />

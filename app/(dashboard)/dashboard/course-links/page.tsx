@@ -36,7 +36,6 @@ export default function CourseLinksPage() {
       } else if (Array.isArray(res)) {
         setCourseLinks(res);
       } else {
-        console.warn("Unexpected response format:", res);
         setCourseLinks([]);
       }
     } catch (err: any) {
@@ -72,7 +71,6 @@ export default function CourseLinksPage() {
               courseNamesMap[courseId] = "Unknown Course";
             }
           } catch (err) {
-            console.error(`Error fetching course name for ID ${courseId}:`, err);
             courseNamesMap[courseId] = "Unknown Course";
           }
         })
@@ -80,7 +78,6 @@ export default function CourseLinksPage() {
       
       setCourseNames(courseNamesMap);
     } catch (err) {
-      console.error("Error fetching course names:", err);
     }
   };
 
@@ -159,7 +156,6 @@ export default function CourseLinksPage() {
         setSuccessMessage("");
       }, 3000);
     } catch (err: any) {
-      console.error("Error deleting course link:", err);
       setError(err.message || "Error deleting course link");
     } finally {
       setIsDeleting(null);
@@ -185,7 +181,6 @@ export default function CourseLinksPage() {
         setSuccessMessage("");
       }, 3000);
     } catch (err: any) {
-      console.error("Error updating course link status:", err);
       setError(err.message || "Error updating course link status");
     } finally {
       setIsUpdatingStatus(null);
@@ -211,7 +206,6 @@ export default function CourseLinksPage() {
         setSuccessMessage("");
       }, 3000);
     } catch (err: any) {
-      console.error("Error restoring course link:", err);
       setError(err.message || "Error restoring course link");
     } finally {
       setIsRestoring(null);

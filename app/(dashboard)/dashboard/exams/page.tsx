@@ -32,11 +32,9 @@ export default function ExamsPage() {
         setIsLoading(true);
         setError("");
 
-        console.log("Fetching exams, courses, and question papers");
         
         // Fetch all exams
         const examsResponse = await examService.getAllExams();
-        console.log("Exams response:", examsResponse);
         
         if (examsResponse) {
           let examsList = [];
@@ -60,7 +58,6 @@ export default function ExamsPage() {
             
             // Fetch course details for mapping
             const coursesResponse = await courseService.getAllCourses();
-            console.log("Courses response:", coursesResponse);
             
             if (coursesResponse) {
               let courses = [];
@@ -85,7 +82,6 @@ export default function ExamsPage() {
             
             // Fetch question paper details for mapping
             const questionPapersResponse = await questionPaperService.getAllQuestionPapers();
-            console.log("Question papers response:", questionPapersResponse);
             
             if (questionPapersResponse) {
               let questionPapers = [];
@@ -110,7 +106,6 @@ export default function ExamsPage() {
           }
         }
       } catch (err: any) {
-        console.error("Error fetching data:", err);
         setError(err.message || "An error occurred while fetching data");
       } finally {
         setIsLoading(false);
@@ -150,7 +145,6 @@ export default function ExamsPage() {
         )
       );
     } catch (err: any) {
-      console.error("Error toggling status:", err);
       alert("Failed to update status. Please try again.");
     }
   };
@@ -175,7 +169,6 @@ export default function ExamsPage() {
       );
       setShowDeleteModal(false);
     } catch (err: any) {
-      console.error("Error deleting exam:", err);
       setError(err.message || "Failed to delete exam. Please try again.");
     } finally {
       setIsDeleting(null);
@@ -193,7 +186,6 @@ export default function ExamsPage() {
         )
       );
     } catch (err: any) {
-      console.error("Error restoring exam:", err);
       alert("Failed to restore exam. Please try again.");
     }
   };

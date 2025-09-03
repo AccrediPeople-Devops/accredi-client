@@ -45,7 +45,6 @@ export default function FaqsPage() {
     setError("");
     try {
       const res = await faqService.getAllFaqs();
-      console.log("FAQs fetched:", res);
       if (res?.faqs) {
         setFaqs(res.faqs);
       }
@@ -59,7 +58,6 @@ export default function FaqsPage() {
   const fetchCourses = async () => {
     try {
       const res = await courseService.getAllCourses();
-      console.log("Courses fetched:", res);
       if (res?.courses) {
         setCourses(
           res.courses.filter(
@@ -68,7 +66,6 @@ export default function FaqsPage() {
         );
       }
     } catch (err: any) {
-      console.error("Error fetching courses:", err);
     }
   };
 
@@ -117,19 +114,13 @@ export default function FaqsPage() {
     setIsDeleting(faqToDelete);
 
     try {
-      console.log("=== DELETE FAQ OPERATION START ===");
-      console.log("FAQ ID to delete:", faqToDelete);
 
       await faqService.deleteFaqById(faqToDelete);
-      console.log("FAQ delete successful");
 
       // Refresh the FAQs data
       await fetchFaqs();
       setShowDeleteModal(false);
-      console.log("=== DELETE FAQ OPERATION SUCCESS ===");
     } catch (err: any) {
-      console.log("=== DELETE FAQ OPERATION FAILED ===");
-      console.error("Delete failed:", err);
       setError(
         err.response?.data?.message ||
           err.message ||

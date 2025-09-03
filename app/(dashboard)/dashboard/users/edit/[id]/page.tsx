@@ -41,9 +41,7 @@ export default function EditUserPage() {
     try {
       // Since getCurrentUser method doesn't exist, we'll skip this for now
       // User role restrictions will be handled differently if needed
-      console.log("Current user check skipped in edit user page");
     } catch (err: any) {
-      console.error("Error in user check:", err);
     }
   };
 
@@ -228,11 +226,9 @@ export default function EditUserPage() {
             }
           );
 
-          console.log("Direct upload response:", uploadResponse.data);
 
           if (uploadResponse.data.status && uploadResponse.data.upload) {
             // Add profile image to update data
-            console.log("Upload response:", uploadResponse.data);
             updateData.profileImage = {
               path: uploadResponse.data.upload[0].path,
               key: uploadResponse.data.upload[0].key,
@@ -241,7 +237,6 @@ export default function EditUserPage() {
             throw new Error("Failed to upload profile image");
           }
         } catch (uploadError) {
-          console.error("Upload error:", uploadError);
           setError("Error uploading image. Please try again.");
           setIsSaving(false);
           return;
@@ -272,7 +267,6 @@ export default function EditUserPage() {
         setError(response.message || "Failed to update user");
       }
     } catch (err: any) {
-      console.error("Error updating user:", err);
       setError(err.response?.data?.message || "Error updating user");
     } finally {
       setIsSaving(false);
@@ -600,7 +594,6 @@ export default function EditUserPage() {
           userId={targetUser._id}
           userName={targetUser.fullName}
           onSuccess={() => {
-            console.log("Course assigned successfully");
             setShowCourseAssignmentModal(false);
           }}
         />

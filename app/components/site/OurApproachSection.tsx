@@ -115,23 +115,23 @@ export default function OurApproachSection() {
                   </div>
                   
                   {/* Rotating Orbiting Elements - All 3 Circles */}
-                  {/* Align - Starting at top */}
+                  {/* Align - Top position (0 degrees) */}
                   <div className="absolute inset-0 animate-spin-slow">
-                    <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 w-16 h-16 bg-gradient-to-br from-[#4F46E5]/20 to-[#7C3AED]/20 site-light:from-[#4F46E5]/30 site-light:to-[#7C3AED]/30 backdrop-blur-sm rounded-full border border-[#4F46E5]/30 site-light:border-[#4F46E5]/50 flex items-center justify-center hover:scale-110 transition-transform duration-300">
+                    <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-gradient-to-br from-[#4F46E5]/20 to-[#7C3AED]/20 site-light:from-[#4F46E5]/30 site-light:to-[#7C3AED]/30 backdrop-blur-sm rounded-full border border-[#4F46E5]/30 site-light:border-[#4F46E5]/50 flex items-center justify-center hover:scale-110 transition-transform duration-300">
                       <span className="text-xs font-bold site-text-primary no-rotate">Align</span>
                     </div>
                   </div>
                     
-                  {/* Acquire - Starting 120 degrees later */}
+                  {/* Acquire - Bottom left position (120 degrees) */}
                   <div className="absolute inset-0 animate-spin-slow animate-delay-8s">
-                    <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 w-16 h-16 bg-gradient-to-br from-[#F59E0B]/20 to-[#D97706]/20 site-light:from-[#F59E0B]/30 site-light:to-[#D97706]/30 backdrop-blur-sm rounded-full border border-[#F59E0B]/30 site-light:border-[#F59E0B]/50 flex items-center justify-center hover:scale-110 transition-transform duration-300">
+                    <div className="absolute bottom-0 left-0 transform translate-x-1/2 translate-y-1/2 w-16 h-16 bg-gradient-to-br from-[#F59E0B]/20 to-[#D97706]/20 site-light:from-[#F59E0B]/30 site-light:to-[#D97706]/30 backdrop-blur-sm rounded-full border border-[#F59E0B]/30 site-light:border-[#F59E0B]/50 flex items-center justify-center hover:scale-110 transition-transform duration-300">
                       <span className="text-xs font-bold site-text-primary no-rotate">Acquire</span>
                     </div>
                   </div>
                     
-                  {/* Achieve - Starting 240 degrees later */}
+                  {/* Achieve - Bottom right position (240 degrees) */}
                   <div className="absolute inset-0 animate-spin-slow animate-delay-16s">
-                    <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 w-16 h-16 bg-gradient-to-br from-[#EF4444]/20 to-[#DC2626]/20 site-light:from-[#EF4444]/30 site-light:to-[#DC2626]/30 backdrop-blur-sm rounded-full border border-[#EF4444]/30 site-light:border-[#EF4444]/50 flex items-center justify-center hover:scale-110 transition-transform duration-300">
+                    <div className="absolute bottom-0 right-0 transform -translate-x-1/2 translate-y-1/2 w-16 h-16 bg-gradient-to-br from-[#EF4444]/20 to-[#DC2626]/20 site-light:from-[#EF4444]/30 site-light:to-[#DC2626]/30 backdrop-blur-sm rounded-full border border-[#EF4444]/30 site-light:border-[#EF4444]/50 flex items-center justify-center hover:scale-110 transition-transform duration-300">
                       <span className="text-xs font-bold site-text-primary no-rotate">Achieve</span>
                     </div>
                   </div>
@@ -274,18 +274,18 @@ export default function OurApproachSection() {
       </div>
 
       <style jsx>{`
-        @keyframes spin-slow {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
+        @keyframes orbit {
+          0% { transform: rotate(0deg) translateX(100px) rotate(0deg); }
+          100% { transform: rotate(360deg) translateX(100px) rotate(-360deg); }
         }
         .animate-spin-slow {
-          animation: spin-slow 24s linear infinite;
+          animation: orbit 20s linear infinite;
         }
         .animate-delay-8s {
-          animation-delay: -8s;
+          animation-delay: -6.67s;
         }
         .animate-delay-16s {
-          animation-delay: -16s;
+          animation-delay: -13.33s;
         }
         .no-rotate {
           transform: none !important;

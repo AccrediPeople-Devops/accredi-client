@@ -51,7 +51,6 @@ function EditExamContent({ id }: { id: string }) {
 
         // Fetch exam data
         const examResponse = await examService.getExamById(examId);
-        console.log("Exam response:", examResponse);
         
         if (!examResponse || !examResponse.status) {
           throw new Error(examResponse?.message || "Failed to fetch exam data");
@@ -74,7 +73,6 @@ function EditExamContent({ id }: { id: string }) {
 
         // Fetch courses
         const coursesResponse = await courseService.getAllCourses();
-        console.log("Courses response:", coursesResponse);
         
         if (coursesResponse) {
           let courses = [];
@@ -99,7 +97,6 @@ function EditExamContent({ id }: { id: string }) {
 
         // Fetch question papers
         const questionPapersResponse = await questionPaperService.getAllQuestionPapers();
-        console.log("Question papers response:", questionPapersResponse);
         
         if (questionPapersResponse) {
           let questionPapers = [];
@@ -133,7 +130,6 @@ function EditExamContent({ id }: { id: string }) {
           }
         }
       } catch (err: any) {
-        console.error("Error fetching data:", err);
         setError(err.message || "An error occurred while fetching data");
       } finally {
         setIsLoadingInitial(false);
@@ -215,11 +211,9 @@ function EditExamContent({ id }: { id: string }) {
         throw new Error("Time limit must be greater than 0 minutes");
       }
 
-      console.log("Submitting updated exam data:", formData);
       
       // Update the exam
       const response = await examService.updateExam(examId, formData);
-      console.log("Response from service:", response);
 
       if (response) {
         // Check if the response has exam or status property
@@ -238,14 +232,12 @@ function EditExamContent({ id }: { id: string }) {
         } else {
           // If we can't determine a specific pattern but got a response,
           // assume success and redirect
-          console.log("No specific success indicator found, but got a response. Assuming success.");
           router.push("/dashboard/exams");
         }
       } else {
         setError("Failed to update exam. No response from server.");
       }
     } catch (err: any) {
-      console.error("Error updating exam:", err);
       setError(err.message || "An unexpected error occurred while updating the exam");
     } finally {
       setIsLoading(false);

@@ -120,7 +120,6 @@ export default function AddSchedulePage() {
           setCourses(filteredCourses);
         }
       } catch (error) {
-        console.error("Error fetching courses:", error);
         setError("Failed to load courses. Please refresh the page.");
       } finally {
         setIsLoadingCourses(false);
@@ -420,7 +419,6 @@ export default function AddSchedulePage() {
         setError(response?.message || "Failed to create schedule");
       }
     } catch (error: any) {
-      console.error("Error creating schedule:", error);
       setError(error.message || "An error occurred while creating the schedule");
     } finally {
       setIsLoading(false);

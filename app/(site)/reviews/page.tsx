@@ -226,7 +226,7 @@ export default function ReviewsPage() {
           </div>
 
           {/* Stats Section */}
-      <div className="py-12">
+      {/* <div className="py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
             {stats.map((stat, index) => (
@@ -241,7 +241,7 @@ export default function ReviewsPage() {
             ))}
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Reviews Grid */}
       <div className="pb-20">
@@ -291,13 +291,13 @@ export default function ReviewsPage() {
                     </div>
 
                     {/* Rating */}
-                    <div className="flex gap-1 mb-4">
+                    {/* <div className="flex gap-1 mb-4">
                       {[...Array(5)].map((_, i) => (
                         <svg key={i} className="w-4 h-4 text-amber-400 site-light:text-amber-500" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
                         </svg>
                       ))}
-                    </div>
+                    </div> */}
 
                     {/* Review content */}
                     <div className="mb-6">

@@ -56,7 +56,6 @@ export default function CouponCodesPage() {
         setError("Failed to load coupon codes. Invalid response format.");
       }
     } catch (err: any) {
-      console.error("Error fetching coupon codes:", err);
       setError(err.response?.data?.message || "Failed to load coupon codes");
     } finally {
       setIsLoading(false);
@@ -74,7 +73,6 @@ export default function CouponCodesPage() {
         setCourses(courseMap);
       }
     } catch (err) {
-      console.error("Error fetching courses:", err);
     }
   };
 
@@ -85,7 +83,6 @@ export default function CouponCodesPage() {
         await couponCodeService.deleteCouponCode(id);
         setCouponCodes(couponCodes.filter(code => code._id !== id));
       } catch (err: any) {
-        console.error("Error deleting coupon code:", err);
         setError(err.response?.data?.message || "Error deleting coupon code");
       } finally {
         setIsDeleting(null);
@@ -103,7 +100,6 @@ export default function CouponCodesPage() {
         )
       );
     } catch (err: any) {
-      console.error("Error toggling coupon code active state:", err);
       setError(err.response?.data?.message || "Error updating coupon code status");
     } finally {
       setIsTogglingActive(null);

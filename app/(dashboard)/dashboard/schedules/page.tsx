@@ -28,22 +28,16 @@ export default function SchedulesPage() {
     setIsLoading(true);
     setError("");
     try {
-      console.log("Fetching all schedules");
       const res = await scheduleService.getAllSchedules();
-      console.log("Schedules response:", res);
 
       if (res && res.schedules) {
-        console.log(`Got ${res.schedules.length} schedules`);
         setSchedules(res.schedules);
       } else if (Array.isArray(res)) {
-        console.log(`Got ${res.length} schedules (direct array)`);
         setSchedules(res);
       } else {
-        console.warn("Unexpected response format:", res);
         setSchedules([]);
       }
     } catch (err: any) {
-      console.error("Error fetching schedules:", err);
       setError(err.response?.data?.message || "Error fetching schedules");
     } finally {
       setIsLoading(false);
@@ -80,10 +74,6 @@ export default function SchedulesPage() {
               courseNamesMap[courseId] = "Unknown Course";
             }
           } catch (err) {
-            console.error(
-              `Error fetching course name for ID ${courseId}:`,
-              err
-            );
             courseNamesMap[courseId] = "Unknown Course";
           }
         })
@@ -91,7 +81,6 @@ export default function SchedulesPage() {
 
       setCourseNames(courseNamesMap);
     } catch (err) {
-      console.error("Error fetching course names:", err);
     }
   };
 
@@ -202,7 +191,6 @@ export default function SchedulesPage() {
     setSuccessMessage("");
 
     try {
-      console.log("Soft deleting schedule with ID:", scheduleToDelete);
       // Use updateSchedule to set isDeleted: true (soft delete)
       await scheduleService.updateSchedule(scheduleToDelete, {
         isDeleted: true,
@@ -218,7 +206,6 @@ export default function SchedulesPage() {
         setSuccessMessage("");
       }, 3000);
     } catch (err: any) {
-      console.error("Error deleting schedule:", err);
       setError(err.response?.data?.message || "Error deleting schedule");
     } finally {
       setIsDeleting(null);
@@ -232,7 +219,6 @@ export default function SchedulesPage() {
     setSuccessMessage("");
 
     try {
-      console.log("Restoring schedule with ID:", scheduleId);
       // Use updateSchedule to set isDeleted: false (restore)
       await scheduleService.updateSchedule(scheduleId, {
         isDeleted: false,
@@ -247,7 +233,6 @@ export default function SchedulesPage() {
         setSuccessMessage("");
       }, 3000);
     } catch (err: any) {
-      console.error("Error restoring schedule:", err);
       setError(err.response?.data?.message || "Error restoring schedule");
     } finally {
       setIsRestoring(null);

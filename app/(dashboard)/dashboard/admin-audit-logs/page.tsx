@@ -60,7 +60,6 @@ export default function AdminAuditLogsPage() {
     setIsLoading(true);
     setError("");
     try {
-      console.log("Fetching admin audit logs...");
       const params: AdminAuditLogParams = {
         page: currentPage,
         limit: itemsPerPage,
@@ -76,29 +75,24 @@ export default function AdminAuditLogsPage() {
       }
 
       const response = await adminAuditLogService.getAdminAuditLogs(params);
-      console.log("Admin audit logs fetched:", response);
       
       if (response?.data && Array.isArray(response.data)) {
-        console.log("Setting audit logs from response.data:", response.data.length, "items");
         setAuditLogs(response.data);
         setFilteredLogs(response.data);
         setTotalCount(response.totalCount || response.data.length);
         setTotalPages(response.totalPages || Math.ceil((response.totalCount || response.data.length) / itemsPerPage));
       } else if (Array.isArray(response)) {
-        console.log("Setting audit logs from direct array:", response.length, "items");
         setAuditLogs(response);
         setFilteredLogs(response);
         setTotalCount(response.length);
         setTotalPages(Math.ceil(response.length / itemsPerPage));
       } else {
-        console.log("Unexpected response format:", response);
         setAuditLogs([]);
         setFilteredLogs([]);
         setTotalCount(0);
         setTotalPages(0);
       }
     } catch (err: any) {
-      console.error("Error fetching admin audit logs:", err);
       setError(err.response?.data?.message || err.message || "Error fetching admin audit logs");
     } finally {
       setIsLoading(false);

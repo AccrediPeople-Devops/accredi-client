@@ -35,7 +35,6 @@ export default function AddUserPage() {
       // Get the token to extract user info
       const token = localStorage.getItem("token");
       if (!token) {
-        console.log("No token found");
         setIsLoadingUser(false);
         return;
       }
@@ -43,7 +42,6 @@ export default function AddUserPage() {
       // Try to decode the token to get user email (if it's a JWT)
       try {
         const tokenPayload = JSON.parse(atob(token.split('.')[1]));
-        console.log("Token payload:", tokenPayload);
         
         // Fetch users and find the one matching the token
         const res = await UserService.getAllUsers();
@@ -56,16 +54,12 @@ export default function AddUserPage() {
           
           if (foundUser) {
             setCurrentUser(foundUser);
-            console.log("Found current user:", foundUser);
           } else {
-            console.log("User not found in users list");
           }
         }
       } catch (tokenError) {
-        console.error("Error decoding token:", tokenError);
       }
     } catch (err: any) {
-      console.error("Error fetching current user:", err);
     } finally {
       setIsLoadingUser(false);
     }
@@ -76,24 +70,20 @@ export default function AddUserPage() {
   }, []);
 
   const canCreateRole = (role: string): boolean => {
-    console.log("canCreateRole check:", { currentUser: currentUser?.role, targetRole: role });
     
     if (!currentUser) {
-      console.log("No current user, returning false");
       return false;
     }
     
     // Only superadmin can create admins (there's only one superadmin created by backend)
     if (role === "admin") {
       const canCreate = currentUser.role === "superadmin";
-      console.log(`Can create ${role}:`, canCreate);
       return canCreate;
     }
     
     // Both admin and superadmin can create users
     if (role === "user") {
       const canCreate = currentUser.role === "admin" || currentUser.role === "superadmin";
-      console.log(`Can create ${role}:`, canCreate);
       return canCreate;
     }
     

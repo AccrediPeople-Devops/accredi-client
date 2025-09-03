@@ -70,7 +70,6 @@ export default function ResourcesPage() {
         setError("Failed to load resources. Invalid response format.");
       }
     } catch (err: any) {
-      console.error("Error fetching resources:", err);
       setError(err.response?.data?.message || "Failed to load resources");
     } finally {
       setIsLoading(false);
@@ -88,7 +87,6 @@ export default function ResourcesPage() {
         setCourses(courseMap);
       }
     } catch (err) {
-      console.error("Error fetching courses:", err);
     }
   };
 
@@ -109,7 +107,6 @@ export default function ResourcesPage() {
       ));
       setShowDeleteModal(false);
     } catch (err: any) {
-      console.error("Error deleting resource:", err);
       setError(err.response?.data?.message || "Error deleting resource");
     } finally {
       setIsDeleting(null);
@@ -128,7 +125,6 @@ export default function ResourcesPage() {
         )
       );
     } catch (err: any) {
-      console.error("Error restoring resource:", err);
       setError(err.response?.data?.message || "Error restoring resource");
     } finally {
       setIsRestoring(null);

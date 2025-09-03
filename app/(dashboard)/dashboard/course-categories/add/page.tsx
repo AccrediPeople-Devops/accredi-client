@@ -51,7 +51,6 @@ export default function AddCourseCategoryPage() {
               true
             );
           } catch (statusErr) {
-            console.error("Error setting initial active status:", statusErr);
           }
         }
         
@@ -59,7 +58,6 @@ export default function AddCourseCategoryPage() {
         router.push("/dashboard/course-categories");
       }
     } catch (err: any) {
-      console.error("Error adding category:", err);
       setError(err.response?.data?.message || "Error adding category");
     } finally {
       setIsLoading(false);

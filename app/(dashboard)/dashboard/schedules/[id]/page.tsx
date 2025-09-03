@@ -38,7 +38,6 @@ function ScheduleDetails({ id }: { id: string }) {
         } else {
           // Failed to find the schedule
           setError(response?.message || "Failed to find the schedule");
-          console.error("Failed to fetch schedule:", response);
           setLoading(false);
           return;
         }
@@ -57,11 +56,9 @@ function ScheduleDetails({ id }: { id: string }) {
               setCourseName(course.title);
             }
           } catch (err) {
-            console.error("Error fetching course name:", err);
           }
         }
       } catch (err: any) {
-        console.error("Error fetching data:", err);
         setError(err.message || "An error occurred while fetching data");
       } finally {
         setLoading(false);
@@ -131,7 +128,6 @@ function ScheduleDetails({ id }: { id: string }) {
         setError(response?.message || "Failed to delete schedule");
       }
     } catch (err: any) {
-      console.error("Error deleting schedule:", err);
       setError(err.message || "An error occurred while deleting the schedule");
     } finally {
       setIsActionLoading(false);
@@ -164,7 +160,6 @@ function ScheduleDetails({ id }: { id: string }) {
         setError(response?.message || "Failed to update schedule status");
       }
     } catch (err: any) {
-      console.error("Error updating schedule status:", err);
       setError(err.message || "An error occurred while updating the schedule status");
     } finally {
       setIsActionLoading(false);
@@ -179,9 +174,7 @@ function ScheduleDetails({ id }: { id: string }) {
     setSuccessMessage("");
 
     try {
-      console.log("DetailPage: Attempting to restore schedule with ID:", schedule._id);
       const response = await scheduleService.restoreSchedule(schedule._id);
-      console.log("DetailPage: Restore response:", response);
       
       // Check for successful restoration in various response formats
       const isSuccess = 
@@ -190,7 +183,6 @@ function ScheduleDetails({ id }: { id: string }) {
         (response && response.schedule && response.schedule._id);
       
       if (isSuccess) {
-        console.log("DetailPage: Restore successful, updating UI");
         // Update the local state
         setSchedule({
           ...schedule,
@@ -199,17 +191,14 @@ function ScheduleDetails({ id }: { id: string }) {
         
         setSuccessMessage("Schedule restored successfully");
       } else {
-        console.error("DetailPage: Restore failed with response:", response);
         
         // Try a fallback approach - refresh the schedule data
         try {
-          console.log("DetailPage: Attempting fallback - refreshing schedule data");
           const refreshedData = await scheduleService.getScheduleById(schedule._id);
           
           if (refreshedData && refreshedData.schedule) {
             // If the refreshed data shows the schedule as not deleted, consider it a success
             if (!refreshedData.schedule.isDeleted) {
-              console.log("DetailPage: Schedule appears to be restored based on refreshed data");
               setSchedule(refreshedData.schedule);
               setSuccessMessage("Schedule restored successfully");
               setIsActionLoading(false);
@@ -217,19 +206,11 @@ function ScheduleDetails({ id }: { id: string }) {
             }
           }
         } catch (refreshError) {
-          console.error("DetailPage: Fallback refresh failed:", refreshError);
         }
         
         setError(response?.message || "Failed to restore schedule. Please try again.");
       }
     } catch (err: any) {
-      console.error("DetailPage: Error restoring schedule:", err);
-      if (err.response) {
-        console.error("DetailPage: Server response:", {
-          status: err.response.status, 
-          data: err.response.data
-        });
-      }
       setError(err.message || "An error occurred while restoring the schedule. Please try again.");
     } finally {
       setIsActionLoading(false);
