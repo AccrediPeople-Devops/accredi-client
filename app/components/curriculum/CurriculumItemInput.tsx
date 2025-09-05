@@ -45,42 +45,42 @@ const CurriculumItemInput: React.FC<CurriculumItemInputProps> = ({
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-medium text-white">Curriculum Items</h3>
-        <button
-          type="button"
-          onClick={addItem}
-          className="px-3 py-1 rounded-lg bg-[#5B2C6F] text-white text-sm hover:bg-[#5B2C6F]/90 transition-colors flex items-center"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-4 w-4 mr-1"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fillRule="evenodd"
-              d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-              clipRule="evenodd"
-            />
-          </svg>
-          Add Item
-        </button>
+      <div>
+        <h3 className="text-lg font-medium text-[var(--foreground)]">Curriculum Items</h3>
       </div>
 
       {items.length === 0 ? (
-        <div className="p-4 bg-[#1A1A1A] rounded-lg text-center">
-          <p className="text-white/70">No curriculum items yet. Add your first item!</p>
+        <div className="p-6 bg-[var(--background)] rounded-lg text-center border border-[var(--border)]">
+          <p className="text-[var(--foreground-muted)] mb-4">No curriculum items yet. Add your first item!</p>
+          <button
+            type="button"
+            onClick={addItem}
+            className="px-4 py-2 rounded-lg bg-[var(--primary)] text-white text-sm hover:bg-[var(--primary)]/90 transition-colors flex items-center gap-2 mx-auto"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-4 w-4"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                clipRule="evenodd"
+              />
+            </svg>
+            Add First Item
+          </button>
         </div>
       ) : (
         <div className="space-y-4">
           {items.map((item, index) => (
             <div
               key={index}
-              className="p-4 bg-[#1A1A1A] rounded-lg border border-[#5B2C6F]/20"
+              className="p-4 bg-[var(--background)] rounded-lg border border-[var(--border)]"
             >
               <div className="flex justify-between items-center mb-3">
-                <h4 className="text-[#D7BDE2] font-medium">Item {index + 1}</h4>
+                <h4 className="text-[var(--primary)] font-medium">Item {index + 1}</h4>
                 <div className="flex space-x-2">
                   <button
                     type="button"
@@ -88,8 +88,8 @@ const CurriculumItemInput: React.FC<CurriculumItemInputProps> = ({
                     disabled={index === 0}
                     className={`p-1 rounded-lg ${
                       index === 0
-                        ? "text-white/30 cursor-not-allowed"
-                        : "text-white/70 hover:bg-[#5B2C6F]/20 hover:text-white"
+                        ? "text-[var(--foreground-muted)] cursor-not-allowed"
+                        : "text-[var(--foreground-muted)] hover:bg-[var(--primary)]/20 hover:text-[var(--foreground)]"
                     }`}
                   >
                     <svg
@@ -111,8 +111,8 @@ const CurriculumItemInput: React.FC<CurriculumItemInputProps> = ({
                     disabled={index === items.length - 1}
                     className={`p-1 rounded-lg ${
                       index === items.length - 1
-                        ? "text-white/30 cursor-not-allowed"
-                        : "text-white/70 hover:bg-[#5B2C6F]/20 hover:text-white"
+                        ? "text-[var(--foreground-muted)] cursor-not-allowed"
+                        : "text-[var(--foreground-muted)] hover:bg-[var(--primary)]/20 hover:text-[var(--foreground)]"
                     }`}
                   >
                     <svg
@@ -131,7 +131,7 @@ const CurriculumItemInput: React.FC<CurriculumItemInputProps> = ({
                   <button
                     type="button"
                     onClick={() => removeItem(index)}
-                    className="p-1 rounded-lg text-red-400 hover:bg-red-500/20"
+                    className="p-1 rounded-lg text-[var(--error)] hover:bg-[var(--error)]/20"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -151,7 +151,7 @@ const CurriculumItemInput: React.FC<CurriculumItemInputProps> = ({
 
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-medium text-white/70 mb-1">
+                  <label className="block text-sm font-medium text-[var(--foreground-muted)] mb-1">
                     Title
                   </label>
                   <input
@@ -159,11 +159,11 @@ const CurriculumItemInput: React.FC<CurriculumItemInputProps> = ({
                     value={item.title}
                     onChange={(e) => updateItem(index, "title", e.target.value)}
                     placeholder="Enter title"
-                    className="w-full px-3 py-2 bg-[#2A2A2A] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5B2C6F]"
+                    className="w-full px-3 py-2 bg-[var(--input-bg)] text-[var(--foreground)] border border-[var(--border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-white/70 mb-1">
+                  <label className="block text-sm font-medium text-[var(--foreground-muted)] mb-1">
                     Description
                   </label>
                   <RichTextEditor
@@ -177,6 +177,29 @@ const CurriculumItemInput: React.FC<CurriculumItemInputProps> = ({
               </div>
             </div>
           ))}
+          
+          {/* Add Item Button at the bottom */}
+          <div className="flex justify-center pt-4">
+            <button
+              type="button"
+              onClick={addItem}
+              className="px-4 py-2 rounded-lg bg-[var(--primary)] text-white text-sm hover:bg-[var(--primary)]/90 transition-colors flex items-center gap-2"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              Add New Item
+            </button>
+          </div>
         </div>
       )}
     </div>

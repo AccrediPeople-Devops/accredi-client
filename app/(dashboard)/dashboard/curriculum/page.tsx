@@ -1,14 +1,15 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import curriculumService from "@/app/components/service/curriculum.service";
 import courseService from "@/app/components/service/course.service";
-import { Curriculum } from "@/app/types/curriculum";
+import { Curriculum, CurriculumContent } from "@/app/types/curriculum";
 import { Course } from "@/app/types/course";
 import { createHtmlPreview } from "@/app/utils/textUtils";
 import { LoadingSpinner } from "@/app/components/LoadingSpinner";
 import Modal from "@/app/components/Modal";
+import ListPageControls, { Pagination } from "@/app/components/ListPageControls";
 
 export default function CurriculumPage() {
   const [curriculums, setCurriculums] = useState<Curriculum[]>([]);
@@ -19,6 +20,17 @@ export default function CurriculumPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [curriculumToDelete, setCurriculumToDelete] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  
+  // Enhanced filtering and pagination state
+  const [selectedCourse, setSelectedCourse] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("updatedAt");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  
+  // Status update state
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState<string | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -66,6 +78,7 @@ export default function CurriculumPage() {
   };
 
   const handleToggleActive = async (id: string, isActive: boolean) => {
+    setIsUpdatingStatus(id);
     try {
       await curriculumService.toggleCurriculumActive(id, isActive);
       // Update the local state after successful toggle
@@ -78,6 +91,8 @@ export default function CurriculumPage() {
       setError(
         err.response?.data?.message || "Error updating curriculum status"
       );
+    } finally {
+      setIsUpdatingStatus(null);
     }
   };
 
@@ -102,10 +117,65 @@ export default function CurriculumPage() {
     }
   };
 
-  const filteredCurriculums = curriculums.filter((curriculum) => {
-    const courseName = getCourseNameById(curriculum.courseId).toLowerCase();
-    return courseName.includes(searchTerm.toLowerCase());
-  });
+  // Enhanced filtering and sorting logic
+  const filteredCurriculums = useMemo(() => {
+    let filtered = curriculums.filter((curriculum) => {
+      const courseName = getCourseNameById(curriculum.courseId).toLowerCase();
+      const matchesSearch = courseName.includes(searchTerm.toLowerCase());
+      const matchesCourse = !selectedCourse || curriculum.courseId === selectedCourse;
+      const matchesStatus = statusFilter === "all" || 
+        (statusFilter === "active" && curriculum.isActive) ||
+        (statusFilter === "inactive" && !curriculum.isActive);
+      
+      return matchesSearch && matchesCourse && matchesStatus;
+    });
+
+    // Sort the filtered results
+    filtered.sort((a, b) => {
+      let aValue: any, bValue: any;
+      
+      switch (sortBy) {
+        case "courseName":
+          aValue = getCourseNameById(a.courseId).toLowerCase();
+          bValue = getCourseNameById(b.courseId).toLowerCase();
+          break;
+        case "contentCount":
+          aValue = a.content.length;
+          bValue = b.content.length;
+          break;
+        case "updatedAt":
+          aValue = new Date(a.updatedAt || a.createdAt || "").getTime();
+          bValue = new Date(b.updatedAt || b.createdAt || "").getTime();
+          break;
+        case "createdAt":
+          aValue = new Date(a.createdAt || "").getTime();
+          bValue = new Date(b.createdAt || "").getTime();
+          break;
+        default:
+          aValue = a[sortBy as keyof Curriculum];
+          bValue = b[sortBy as keyof Curriculum];
+      }
+
+      if (aValue < bValue) return sortOrder === "asc" ? -1 : 1;
+      if (aValue > bValue) return sortOrder === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    return filtered;
+  }, [curriculums, searchTerm, selectedCourse, statusFilter, sortBy, sortOrder, courses]);
+
+  // Pagination logic
+  const totalItems = filteredCurriculums.length;
+  const totalPages = itemsPerPage === -1 ? 1 : Math.ceil(totalItems / itemsPerPage);
+  const startIndex = itemsPerPage === -1 ? 0 : (currentPage - 1) * itemsPerPage;
+  const endIndex = itemsPerPage === -1 ? totalItems : Math.min(startIndex + itemsPerPage, totalItems);
+  const paginatedCurriculums = itemsPerPage === -1 ? filteredCurriculums : filteredCurriculums.slice(startIndex, endIndex);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedCourse, statusFilter, sortBy, sortOrder]);
+
 
   return (
     <div className="space-y-6">
@@ -138,30 +208,51 @@ export default function CurriculumPage() {
         </Link>
       </div>
 
-      {/* Search */}
-      <div className="relative w-full max-w-md">
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5 text-[var(--foreground-muted)]"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fillRule="evenodd"
-              d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-              clipRule="evenodd"
-            />
-          </svg>
-        </div>
-        <input
-          type="text"
-          placeholder="Search by course name..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10 pr-4 py-2 w-full bg-[var(--input-bg)] text-[var(--foreground)] border border-[var(--border)] rounded-[var(--radius-md)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-        />
-      </div>
+      {/* Enhanced Search and Filter Controls */}
+      <ListPageControls
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        searchPlaceholder="Search by course name..."
+        filters={[
+          {
+            label: "Course",
+            value: selectedCourse,
+            options: [
+              { value: "", label: "All Courses" },
+              ...courses.map(course => ({ value: course._id, label: course.title }))
+            ],
+            onChange: setSelectedCourse
+          },
+          {
+            label: "Status",
+            value: statusFilter,
+            options: [
+              { value: "all", label: "All Status" },
+              { value: "active", label: "Active" },
+              { value: "inactive", label: "Inactive" }
+            ],
+            onChange: setStatusFilter
+          }
+        ]}
+        sortBy={sortBy}
+        onSortByChange={setSortBy}
+        sortOrder={sortOrder}
+        onSortOrderChange={setSortOrder}
+        sortOptions={[
+          { value: "courseName", label: "Course Name" },
+          { value: "contentCount", label: "Content Items" },
+          { value: "updatedAt", label: "Last Updated" },
+          { value: "createdAt", label: "Created Date" }
+        ]}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        itemsPerPage={itemsPerPage}
+        onItemsPerPageChange={setItemsPerPage}
+        totalItems={totalItems}
+        startIndex={startIndex}
+        endIndex={endIndex}
+      />
 
       {/* Error message */}
       {error && (
@@ -198,7 +289,7 @@ export default function CurriculumPage() {
             No Curriculums Found
           </h3>
           <p className="mt-2 text-[var(--foreground-muted)]">
-            {searchTerm
+            {searchTerm || selectedCourse || statusFilter !== "all"
               ? "No curriculums match your search criteria."
               : "Get started by creating a new curriculum."}
           </p>
@@ -208,28 +299,51 @@ export default function CurriculumPage() {
       {/* Curriculum List */}
       {!isLoading && !error && filteredCurriculums.length > 0 && (
         <div className="grid grid-cols-1 gap-4">
-          {filteredCurriculums.map((curriculum) => (
+          {paginatedCurriculums.map((curriculum) => (
             <div
               key={curriculum._id}
               className="bg-[var(--background)] rounded-[var(--radius-md)] overflow-hidden border border-[var(--border)]"
             >
               <div className="p-6">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-medium text-[var(--foreground)]">
-                    {courses.length === 0 ? (
-                      <span className="inline-flex items-center">
-                        Course:{" "}
-                        <span className="ml-2 animate-pulse text-[var(--foreground-muted)]">
-                          Loading...
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex-1">
+                    <h2 className="text-xl font-medium text-[var(--foreground)] mb-2">
+                      {courses.length === 0 ? (
+                        <span className="inline-flex items-center">
+                          Course:{" "}
+                          <span className="ml-2 animate-pulse text-[var(--foreground-muted)]">
+                            Loading...
+                          </span>
                         </span>
+                      ) : (
+                        <span>
+                          Course: {getCourseNameById(curriculum.courseId)}
+                        </span>
+                      )}
+                    </h2>
+                    <div className="flex items-center gap-4">
+                      <span
+                        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                          curriculum.isActive
+                            ? "bg-[var(--success)]/20 text-[var(--success)]"
+                            : "bg-[var(--foreground-muted)]/20 text-[var(--foreground-muted)]"
+                        }`}
+                      >
+                        <span
+                          className={`h-2 w-2 rounded-full mr-1 ${
+                            curriculum.isActive ? "bg-[var(--success)]" : "bg-[var(--foreground-muted)]"
+                          }`}
+                        ></span>
+                        {curriculum.isActive ? "Active" : "Inactive"}
                       </span>
-                    ) : (
-                      <span>
-                        Course: {getCourseNameById(curriculum.courseId)}
+                      <span className="text-sm text-[var(--foreground-muted)]">
+                        {curriculum.content.length} content items
                       </span>
-                    )}
-                  </h2>
-                  <div className="flex space-x-2">
+                    </div>
+                  </div>
+                  
+                  {/* Action buttons moved to top right */}
+                  <div className="flex gap-2">
                     <button
                       onClick={() =>
                         handleToggleActive(
@@ -237,66 +351,62 @@ export default function CurriculumPage() {
                           !curriculum.isActive
                         )
                       }
-                      className={`p-2 rounded-[var(--radius-sm)] ${
+                      disabled={isUpdatingStatus === curriculum._id}
+                      className={`px-3 py-1.5 rounded-[var(--radius-sm)] text-sm font-medium transition-colors disabled:opacity-50 ${
                         curriculum.isActive
                           ? "bg-[var(--success)]/20 text-[var(--success)] hover:bg-[var(--success)]/30"
                           : "bg-[var(--foreground-muted)]/20 text-[var(--foreground-muted)] hover:bg-[var(--foreground-muted)]/30"
-                      } transition-colors`}
-                      title={curriculum.isActive ? "Deactivate" : "Activate"}
+                      }`}
                     >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d={
-                            curriculum.isActive
-                              ? "M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                              : "M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z"
-                          }
-                          clipRule="evenodd"
-                        />
-                      </svg>
+                      {isUpdatingStatus === curriculum._id ? (
+                        <span className="flex items-center gap-1">
+                          <svg className="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Updating...
+                        </span>
+                      ) : (
+                        curriculum.isActive ? "Deactivate" : "Activate"
+                      )}
                     </button>
+                    
+                    <Link
+                      href={`/dashboard/curriculum/${curriculum._id}`}
+                      className="px-3 py-1.5 bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] rounded-[var(--radius-sm)] hover:bg-[var(--input-bg)] transition-colors text-sm font-medium flex items-center gap-1"
+                    >
+                      <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                      View
+                    </Link>
+                    
                     <Link
                       href={`/dashboard/curriculum/edit/${curriculum._id}`}
-                      className="p-2 rounded-[var(--radius-sm)] bg-[var(--primary)]/20 text-[var(--primary)] hover:bg-[var(--primary)]/30 transition-colors"
+                      className="px-3 py-1.5 bg-[var(--primary)] text-white rounded-[var(--radius-sm)] hover:bg-[var(--primary)]/90 transition-colors text-sm font-medium flex items-center gap-1"
                     >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                      >
+                      <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                       </svg>
+                      Edit
                     </Link>
+                    
                     <button
                       onClick={() => handleDeleteClick(curriculum._id as string)}
-                      className="p-2 rounded-[var(--radius-sm)] bg-[var(--error)]/20 text-[var(--error)] hover:bg-[var(--error)]/30 transition-colors"
+                      className="px-3 py-1.5 bg-[var(--error)]/20 text-[var(--error)] rounded-[var(--radius-sm)] hover:bg-[var(--error)]/30 transition-colors text-sm font-medium flex items-center gap-1"
                     >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                          clipRule="evenodd"
-                        />
+                      <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
                       </svg>
+                      Delete
                     </button>
                   </div>
                 </div>
 
                 <div className="mt-4">
-                  <h3 className="text-[var(--foreground)] font-medium mb-2">
-                    Content Items: {curriculum.content.length}
+                  <h3 className="text-[var(--foreground)] font-medium mb-3">
+                    Content Preview
                   </h3>
                   <div className="space-y-2">
                     {curriculum.content.slice(0, 3).map((item, index) => (
@@ -304,10 +414,10 @@ export default function CurriculumPage() {
                         key={index} 
                         className="p-3 bg-[var(--input-bg)] rounded-[var(--radius-sm)]"
                       >
-                        <h4 className="text-[var(--primary)] font-medium">
+                        <h4 className="text-[var(--primary)] font-medium text-sm">
                           {item.title}
                         </h4>
-                        <div className="text-[var(--foreground-muted)] text-sm mt-1 line-clamp-1 overflow-hidden">
+                        <div className="text-[var(--foreground-muted)] text-xs mt-1 line-clamp-2 overflow-hidden">
                           {createHtmlPreview(item.description)}
                         </div>
                       </div>
@@ -320,42 +430,24 @@ export default function CurriculumPage() {
                   </div>
                 </div>
 
-                <div className="mt-4 pt-4 border-t border-[var(--border)] flex justify-between items-center">
+                <div className="mt-4 pt-4 border-t border-[var(--border)]">
                   <div className="text-sm text-[var(--foreground-muted)]">
-                    Last updated:{" "}
-                    {new Date(curriculum.updatedAt || "").toLocaleDateString()}
-                    <span className="ml-3 inline-flex items-center">
-                      <span
-                        className={`h-2 w-2 rounded-full ${
-                          curriculum.isActive ? "bg-[var(--success)]" : "bg-[var(--foreground-muted)]"
-                        } mr-1`}
-                      ></span>
-                      {curriculum.isActive ? "Active" : "Inactive"}
-                    </span>
+                    Last updated: {new Date(curriculum.updatedAt || "").toLocaleDateString()}
                   </div>
-                  <Link
-                    href={`/dashboard/curriculum/${curriculum._id}`}
-                    className="text-[var(--primary)] hover:text-[var(--primary)]/80 transition-colors flex items-center"
-                  >
-                    View Details
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4 ml-1"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </Link>
                 </div>
               </div>
             </div>
           ))}
         </div>
+      )}
+
+      {/* Pagination */}
+      {!isLoading && !error && filteredCurriculums.length > 0 && totalPages > 1 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
       )}
 
       {/* Delete Confirmation Modal */}

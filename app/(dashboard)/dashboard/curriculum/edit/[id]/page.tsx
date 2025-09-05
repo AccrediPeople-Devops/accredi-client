@@ -128,7 +128,7 @@ export default function EditCurriculumPage() {
 
       const res = await curriculumService.updateCurriculum(id, payload);
       if (res) {
-        router.push(`/dashboard/curriculum/${id}`);
+        router.push(`/dashboard/curriculum`);
       }
     } catch (err: any) {
       setError(err.response?.data?.message || "Error updating curriculum");
@@ -149,8 +149,8 @@ export default function EditCurriculumPage() {
       {/* Header with navigation */}
       <div className="flex items-center space-x-4">
         <Link
-          href={`/dashboard/curriculum/${id}`}
-          className="p-2 rounded-lg bg-[#2A2A2A] text-white hover:bg-[#5B2C6F]/20 transition-colors"
+          href="/dashboard/curriculum"
+          className="p-2 rounded-lg bg-[var(--input-bg)] text-[var(--foreground)] hover:bg-[var(--primary)]/20 transition-colors border border-[var(--border)]"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -165,15 +165,15 @@ export default function EditCurriculumPage() {
             />
           </svg>
         </Link>
-        <div className="p-6 bg-[#2A2A2A] rounded-xl flex-1">
-          <h1 className="text-2xl font-bold text-white mb-2">
+        <div className="p-6 bg-[var(--input-bg)] rounded-xl flex-1 border border-[var(--border)]">
+          <h1 className="text-2xl font-bold text-[var(--foreground)] mb-2">
             Edit Curriculum
           </h1>
-          <p className="text-[#D7BDE2]">
+          <p className="text-[var(--foreground-muted)]">
             {!isLoading && currentCourseName ? (
               <>
                 Update curriculum for{" "}
-                <span className="font-medium">{currentCourseName}</span>
+                <span className="font-medium text-[var(--primary)]">{currentCourseName}</span>
               </>
             ) : (
               "Update course curriculum content"
@@ -185,14 +185,14 @@ export default function EditCurriculumPage() {
       {/* Loading State */}
       {isLoading && (
         <div className="text-center py-8">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-[#5B2C6F] border-r-2 border-b-2 border-transparent"></div>
-          <p className="mt-2 text-white/70">Loading curriculum...</p>
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-[var(--primary)] border-r-2 border-b-2 border-transparent"></div>
+          <p className="mt-2 text-[var(--foreground-muted)]">Loading curriculum...</p>
         </div>
       )}
 
       {/* Error message */}
       {error && !isLoading && (
-        <div className="p-4 bg-red-500/20 border border-red-500/50 rounded-lg text-white text-center">
+        <div className="p-4 bg-[var(--error)]/10 border border-[var(--error)]/30 text-[var(--error)] rounded-lg text-center">
           {error}
         </div>
       )}
@@ -200,20 +200,20 @@ export default function EditCurriculumPage() {
       {/* Form */}
       {!isLoading && (
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="bg-[#2A2A2A] rounded-xl p-6">
+          <div className="bg-[var(--input-bg)] rounded-xl p-6 border border-[var(--border)]">
             <div className="mb-6">
-              <h2 className="text-xl font-bold text-white mb-4">
+              <h2 className="text-xl font-bold text-[var(--foreground)] mb-4">
                 Course Information
               </h2>
 
               <div>
-                <label className="block text-sm font-medium text-white/70 mb-1">
+                <label className="block text-sm font-medium text-[var(--foreground-muted)] mb-1">
                   Select Course
                 </label>
                 <select
                   value={courseId}
                   onChange={(e) => setCourseId(e.target.value)}
-                  className="w-full px-3 py-2 bg-[#1A1A1A] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5B2C6F]"
+                  className="w-full px-3 py-2 bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                 >
                   <option value="">-- Select a course --</option>
                   {availableCourses.map((course) => (
@@ -222,7 +222,7 @@ export default function EditCurriculumPage() {
                     </option>
                   ))}
                 </select>
-                <p className="text-sm text-white/50 mt-1">
+                <p className="text-sm text-[var(--foreground-muted)] mt-1">
                   Choose the course for which you want to update the curriculum
                 </p>
               </div>
@@ -235,15 +235,15 @@ export default function EditCurriculumPage() {
           {/* Action buttons */}
           <div className="flex justify-end space-x-3">
             <Link
-              href={`/dashboard/curriculum/${id}`}
-              className="px-4 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors"
+              href="/dashboard/curriculum"
+              className="px-4 py-2 rounded-lg bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] hover:bg-[var(--input-bg)] transition-colors"
             >
               Cancel
             </Link>
             <button
               type="submit"
               disabled={isSaving}
-              className={`px-4 py-2 rounded-lg bg-[#5B2C6F] text-white hover:bg-[#5B2C6F]/90 transition-colors flex items-center ${
+              className={`px-4 py-2 rounded-lg bg-[var(--primary)] text-white hover:bg-[var(--primary)]/90 transition-colors flex items-center ${
                 isSaving ? "opacity-70 cursor-not-allowed" : ""
               }`}
             >

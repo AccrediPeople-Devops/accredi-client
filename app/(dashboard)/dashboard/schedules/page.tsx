@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import scheduleService from "@/app/components/service/schedule.service";
 import courseService from "@/app/components/service/course.service";
@@ -8,11 +8,21 @@ import { Schedule } from "@/app/types/schedule";
 import { LoadingSpinner } from "@/app/components/LoadingSpinner";
 import Modal from "@/app/components/Modal";
 import { formatDate, parseDateLocal } from "@/app/utils/dateUtils";
+import { ListPageControls, Pagination } from "@/app/components/ListPageControls";
+import { EnhancedLocationService } from "@/app/components/service/enhancedLocationData";
 
 export default function SchedulesPage() {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
+  const [courses, setCourses] = useState<any[]>([]);
+  const [countries, setCountries] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCountry, setSelectedCountry] = useState("");
+  const [selectedCourse, setSelectedCourse] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("startDate");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [activeTab, setActiveTab] = useState("active");
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
@@ -41,6 +51,32 @@ export default function SchedulesPage() {
       setError(err.response?.data?.message || "Error fetching schedules");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Fetch all courses
+  const fetchCourses = async () => {
+    try {
+      const res = await courseService.getAllCourses();
+      if (res && res.courses) {
+        setCourses(res.courses);
+      } else if (Array.isArray(res)) {
+        setCourses(res);
+      } else {
+        setCourses([]);
+      }
+    } catch (err: any) {
+      console.error("Error fetching courses:", err);
+    }
+  };
+
+  // Fetch countries
+  const fetchCountries = () => {
+    try {
+      const allCountries = EnhancedLocationService.getAllCountries();
+      setCountries(allCountries);
+    } catch (err: any) {
+      console.error("Error fetching countries:", err);
     }
   };
 
@@ -87,6 +123,8 @@ export default function SchedulesPage() {
   // Initial data load
   useEffect(() => {
     fetchSchedules();
+    fetchCourses();
+    fetchCountries();
   }, []);
 
   // Fetch course names whenever schedules change
@@ -94,42 +132,131 @@ export default function SchedulesPage() {
     fetchCourseNames();
   }, [schedules]);
 
-  // Filter schedules based on search, status, and deleted state
-  const filteredSchedules = schedules.filter((schedule) => {
-    // Match search term
-    const matchesSearch =
-      searchTerm === "" ||
-      (courseNames[schedule.courseId] &&
-        courseNames[schedule.courseId]
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase())) ||
-      (schedule.instructorName &&
-        schedule.instructorName
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase())) ||
-      (schedule.country &&
-        schedule.country.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (schedule.city &&
-        schedule.city.toLowerCase().includes(searchTerm.toLowerCase()));
+  // Reset current page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedCountry, selectedCourse, statusFilter, activeTab]);
 
-    // Match status filter
-    const matchesStatus =
-      statusFilter === "all" ||
-      (statusFilter === "upcoming" &&
-        parseDateLocal(schedule.startDate)! > new Date()) ||
-      (statusFilter === "ongoing" &&
-        parseDateLocal(schedule.startDate)! <= new Date() &&
-        parseDateLocal(schedule.endDate)! >= new Date()) ||
-      (statusFilter === "completed" &&
-        parseDateLocal(schedule.endDate)! < new Date());
+  // Filter and sort schedules
+  const filteredSchedules = useMemo(() => {
+    let filtered = schedules.filter((schedule) => {
+      // Match search term
+      const matchesSearch =
+        searchTerm === "" ||
+        (courseNames[schedule.courseId] &&
+          courseNames[schedule.courseId]
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase())) ||
+        (schedule.instructorName &&
+          schedule.instructorName
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase())) ||
+        (schedule.country &&
+          schedule.country.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (schedule.city &&
+          schedule.city.toLowerCase().includes(searchTerm.toLowerCase()));
 
-    // Filter based on active tab
-    const matchesTab =
-      (activeTab === "active" && !(schedule.isDeleted ?? false)) ||
-      (activeTab === "deleted" && (schedule.isDeleted ?? false));
+      // Match country filter
+      const matchesCountry =
+        selectedCountry === "" ||
+        schedule.country === selectedCountry;
 
-    return matchesSearch && matchesStatus && matchesTab;
-  });
+      // Match course filter
+      const matchesCourse =
+        selectedCourse === "" ||
+        schedule.courseId === selectedCourse;
+
+      // Match status filter
+      const matchesStatus =
+        statusFilter === "all" ||
+        (statusFilter === "upcoming" &&
+          parseDateLocal(schedule.startDate)! > new Date()) ||
+        (statusFilter === "ongoing" &&
+          parseDateLocal(schedule.startDate)! <= new Date() &&
+          parseDateLocal(schedule.endDate)! >= new Date()) ||
+        (statusFilter === "completed" &&
+          parseDateLocal(schedule.endDate)! < new Date());
+
+      // Filter based on active tab
+      const matchesTab =
+        (activeTab === "active" && !(schedule.isDeleted ?? false)) ||
+        (activeTab === "deleted" && (schedule.isDeleted ?? false));
+
+      return matchesSearch && matchesCountry && matchesCourse && matchesStatus && matchesTab;
+    });
+
+    // Sort schedules
+    filtered.sort((a, b) => {
+      let aValue, bValue;
+      
+      switch (sortBy) {
+        case "courseName":
+          aValue = courseNames[a.courseId] || "";
+          bValue = courseNames[b.courseId] || "";
+          break;
+        case "instructorName":
+          aValue = a.instructorName || "";
+          bValue = b.instructorName || "";
+          break;
+        case "country":
+          aValue = a.country || "";
+          bValue = b.country || "";
+          break;
+        case "city":
+          aValue = a.city || "";
+          bValue = b.city || "";
+          break;
+        case "startDate":
+          aValue = new Date(a.startDate).getTime();
+          bValue = new Date(b.startDate).getTime();
+          break;
+        case "endDate":
+          aValue = new Date(a.endDate).getTime();
+          bValue = new Date(b.endDate).getTime();
+          break;
+        case "price":
+          aValue = a.offerPrice || a.standardPrice || 0;
+          bValue = b.offerPrice || b.standardPrice || 0;
+          break;
+        default:
+          aValue = new Date(a.startDate).getTime();
+          bValue = new Date(b.startDate).getTime();
+      }
+
+      if (aValue < bValue) return sortOrder === "asc" ? -1 : 1;
+      if (aValue > bValue) return sortOrder === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    return filtered;
+  }, [schedules, searchTerm, selectedCountry, selectedCourse, statusFilter, activeTab, sortBy, sortOrder, courseNames]);
+
+  // Pagination calculations
+  const totalItems = filteredSchedules.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedSchedules = filteredSchedules.slice(startIndex, endIndex);
+
+  // Get available courses for selected country
+  const availableCourses = useMemo(() => {
+    if (!selectedCountry) return courses;
+    
+    const countrySchedules = schedules.filter(schedule => 
+      schedule.country === selectedCountry && !(schedule.isDeleted ?? false)
+    );
+    const courseIds = [...new Set(countrySchedules.map(schedule => schedule.courseId))];
+    
+    return courses.filter(course => courseIds.includes(course._id || course.id));
+  }, [courses, schedules, selectedCountry]);
+
+  // Get available countries
+  const availableCountries = useMemo(() => {
+    const countrySchedules = schedules.filter(schedule => !(schedule.isDeleted ?? false));
+    const countryNames = [...new Set(countrySchedules.map(schedule => schedule.country).filter(Boolean))];
+    
+    return countries.filter(country => countryNames.includes(country.name));
+  }, [countries, schedules]);
 
   // Format date for display
   const formatDate = (dateString: string | null) => {
@@ -311,27 +438,72 @@ export default function SchedulesPage() {
       </div>
 
       {/* Search and Filter Controls */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="flex-1">
-          <input
-            type="text"
-            placeholder="Search schedules..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-2 border border-[var(--primary)]/30 rounded-[var(--radius-md)] bg-[var(--input-bg)] text-[var(--foreground)] placeholder-[var(--foreground-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/50 focus:border-[var(--primary)]"
-          />
-        </div>
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-4 py-2 border border-[var(--primary)]/30 rounded-[var(--radius-md)] bg-[var(--input-bg)] text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/50 focus:border-[var(--primary)]"
-        >
-          <option value="all">All Status</option>
-          <option value="upcoming">Upcoming</option>
-          <option value="ongoing">Ongoing</option>
-          <option value="completed">Completed</option>
-        </select>
-      </div>
+      <ListPageControls
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        searchPlaceholder="Search schedules..."
+        filters={[
+          {
+            label: "Country",
+            value: selectedCountry,
+            onChange: (value) => {
+              setSelectedCountry(value);
+              setSelectedCourse(""); // Reset course when country changes
+            },
+            options: [
+              { value: "", label: "All Countries" },
+              ...availableCountries.map(country => ({
+                value: country.name,
+                label: country.name
+              }))
+            ]
+          },
+          {
+            label: "Course",
+            value: selectedCourse,
+            onChange: setSelectedCourse,
+            options: [
+              { value: "", label: "All Courses" },
+              ...availableCourses.map(course => ({
+                value: course._id || course.id,
+                label: course.title
+              }))
+            ]
+          },
+          {
+            label: "Status",
+            value: statusFilter,
+            onChange: setStatusFilter,
+            options: [
+              { value: "all", label: "All Status" },
+              { value: "upcoming", label: "Upcoming" },
+              { value: "ongoing", label: "Ongoing" },
+              { value: "completed", label: "Completed" }
+            ]
+          }
+        ]}
+        sortBy={sortBy}
+        onSortByChange={setSortBy}
+        sortOrder={sortOrder}
+        onSortOrderChange={setSortOrder}
+        sortOptions={[
+          { value: "startDate", label: "Start Date" },
+          { value: "endDate", label: "End Date" },
+          { value: "courseName", label: "Course Name" },
+          { value: "instructorName", label: "Instructor" },
+          { value: "country", label: "Country" },
+          { value: "city", label: "City" },
+          { value: "price", label: "Price" }
+        ]}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        itemsPerPage={itemsPerPage}
+        onItemsPerPageChange={setItemsPerPage}
+        totalItems={totalItems}
+        startIndex={startIndex + 1}
+        endIndex={Math.min(endIndex, totalItems)}
+      />
 
       {/* Schedules List */}
       {isLoading ? (
@@ -345,7 +517,7 @@ export default function SchedulesPage() {
           </h3>
           <p className="mt-2 text-[var(--foreground)]/60">
             {activeTab === "active" 
-              ? searchTerm || statusFilter !== "all"
+              ? searchTerm || statusFilter !== "all" || selectedCountry || selectedCourse
                 ? "Try adjusting your search or filters"
                 : "Add your first schedule to get started"
               : "No deleted schedules to show"
@@ -381,7 +553,7 @@ export default function SchedulesPage() {
               </tr>
             </thead>
             <tbody className="bg-[var(--background)] divide-y divide-[var(--primary)]/10">
-              {filteredSchedules.map((schedule) => {
+              {paginatedSchedules.map((schedule) => {
                 const status = getScheduleStatus(
                   schedule.startDate,
                   schedule.endDate
@@ -516,6 +688,20 @@ export default function SchedulesPage() {
             </tbody>
           </table>
         </div>
+      )}
+
+      {/* Pagination */}
+      {!isLoading && filteredSchedules.length > 0 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          itemsPerPage={itemsPerPage}
+          onItemsPerPageChange={setItemsPerPage}
+          totalItems={totalItems}
+          startIndex={startIndex + 1}
+          endIndex={Math.min(endIndex, totalItems)}
+        />
       )}
 
       {/* Delete Confirmation Modal */}

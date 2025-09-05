@@ -4,10 +4,13 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import courseLinkService from "@/app/components/service/courseLink.service";
 import courseService from "@/app/components/service/course.service";
+import scheduleService from "@/app/components/service/schedule.service";
 import { CourseLink } from "@/app/types/courseLink";
 import { Course } from "@/app/types/course";
+import { Schedule } from "@/app/types/schedule";
 import { LoadingSpinner } from "@/app/components/LoadingSpinner";
 import Modal from "@/app/components/Modal";
+import ListPageControls, { Pagination, SortableHeader } from "@/app/components/ListPageControls";
 
 export default function CourseLinksPage() {
   const [courseLinks, setCourseLinks] = useState<CourseLink[]>([]);
@@ -23,6 +26,23 @@ export default function CourseLinksPage() {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [courseNames, setCourseNames] = useState<Record<string, string>>({});
+  
+  // New filtering and pagination states
+  const [countryFilter, setCountryFilter] = useState("all");
+  const [courseFilter, setCourseFilter] = useState("all");
+  const [scheduleFilter, setScheduleFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("createdAt");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  
+  // Data for filters
+  const [countries, setCountries] = useState<string[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [schedules, setSchedules] = useState<Schedule[]>([]);
+  const [scheduleNames, setScheduleNames] = useState<Record<string, string>>({});
+  const [copiedLinkId, setCopiedLinkId] = useState<string | null>(null);
+  const [copyMessage, setCopyMessage] = useState("");
 
   // Fetch all course links
   const fetchCourseLinks = async () => {
@@ -81,9 +101,43 @@ export default function CourseLinksPage() {
     }
   };
 
+  // Fetch filter data
+  const fetchFilterData = async () => {
+    try {
+      // Fetch courses
+      const coursesResponse = await courseService.getAllCourses();
+      if (coursesResponse && coursesResponse.courses) {
+        setCourses(Array.isArray(coursesResponse.courses) ? coursesResponse.courses : []);
+      }
+
+      // Fetch schedules
+      const schedulesResponse = await scheduleService.getAllSchedules();
+      if (schedulesResponse && schedulesResponse.schedules) {
+        const schedulesData = Array.isArray(schedulesResponse.schedules) ? schedulesResponse.schedules : [];
+        setSchedules(schedulesData);
+        
+        // Extract unique countries from schedules
+        const uniqueCountries = [...new Set(schedulesData.map((schedule: Schedule) => schedule.country))].filter(Boolean) as string[];
+        setCountries(uniqueCountries);
+        
+        // Create schedule names map
+        const scheduleNamesMap: Record<string, string> = {};
+        schedulesData.forEach((schedule: Schedule) => {
+          const courseName = courses.find(c => c._id === schedule.courseId)?.title || "Unknown Course";
+          const scheduleName = `${courseName} - ${schedule.country} (${schedule.startDate} to ${schedule.endDate})`;
+          scheduleNamesMap[schedule._id] = scheduleName;
+        });
+        setScheduleNames(scheduleNamesMap);
+      }
+    } catch (err) {
+      console.error("Error fetching filter data:", err);
+    }
+  };
+
   // Initial data load
   useEffect(() => {
     fetchCourseLinks();
+    fetchFilterData();
   }, []);
 
   // Fetch course names whenever course links change
@@ -91,13 +145,61 @@ export default function CourseLinksPage() {
     fetchCourseNames();
   }, [courseLinks]);
 
-  // Filter course links based on search, status, and deleted state
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [countryFilter, courseFilter, scheduleFilter, searchTerm, statusFilter, activeTab]);
+
+  // Get schedule name for a course link
+  const getScheduleName = (scheduleId: string) => {
+    return scheduleNames[scheduleId] || "Unknown Schedule";
+  };
+
+  // Get country for a course link (from schedule)
+  const getCountryForLink = (scheduleId: string) => {
+    const schedule = schedules.find(s => s._id === scheduleId);
+    return schedule?.country || "Unknown Country";
+  };
+
+  // Handle copying link to clipboard
+  const handleCopyLink = async (link: string, linkId: string) => {
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopiedLinkId(linkId);
+      setCopyMessage("Link copied to clipboard!");
+      
+      // Clear the copied state and message after 2 seconds
+      setTimeout(() => {
+        setCopiedLinkId(null);
+        setCopyMessage("");
+      }, 2000);
+    } catch (err) {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = link;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      
+      setCopiedLinkId(linkId);
+      setCopyMessage("Link copied to clipboard!");
+      
+      setTimeout(() => {
+        setCopiedLinkId(null);
+        setCopyMessage("");
+      }, 2000);
+    }
+  };
+
+  // Filter course links based on all filters
   const filteredCourseLinks = courseLinks.filter((link) => {
     // Match search term
     const matchesSearch = searchTerm === "" || 
       link.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       link.link.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (courseNames[link.courseId] && courseNames[link.courseId].toLowerCase().includes(searchTerm.toLowerCase()));
+      (courseNames[link.courseId] && courseNames[link.courseId].toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (scheduleNames[link.scheduleId] && scheduleNames[link.scheduleId].toLowerCase().includes(searchTerm.toLowerCase()));
     
     // Match status filter (only applies to active tab)
     const matchesStatus =
@@ -110,8 +212,55 @@ export default function CourseLinksPage() {
       (activeTab === "active" && !link.isDeleted) ||
       (activeTab === "deleted" && link.isDeleted);
     
-    return matchesSearch && matchesStatus && matchesTab;
+    // Match country filter
+    const matchesCountry = countryFilter === "all" || getCountryForLink(link.scheduleId) === countryFilter;
+    
+    // Match course filter
+    const matchesCourse = courseFilter === "all" || link.courseId === courseFilter;
+    
+    // Match schedule filter
+    const matchesSchedule = scheduleFilter === "all" || link.scheduleId === scheduleFilter;
+    
+    return matchesSearch && matchesStatus && matchesTab && matchesCountry && matchesCourse && matchesSchedule;
   });
+
+  // Sort filtered course links
+  const sortedCourseLinks = [...filteredCourseLinks].sort((a, b) => {
+    let aValue: any, bValue: any;
+    
+    switch (sortBy) {
+      case "name":
+        aValue = a.name.toLowerCase();
+        bValue = b.name.toLowerCase();
+        break;
+      case "course":
+        aValue = (courseNames[a.courseId] || "").toLowerCase();
+        bValue = (courseNames[b.courseId] || "").toLowerCase();
+        break;
+      case "country":
+        aValue = getCountryForLink(a.scheduleId).toLowerCase();
+        bValue = getCountryForLink(b.scheduleId).toLowerCase();
+        break;
+      case "createdAt":
+      default:
+        aValue = new Date(a.createdAt).getTime();
+        bValue = new Date(b.createdAt).getTime();
+        break;
+    }
+    
+    if (sortOrder === "asc") {
+      return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+    } else {
+      return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+    }
+  });
+
+  // Pagination
+  const totalItems = sortedCourseLinks.length;
+  const totalPages = itemsPerPage === -1 ? 1 : Math.ceil(totalItems / itemsPerPage);
+  const startIndex = itemsPerPage === -1 ? 0 : (currentPage - 1) * itemsPerPage;
+  const endIndex = itemsPerPage === -1 ? totalItems : startIndex + itemsPerPage;
+  const paginatedCourseLinks = sortedCourseLinks.slice(startIndex, endIndex);
 
   // Format date for display
   const formatDate = (dateString: string) => {
@@ -253,6 +402,12 @@ export default function CourseLinksPage() {
         </div>
       )}
 
+      {copyMessage && (
+        <div className="p-4 bg-[var(--success)]/10 border border-[var(--success)]/30 text-[var(--success)] rounded-[var(--radius-md)]">
+          {copyMessage}
+        </div>
+      )}
+
       {/* Tabs for Active/Deleted */}
       <div className="border-b border-[var(--border)]">
         <div className="flex space-x-4">
@@ -279,48 +434,72 @@ export default function CourseLinksPage() {
         </div>
       </div>
 
-      {/* Filters - Only show status filter on Active tab */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 text-[var(--foreground-muted)]"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </div>
-            <input
-              type="text"
-              placeholder="Search course links..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 w-full bg-[var(--input-bg)] text-[var(--foreground)] border border-[var(--border)] rounded-[var(--radius-md)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-            />
-          </div>
-        </div>
-
-        {activeTab === "active" && (
-          <div>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2 w-full bg-[var(--input-bg)] text-[var(--foreground)] border border-[var(--border)] rounded-[var(--radius-md)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-            >
-              <option value="all">All Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
-          </div>
-        )}
-      </div>
+      {/* Filters */}
+      <ListPageControls
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        searchPlaceholder="Search course links..."
+        filters={[
+          ...(activeTab === "active" ? [{
+            label: "Status",
+            value: statusFilter,
+            options: [
+              { value: "all", label: "All Status" },
+              { value: "active", label: "Active" },
+              { value: "inactive", label: "Inactive" }
+            ],
+            onChange: setStatusFilter
+          }] : []),
+          {
+            label: "Country",
+            value: countryFilter,
+            options: [
+              { value: "all", label: "All Countries" },
+              ...countries.map(country => ({ value: country, label: country }))
+            ],
+            onChange: setCountryFilter
+          },
+          {
+            label: "Course",
+            value: courseFilter,
+            options: [
+              { value: "all", label: "All Courses" },
+              ...courses.map(course => ({ value: course._id, label: course.title }))
+            ],
+            onChange: setCourseFilter
+          },
+          {
+            label: "Schedule",
+            value: scheduleFilter,
+            options: [
+              { value: "all", label: "All Schedules" },
+              ...schedules.map(schedule => ({ 
+                value: schedule._id, 
+                label: scheduleNames[schedule._id] || `${schedule.country} - ${schedule.startDate} to ${schedule.endDate}`
+              }))
+            ],
+            onChange: setScheduleFilter
+          }
+        ]}
+        sortBy={sortBy}
+        onSortByChange={setSortBy}
+        sortOrder={sortOrder}
+        onSortOrderChange={setSortOrder}
+        sortOptions={[
+          { value: "createdAt", label: "Date Created" },
+          { value: "name", label: "Name" },
+          { value: "course", label: "Course" },
+          { value: "country", label: "Country" }
+        ]}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        itemsPerPage={itemsPerPage}
+        onItemsPerPageChange={setItemsPerPage}
+        totalItems={totalItems}
+        startIndex={startIndex}
+        endIndex={endIndex}
+      />
 
       {/* Loading state */}
       {isLoading && (
@@ -336,17 +515,56 @@ export default function CourseLinksPage() {
             <table className="min-w-full divide-y divide-[var(--border)]">
               <thead className="bg-[var(--input-bg)]">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wider">
+                  <SortableHeader
+                    sortKey="name"
+                    currentSort={sortBy}
+                    sortOrder={sortOrder}
+                    onSort={(key) => {
+                      if (sortBy === key) {
+                        setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                      } else {
+                        setSortBy(key);
+                        setSortOrder("asc");
+                      }
+                    }}
+                  >
                     Name
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wider">
+                  </SortableHeader>
+                  <SortableHeader
+                    sortKey="course"
+                    currentSort={sortBy}
+                    sortOrder={sortOrder}
+                    onSort={(key) => {
+                      if (sortBy === key) {
+                        setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                      } else {
+                        setSortBy(key);
+                        setSortOrder("asc");
+                      }
+                    }}
+                  >
                     Course
-                  </th>
+                  </SortableHeader>
                   <th className="px-6 py-3 text-left text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wider">
                     Link
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wider">
+                  <SortableHeader
+                    sortKey="createdAt"
+                    currentSort={sortBy}
+                    sortOrder={sortOrder}
+                    onSort={(key) => {
+                      if (sortBy === key) {
+                        setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                      } else {
+                        setSortBy(key);
+                        setSortOrder("desc");
+                      }
+                    }}
+                  >
                     Date Added
+                  </SortableHeader>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wider">
+                    Country
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wider">
                     Status
@@ -357,8 +575,8 @@ export default function CourseLinksPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--border)] bg-[var(--background)]">
-                {filteredCourseLinks.length > 0 ? (
-                  filteredCourseLinks.map((link) => (
+                {paginatedCourseLinks.length > 0 ? (
+                  paginatedCourseLinks.map((link) => (
                     <tr key={link._id} className="hover:bg-[var(--input-bg)]/30 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-[var(--foreground)]">{link.name}</div>
@@ -367,19 +585,70 @@ export default function CourseLinksPage() {
                         <div className="text-sm text-[var(--foreground)]">{getCourseName(link.courseId)}</div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="text-sm text-[var(--foreground)]">
+                        <div className="flex items-center gap-2">
                           <a 
                             href={link.link} 
                             target="_blank" 
                             rel="noopener noreferrer"
-                            className="text-[var(--primary)] hover:underline truncate block max-w-xs"
+                            className="text-[var(--primary)] hover:underline truncate block max-w-xs flex-1"
                           >
                             {link.link}
                           </a>
+                          <button
+                            onClick={() => handleCopyLink(link.link, link._id)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                handleCopyLink(link.link, link._id);
+                              }
+                            }}
+                            className={`p-2 rounded-[var(--radius-sm)] transition-all duration-200 flex-shrink-0 border focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-1 ${
+                              copiedLinkId === link._id
+                                ? "bg-[var(--success)] text-white border-[var(--success)]"
+                                : "text-[var(--foreground-muted)] hover:text-[var(--primary)] hover:bg-[var(--primary)]/10 border-[var(--border)] hover:border-[var(--primary)]"
+                            }`}
+                            title={copiedLinkId === link._id ? "Copied!" : "Copy link to clipboard"}
+                            aria-label={copiedLinkId === link._id ? "Link copied to clipboard" : "Copy link to clipboard"}
+                          >
+                            {copiedLinkId === link._id ? (
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-4 w-4"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth={2}
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M5 13l4 4L19 7"
+                                />
+                              </svg>
+                            ) : (
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-4 w-4"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth={2}
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                                />
+                              </svg>
+                            )}
+                          </button>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-[var(--foreground-muted)]">{formatDate(link.createdAt)}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-[var(--foreground)]">{getCountryForLink(link.scheduleId)}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
@@ -518,7 +787,7 @@ export default function CourseLinksPage() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={6} className="px-6 py-4 text-center text-[var(--foreground-muted)]">
+                    <td colSpan={7} className="px-6 py-4 text-center text-[var(--foreground-muted)]">
                       {activeTab === "active"
                         ? "No active course links found"
                         : "No deleted course links found"}
@@ -530,6 +799,9 @@ export default function CourseLinksPage() {
           </div>
         </div>
       )}
+
+      {/* Pagination */}
+      {!isLoading && <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />}
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (

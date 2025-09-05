@@ -117,7 +117,7 @@ function EditCourseLinkContent({
           setFormData({
             courseId: courseLink.courseId,
             name: courseLink.name,
-            scheduleId: courseLink.scheduleId || "",
+            scheduleId: courseLink.scheduleId,
             link: courseLink.link,
             isActive: courseLink.isActive,
           });
@@ -127,7 +127,7 @@ function EditCourseLinkContent({
           setFormData({
             courseId: courseLink.courseId,
             name: courseLink.name,
-            scheduleId: courseLink.scheduleId || "",
+            scheduleId: courseLink.scheduleId,
             link: courseLink.link,
             isActive: courseLink.isActive,
           });
