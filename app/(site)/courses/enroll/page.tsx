@@ -354,21 +354,18 @@ function CourseEnrollmentContent() {
   };
 
   // Calculate total for payment (same amount regardless of currency)
+  // This should always use the base price - the backend will handle coupon validation
+  // The Apply button is only for UI display, not for payment calculation
   const calculateTotal = () => {
     if (!selectedSchedule) return 0;
 
     const quantity = scheduleQuantities[selectedSchedule.id || selectedSchedule._id] || 1;
     const basePrice = selectedSchedule.earlyBirdPrice * quantity;
 
-    if (appliedCoupon) {
-      if (appliedCoupon.type === "percentage") {
-        return basePrice - (basePrice * appliedCoupon.discount) / 100;
-      } else {
-        // Use discountPrice for fixed amount coupons
-        return basePrice - (appliedCoupon.discountPrice || appliedCoupon.discount || 0);
-      }
-    }
+    // Payment calculation - always using base price
+    // Coupon code will be handled by backend
 
+    // Always return base price - backend handles coupon validation
     return basePrice;
   };
 
