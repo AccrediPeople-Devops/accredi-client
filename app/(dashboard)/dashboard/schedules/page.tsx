@@ -8,7 +8,7 @@ import { Schedule } from "@/app/types/schedule";
 import { LoadingSpinner } from "@/app/components/LoadingSpinner";
 import Modal from "@/app/components/Modal";
 import { formatDate, parseDateLocal } from "@/app/utils/dateUtils";
-import { ListPageControls, Pagination } from "@/app/components/ListPageControls";
+import ListPageControls, { Pagination } from "@/app/components/ListPageControls";
 import { EnhancedLocationService } from "@/app/components/service/enhancedLocationData";
 
 export default function SchedulesPage() {
@@ -696,11 +696,6 @@ export default function SchedulesPage() {
           currentPage={currentPage}
           totalPages={totalPages}
           onPageChange={setCurrentPage}
-          itemsPerPage={itemsPerPage}
-          onItemsPerPageChange={setItemsPerPage}
-          totalItems={totalItems}
-          startIndex={startIndex + 1}
-          endIndex={Math.min(endIndex, totalItems)}
         />
       )}
 
