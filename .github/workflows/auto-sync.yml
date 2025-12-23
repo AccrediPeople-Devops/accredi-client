@@ -1,0 +1,61 @@
+name: Auto-Sync from DaylinkLtd
+
+on:
+  workflow_dispatch:  # Manual trigger
+  schedule:
+    - cron: "0 2 * * *"  # 🔁 Runs daily at 2 AM UTC
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Client Repo
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "action@github.com"
+
+      - name: Check GH_PAT
+        run: |
+          if [ -z "${{ secrets.GH_PAT }}" ]; then
+            echo "❌ GH_PAT is not set"
+            exit 1
+          fi
+
+      - name: Test Authentication
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          git ls-remote https://$GH_PAT@github.com/daylinkltd/accredi-client.git || {
+            echo "❌ Auth failed!"
+            exit 1
+          }
+
+      - name: Add Upstream
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          git remote remove upstream || true
+          git remote add upstream https://$GH_PAT@github.com/daylinkltd/accredi-client.git
+          git remote -v
+
+      - name: Sync with Upstream (force upstream overwrite)
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          git fetch upstream main || { echo "❌ Fetch failed"; exit 1; }
+
+          git merge -X theirs upstream/main --allow-unrelated-histories -m "Daily sync from upstream [skip ci]" || {
+            echo "⚠️ Merge failed — hard reset fallback"
+            git reset --hard upstream/main
+          }
+
+          git push origin main --force || { echo "❌ Push failed"; exit 1; }
+
+      - name: Done
+        run: echo "✅ Daily Sync Complete"
