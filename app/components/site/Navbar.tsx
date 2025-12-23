@@ -503,25 +503,29 @@ const Navbar = () => {
     },
   ];
 
+  // Check if it's December for Christmas marquee
+  const isDecember = new Date().getMonth() === 11; // 0-11, where 11 is December
+
   return (
     <React.Fragment>
       {/* Fixed navbar with scroll-based visibility */}
       <div 
         ref={navRef} 
         className={`
-          fixed top-0 left-0 right-0 z-[100] h-[72px] transition-all duration-200 ease-in-out
+          fixed top-0 left-0 right-0 z-[100] transition-all duration-200 ease-in-out
+          ${isDecember ? 'h-[104px]' : 'h-[72px]'}
           ${isVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}
           ${isAtTop ? 'bg-transparent backdrop-blur-none' : 'bg-black/40 backdrop-blur-md site-light:bg-white/95 site-light:backdrop-blur-sm'}
           ${!isAtTop ? 'shadow-lg border-b border-white/10 site-light:border-slate-200/50' : ''}
-          py-4 sm:py-6 xl:px-20 sm:px-28 px-0 flex justify-center items-center !py-0 site-navbar
+          site-navbar
         `}
         style={{
           backdropFilter: isAtTop ? 'none' : 'blur(12px)',
           WebkitBackdropFilter: isAtTop ? 'none' : 'blur(12px)',
         }}
       >
-        <div className="px-5 md:px-0 w-full 2xl:max-w-7xl mx-auto">
-          <nav className="flex h-11 justify-between">
+        <div className="px-5 sm:px-8 xl:px-20 2xl:max-w-7xl mx-auto w-full h-[72px] flex items-center">
+          <nav className="flex h-11 justify-between w-full">
             {/* Logo and All Courses */}
             <div className="flex gap-5 items-center">
               <div className="h-11 w-[138px] relative overflow-hidden">
@@ -747,6 +751,41 @@ const Navbar = () => {
             </div>
           </nav>
         </div>
+        
+        {/* Christmas Marquee Banner - Below Navbar */}
+        {isDecember && (
+          <div className="absolute bottom-0 left-0 right-0 w-full bg-gradient-to-r from-red-600 via-red-500 to-red-600 border-t border-yellow-400/50">
+            <div className="overflow-hidden whitespace-nowrap h-8">
+              <div className="inline-block animate-marquee text-white font-semibold text-xs md:text-sm leading-8">
+                <span className="inline-flex items-center gap-3 mx-6">
+                  <span className="text-yellow-300">🎄</span>
+                  <span>Christmas SUPER SALE - 50% OFF</span>
+                  <span className="text-yellow-300 font-extrabold">|</span>
+                  <span>Discount Code: <span className="bg-yellow-400 text-red-700 px-2 py-0.5 rounded text-xs font-bold">CHRISTMAS2025</span></span>
+                  <span className="text-yellow-300 font-extrabold">|</span>
+                  <span>🎄 Christmas Special! Limited-Time Offer – Enrol Now & Save Big! 🎁</span>
+                  <Link href="/courses/pmp-certification-training-course" className="bg-yellow-400 hover:bg-yellow-500 text-red-700 font-bold px-3 py-0.5 rounded-full text-xs transition-colors whitespace-nowrap">
+                    Enroll Now →
+                  </Link>
+                  <span className="text-yellow-300">🎄</span>
+                </span>
+                {/* Duplicate for seamless loop */}
+                <span className="inline-flex items-center gap-3 mx-6">
+                  <span className="text-yellow-300">🎄</span>
+                  <span>Christmas SUPER SALE - 50% OFF</span>
+                  <span className="text-yellow-300 font-extrabold">|</span>
+                  <span>Discount Code: <span className="bg-yellow-400 text-red-700 px-2 py-0.5 rounded text-xs font-bold">CHRISTMAS2025</span></span>
+                  <span className="text-yellow-300 font-extrabold">|</span>
+                  <span>🎄 Christmas Special! Limited-Time Offer – Enrol Now & Save Big! 🎁</span>
+                  <Link href="/courses/pmp-certification-training-course" className="bg-yellow-400 hover:bg-yellow-500 text-red-700 font-bold px-3 py-0.5 rounded-full text-xs transition-colors whitespace-nowrap">
+                    Enroll Now →
+                  </Link>
+                  <span className="text-yellow-300">🎄</span>
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
       {/* Overlay and Mega Menu - Hidden on mobile */}
       {isMenuOpen && (
